@@ -1,6 +1,20 @@
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
+
+// ── Shared Utilities ──
+function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function formatFileSize(bytes) { return (bytes / 1024).toFixed(1); }
+function logError(context, err) {
+  const msg = err?.message || String(err);
+  clog(context + ': ' + msg, 'error');
+  console.warn('[XSLTDebugX]', context, err);
+}
+function guardReady() {
+  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return false; }
+  return true;
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 
@@ -124,63 +138,61 @@ function loadSavedState() {
   }
 }
 
+function _resetXPathMode() {
+  if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
+  if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
+  if (eds.xml) clearAllMarkers();
+  if (typeof clearXPathResults === 'function') clearXPathResults();
+  if (typeof renderXPathHints === 'function') renderXPathHints(null);
+  window._lastExampleKey = null;
+
+  const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
+  if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
+  else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+
+  setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
+  setStatus('Ready', 'ok');
+  clog('XPath session cleared — XML and expression reset to defaults.', 'info');
+}
+
+function _resetXsltMode() {
+  if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+  if (eds.xslt) { _suppressNextSave = true; eds.xslt.setValue(EXAMPLES.identityTransform.xslt); }
+  _suppressNextSave = false;
+  if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
+  kvData.headers    = [];
+  kvData.properties = [];
+  kvIdSeq = 0;
+  renderKV('headers');
+  renderKV('properties');
+  renderOutputKV({}, {});
+
+  if (eds.xml && eds.xslt) clearAllMarkers();
+  if (typeof clearXPathResults === 'function') clearXPathResults();
+  if (typeof renderXPathHints === 'function') renderXPathHints(null);
+  window._lastExampleKey = null;
+
+  const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
+  if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
+  else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+
+  setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
+  setStatus('Ready', 'ok');
+  clog('XSLT session cleared — editors reset to defaults.', 'info');
+}
+
 function clearSavedState() {
   localStorage.removeItem(STORAGE_KEY);
-  // Clear XPath expression history — both persisted and in-memory
   localStorage.removeItem('xdebugx-xpath-history');
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
 
-  const _isXPath = modeManager.isXpath;
-
-  if (_isXPath) {
-    // ── XPath mode reset — stay in XPath, reset XML + expression only ──
-    // Reset the XPath model directly (no suppression needed — inactive model won't trigger editor listeners)
-    if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
-    if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
-    if (eds.xml) clearAllMarkers();
-    if (typeof clearXPathResults === 'function') clearXPathResults();
-    if (typeof renderXPathHints === 'function') renderXPathHints(null);
-    window._lastExampleKey = null;
-
-    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
-    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
-    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
-
-    setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
-    setStatus('Ready', 'ok');
-    clog('XPath session cleared — XML and expression reset to defaults.', 'info');
-
+  if (modeManager.isXpath) {
+    _resetXPathMode();
   } else {
-    // ── XSLT mode reset — full reset, stay in XSLT ──
-    // Reset the XSLT model directly (no suppression needed — inactive model won't trigger editor listeners)
-    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    if (eds.xslt) { _suppressNextSave = true; eds.xslt.setValue(EXAMPLES.identityTransform.xslt); }
-    _suppressNextSave = false;
-    if (eds.out)  { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
-    kvData.headers    = [];
-    kvData.properties = [];
-    kvIdSeq = 0;
-    renderKV('headers');
-    renderKV('properties');
-    renderOutputKV({}, {});
-
-    if (eds.xml && eds.xslt) clearAllMarkers();
-    if (typeof clearXPathResults === 'function') clearXPathResults();
-    if (typeof renderXPathHints === 'function') renderXPathHints(null);
-    window._lastExampleKey = null;
-
-    // Pre-load default XPath expression for when user switches to XPath mode
-    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
-    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
-    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
-
-    setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
-    setStatus('Ready', 'ok');
-    clog('XSLT session cleared — editors reset to defaults.', 'info');
+    _resetXsltMode();
   }
 
-  // Hide saved indicator in both modes
   const ind = document.getElementById('savedIndicator');
   if (ind) ind.style.opacity = '0';
 }

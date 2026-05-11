@@ -417,28 +417,25 @@ require(['vs/editor/editor.main'], () => {
 
   // ── Minify helper: collapses whitespace outside quoted attributes ──
   function _minifyXml(src) {
-    // Strip inter-tag whitespace (safe — this is between > and <)
     let result = src.replace(/>\s+</g, '><');
-    // Collapse runs of whitespace only outside of quoted strings
-    let out = '';
+    const parts = [];
     let inDouble = false, inSingle = false;
     for (let i = 0; i < result.length; i++) {
       const ch = result[i];
       if (!inDouble && !inSingle) {
-        if (ch === '"') { inDouble = true; out += ch; }
-        else if (ch === "'") { inSingle = true; out += ch; }
+        if (ch === '"') { inDouble = true; parts.push(ch); }
+        else if (ch === "'") { inSingle = true; parts.push(ch); }
         else if (/\s/.test(ch)) {
-          // Collapse whitespace run to single space
           while (i + 1 < result.length && /\s/.test(result[i + 1])) i++;
-          out += ' ';
-        } else { out += ch; }
+          parts.push(' ');
+        } else { parts.push(ch); }
       } else {
         if (inDouble && ch === '"') inDouble = false;
         else if (inSingle && ch === "'") inSingle = false;
-        out += ch;
+        parts.push(ch);
       }
     }
-    return out;
+    return parts.join('');
   }
 
   // ── XML editor actions ──

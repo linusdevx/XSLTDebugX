@@ -188,6 +188,9 @@ function deleteKVRow(type, id) {
 function updateKV(type, id, field, val) {
   const row = kvData[type].find(r => r.id === id);
   if (row) row[field] = val;
+  if (field === 'name' && val.length > 128) {
+    clog('Name too long (max 128 chars)', 'warn');
+  }
   const countId = type === 'headers' ? 'hdrCount' : 'propCount';
   document.getElementById(countId).textContent =
     kvData[type].filter(r => r.name.trim()).length;
@@ -269,7 +272,7 @@ function renderKV(type) {
 //  TRANSFORM
 // ════════════════════════════════════════════
 function runTransform() {
-  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return; }
+  if (!guardReady()) return;
 
   // Reset error badge for fresh run
   consoleErrCount = 0;

@@ -20,14 +20,14 @@ function handleUpload(event, pane) {
       if (targetModel) {
         targetModel.setValue(text);
         scheduleSave();
-        clog(`Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+        clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
       } else {
         clog('Editor not ready — cannot upload file', 'error');
       }
     } else if (eds.xslt) {
       eds.xslt.setValue(text);
       scheduleSave();
-      clog(`Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+      clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
     } else {
       clog('Editor not ready — cannot upload file', 'error');
     }
@@ -77,14 +77,14 @@ function setupDragDrop(editorWrapId, pane) {
         if (targetModel) {
           targetModel.setValue(ev.target.result);
           scheduleSave();
-          clog(`Dropped: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+          clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
         } else {
           clog('Editor not ready — cannot upload file', 'error');
         }
       } else if (eds.xslt) {
         eds.xslt.setValue(ev.target.result);
         scheduleSave();
-        clog(`Dropped: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+        clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
       } else {
         clog('Editor not ready — cannot upload file', 'error');
       }

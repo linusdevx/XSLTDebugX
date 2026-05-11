@@ -132,7 +132,7 @@ class ModeManager {
         xmlDecorations.clear();
         xmlDecorations = null;
       } catch (e) {
-        // Silently ignore
+        console.warn('[modeManager] cleanup:', e);
       }
     }
   }

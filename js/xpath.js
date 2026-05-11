@@ -6,9 +6,6 @@
 //  Results are shown in the XPath Results panel (right column).
 // ════════════════════════════════════════════
 
-// Escape special regex characters in a string for safe interpolation into RegExp
-function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
 // Decoration collection for XPath highlights in the XML editor
 let xpathDecorations = null;
 
@@ -369,7 +366,7 @@ function _xpathNormalise(result) {
 
 // ── Main entry point ──────────────────────────────────────────────────────────
 function runXPath() {
-  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return; }
+  if (!guardReady()) return;
   if (!modeManager.isXpath) return;
 
   // Reset error badge for fresh run
@@ -646,7 +643,8 @@ async function _showXPathResults(items, errorMsg, isError) {
       try {
         return await monaco.editor.colorize(text, 'xml', { tabSize: 2 })
           .then(html => html.replace(/<br\s*\/?>\s*$/, ''));
-      } catch(_) {
+      } catch(e) {
+        console.warn('[colorize]', e);
         return escHtml(text);
       }
     }
