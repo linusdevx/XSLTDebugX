@@ -352,12 +352,17 @@ require(['vs/editor/editor.main'], () => {
           startLineNumber: 1, startColumn: 1,
           endLineNumber: pos.lineNumber, endColumn: pos.column
         });
+        // Find last unclosed <!-- by checking that --> doesn't appear AFTER the <!--
         const lastComment = fullBefore.lastIndexOf('<!--');
-        const lastCommentEnd = fullBefore.lastIndexOf('-->');
-        if (lastComment > lastCommentEnd) continue;
+        if (lastComment !== -1) {
+          const lastCommentEnd = fullBefore.indexOf('-->', lastComment + 4);
+          if (lastCommentEnd === -1) continue;
+        }
         const lastCdata = fullBefore.lastIndexOf('<![CDATA[');
-        const lastCdataEnd = fullBefore.lastIndexOf(']]>');
-        if (lastCdata > lastCdataEnd) continue;
+        if (lastCdata !== -1) {
+          const lastCdataEnd = fullBefore.indexOf(']]>', lastCdata + 9);
+          if (lastCdataEnd === -1) continue;
+        }
         const m = before.match(/<([a-zA-Z_][a-zA-Z0-9_:.-]*)(?:\s[^>]*)?>$/);
         if (!m) continue;
         _inserting = true;
