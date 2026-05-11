@@ -16,17 +16,18 @@ function renderExSidebar() {
   let html = '<div class="ex-sidebar-label">Categories</div>';
 
   // "All" button
-  html += `<button class="ex-cat-btn${exActiveCat === 'all' ? ' active' : ''}" data-cat="all" onclick="setExCat('all')">All <span class="ex-cat-count">${total}</span></button>`;
+  html += `<button class="ex-cat-btn${exActiveCat === 'all' ? ' active' : ''}" data-cat="all" onclick="setExCat('all')"><i data-lucide="layout-grid" width="14" height="14"></i> All <span class="ex-cat-count">${total}</span></button>`;
 
   // One button per category — order follows CATEGORIES definition
-  Object.entries(CATEGORIES).forEach(([cat, { label }]) => {
+  Object.entries(CATEGORIES).forEach(([cat, { label, icon }]) => {
     const count = allExamples.filter(ex => ex.cat === cat).length;
     if (count === 0) return; // skip empty categories
     const isActive = exActiveCat === cat;
-    html += `<button class="ex-cat-btn${isActive ? ' active' : ''}" data-cat="${cat}" onclick="setExCat('${cat}')">${label} <span class="ex-cat-count">${count}</span></button>`;
+    html += `<button class="ex-cat-btn${isActive ? ' active' : ''}" data-cat="${cat}" onclick="setExCat('${cat}')"><i data-lucide="${icon}" width="14" height="14"></i> ${label} <span class="ex-cat-count">${count}</span></button>`;
   });
 
   sidebar.innerHTML = html;
+  reinitIcons(sidebar);
 }
 
 function openExModal() {
@@ -113,7 +114,7 @@ function renderExGrid() {
       html += `
         <div class="ex-card" style="--card-accent:${accent}" onclick="loadExample('${k}')">
           <div class="ex-card-top">
-            <span class="ex-card-icon">${ex.icon}</span>
+            <span class="ex-card-icon"><i data-lucide="${ex.icon}" width="16" height="16"></i></span>
             <span class="ex-card-name">${ex.label}</span>
           </div>
           <div class="ex-card-desc">${ex.desc}</div>
@@ -127,6 +128,7 @@ function renderExGrid() {
   });
 
   wrap.innerHTML = html;
+  reinitIcons(wrap);
 }
 
 // ── Load an example ──

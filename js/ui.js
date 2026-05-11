@@ -1,4 +1,29 @@
 // ════════════════════════════════════════════
+//  ICONS (Lucide)
+// ════════════════════════════════════════════
+function reinitIcons(container) {
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons(container ? { root: container } : undefined);
+  }
+}
+
+// ════════════════════════════════════════════
+//  RIPPLE EFFECT
+// ════════════════════════════════════════════
+function createRipple(e) {
+  const btn = e.currentTarget;
+  const circle = document.createElement('span');
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  circle.style.width = circle.style.height = size + 'px';
+  circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  circle.className = 'ripple-circle';
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), 600);
+}
+
+// ════════════════════════════════════════════
 //  TOAST NOTIFICATIONS
 // ════════════════════════════════════════════
 function showCopyToast(message, duration = 1500) {
@@ -25,12 +50,12 @@ function toggleSideCol(side) {
   col.classList.toggle('collapsed');
   scheduleSave();
 
-  // Relayout all Monaco editors after transition
+  // Relayout all Monaco editors after spring transition (0.35s)
   setTimeout(() => {
     eds.xml?.layout();
     eds.xslt?.layout();
     eds.out?.layout();
-  }, 250);
+  }, 400);
 }
 
 // ════════════════════════════════════════════
@@ -44,9 +69,9 @@ function setConsoleState(state) {
   panel.classList.toggle('minimized', state === 'minimized');
   consoleState = state;
 
-  // Relay Monaco continuously during the CSS transition (220ms) to prevent blank editor
+  // Relay Monaco continuously during the CSS transition (350ms spring) to prevent blank editor
   const start = performance.now();
-  const duration = 240;
+  const duration = 400;
   function pump(now) {
     eds.xml?.layout();
     eds.xslt?.layout();
@@ -144,17 +169,12 @@ function applyConsoleSearch(query) {
 // ════════════════════════════════════════════
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
-  document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
   localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark');
   clog(`Theme: ${isLight ? 'light' : 'dark'} mode`, 'info');
 
-  // Switch Monaco editor themes
   const monacoTheme = isLight ? 'xdebugx-light' : 'xdebugx';
   if (typeof monaco !== 'undefined') {
     monaco.editor.setTheme(monacoTheme);
-    // Re-colorize any visible XPath results — monaco.editor.colorize() bakes
-    // palette indices that remap when the theme changes, causing wrong colours.
-    // Delay 50ms to let Monaco finish updating the mtk* CSS before re-rendering.
     setTimeout(() => { if (typeof refreshXPathColors === 'function') refreshXPathColors(); }, 50);
   }
 }
@@ -164,8 +184,6 @@ function toggleTheme() {
   const saved = localStorage.getItem('xdebugx-theme');
   if (saved === 'dark') {
     document.body.classList.remove('light');
-    const btn = document.getElementById('themeToggle');
-    if (btn) btn.textContent = '🌙';
   }
 })();
 // ════════════════════════════════════════════

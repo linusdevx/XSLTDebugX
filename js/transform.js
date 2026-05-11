@@ -5,6 +5,35 @@
 // Shared spinner HTML for the Run button running state
 const _RUN_BTN_SPINNER = `<svg class="spinner" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="8" cy="8" r="6" stroke-opacity="0.3"/><path d="M8 2a6 6 0 0 1 6 6" stroke-linecap="round"/></svg>`;
 
+// ── Transform Animation Helpers ──
+
+function _triggerRunParticles() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const btn = document.getElementById('runBtn');
+  if (!btn) return;
+  const colors = ['#00c8ff', '#6366f1', '#f59e0b', '#10b981', '#ef4444'];
+  for (let i = 0; i < 8; i++) {
+    const angle = (i * 45) * Math.PI / 180;
+    const dist = 20 + Math.random() * 15;
+    const p = document.createElement('span');
+    p.className = 'run-particle';
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--px', `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--py', `${Math.sin(angle) * dist}px`);
+    btn.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+function _flashPaneResult(success) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const pane = document.getElementById('outEd');
+  if (!pane) return;
+  const cls = success ? 'pane-success' : 'pane-error';
+  pane.classList.add(cls);
+  setTimeout(() => pane.classList.remove(cls), success ? 600 : 400);
+}
+
 // Rewrite cpi:setHeader / cpi:setProperty calls to use the js: namespace
 // (http://saxonica.com/ns/globalJS) which Saxon-JS maps to window.xxx().
 // This means Saxon evaluates ALL arguments — including dynamic ones like
@@ -289,11 +318,12 @@ function runTransform() {
       btn.disabled = false;
       if (modeManager.isXpath) {
         btn.onclick = runXPath;
-        btn.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M3 1.5l11 6.5-11 6.5V1.5z"/></svg> Run XPath <span class="kbd">⌘↵</span>`;
+        btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XPath <span class="kbd">⌘↵</span>`;
       } else {
         btn.onclick = runTransform;
-        btn.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M3 1.5l11 6.5-11 6.5V1.5z"/></svg> Run XSLT <span class="kbd">⌘↵</span>`;
+        btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XSLT <span class="kbd">⌘↵</span>`;
       }
+      reinitIcons(btn);
     };
     const remaining = _transformStarted ? _MIN_SPINNER_MS - elapsed : 0;
     if (remaining > 0) setTimeout(restore, remaining);
@@ -303,6 +333,7 @@ function runTransform() {
   btn.disabled = true;
   btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">⌘↵</span>`;
   setStatus('Transforming…', 'busy');
+  _triggerRunParticles();
 
   try {
     const xmlSrc = eds.xml?.getValue()?.trim();
@@ -465,7 +496,7 @@ function runTransform() {
 
       clog(`Transform complete in ${elapsed} ms · output: ${_outLang.toUpperCase()} ✓`, 'success');
       setStatus(`Done · ${elapsed} ms`, 'ok');
-
+      _flashPaneResult(true);
       // Auto-expand output pane on first successful run
       const colRight = document.getElementById('colRight');
       if (colRight.classList.contains('collapsed')) {
@@ -504,6 +535,7 @@ function runTransform() {
       }
 
       setStatus('Transform failed', 'err');
+      _flashPaneResult(false);
     } finally {
       // Always restore console.log — even if Saxon throws
       console.log = _origConsoleLog;

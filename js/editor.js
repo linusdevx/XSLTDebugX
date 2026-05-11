@@ -944,6 +944,7 @@ require(['vs/editor/editor.main'], () => {
       clearTimeout(saxonTimeout); // cancel failure path — prevents double hideLoader() if Saxon
                                   // loads in the same event-loop turn as the 12s timeout fires
       saxonReady = true;
+      reinitIcons();
       hideLoader();
       clog('Saxon-JS 2.x loaded · XSLT 3.0 engine ready ✓', 'success');
       clog('Ctrl+Enter runs XSLT transform in XSLT mode · runs XPath in XPath mode', 'info');
