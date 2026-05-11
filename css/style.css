@@ -311,8 +311,8 @@
       text-orientation: mixed;
       transform: rotate(180deg);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
       user-select: none;
     }
@@ -353,7 +353,7 @@
     .pane-title {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; font-weight: 600;
-      letter-spacing: 1.3px; text-transform: uppercase;
+      letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
     }
     .lang-badge {
@@ -1598,7 +1598,7 @@
     .help-section:last-child { border-bottom: none; }
     .help-section-title {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+      font-size: 9px; font-weight: 600; letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--sap-blue);
       margin-bottom: 8px;
@@ -1666,20 +1666,19 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  opacity: 0.55;
   font-size: 10px;
   white-space: nowrap;
+  color: rgba(255,255,255,0.55);
 }
-.stat-author:hover { opacity: 0.85; }
 .stat-link,
 .stat-link:visited,
 .stat-link:active {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255,255,255,0.55);
   text-decoration: none;
   transition: color 0.15s;
 }
 .stat-link:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
-.stat-divider { opacity: 0.4; }
+.stat-divider { opacity: 0.5; }

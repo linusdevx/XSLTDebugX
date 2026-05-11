@@ -126,6 +126,7 @@ XSLTDebugX is built for **zero friction** — the **app itself** has zero npm ru
 | Component | Type | Source | Impact |
 |-----------|------|--------|--------|
 | **Monaco Editor** | CDN | `cdn.jsdelivr.net` | Syntax highlighting, code editing |
+| **Lucide Icons** | CDN | `unpkg.com` | UI iconography (SVG icon library) |
 | **pako** (compression) | CDN | `cdnjs.cloudflare.com` | Share URL encoding/decoding |
 | **Saxon-JS 2.x** | Bundled | `/lib/SaxonJS2.js` (in repo) | XSLT 3.0 + XPath 3.1 processor |
 | **npm packages** | Development only | `@playwright/test`, `http-server`, `vite` | E2E testing, local dev server, production build |
@@ -521,7 +522,7 @@ XSLTDebugX/
 
 ## Architecture Overview
 
-XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules (~8,544 lines of code) and no external dependencies.
+XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules and no external dependencies.
 
 ### Key Design Principles
 
@@ -567,7 +568,7 @@ See [ARCHITECTURE.md](./.github/docs/ARCHITECTURE.md) for full data flow diagram
 
 ```js
 myExample: {
-  label: 'My Example', icon: '🗂️', desc: 'One sentence',
+  label: 'My Example', icon: 'file-output', desc: 'One sentence',
   cat: 'cpi',   // transform | aggregation | format | cpi | xpath
   xml:  `<Root>...</Root>`,
   xslt: `<xsl:stylesheet version="3.0" ...>...</xsl:stylesheet>`,
@@ -580,7 +581,7 @@ myExample: {
 
 ```js
 myXPathExample: {
-  label: 'My XPath Example', icon: '🔍', desc: 'One sentence',
+  label: 'My XPath Example', icon: 'search', desc: 'One sentence',
   cat: 'xpath',
   xml:       `<Root>...</Root>`,
   xslt:      '',

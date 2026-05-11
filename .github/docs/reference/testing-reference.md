@@ -33,9 +33,6 @@ applyTo: tests/**/*.spec.js, tests/utils/test-helpers.js, tests/fixtures/sample-
 
 - **9 test files** across 2 directories (smoke + 8 workflow suites)
 - **88 tests** total
-- **~700 lines** of test code (spec files)
-- **~650 lines** of helpers + POM (test-helpers.js)
-- **~400 lines** of fixtures (sample-data.js)
 
 ### Test Structure
 
