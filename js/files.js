@@ -40,7 +40,10 @@ function downloadPane(pane, defaultName) {
   const ed = pane === 'xml' ? eds.xml : pane === 'xslt' ? eds.xslt : eds.out;
   const text = ed?.getValue()?.trim();
   if (!text) { clog(`${pane.toUpperCase()} pane is empty — nothing to download`, 'warn'); return; }
-  const blob = new Blob([text], { type: 'application/xml' });
+  const ext = defaultName.split('.').pop() || 'xml';
+  const mimeMap = { xml: 'application/xml', xsl: 'application/xml', xslt: 'application/xml', json: 'application/json', txt: 'text/plain' };
+  const mime = mimeMap[ext] || 'text/plain';
+  const blob = new Blob([text], { type: mime });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;

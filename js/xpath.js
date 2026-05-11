@@ -6,6 +6,9 @@
 //  Results are shown in the XPath Results panel (right column).
 // ════════════════════════════════════════════
 
+// Escape special regex characters in a string for safe interpolation into RegExp
+function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
 // Decoration collection for XPath highlights in the XML editor
 let xpathDecorations = null;
 
@@ -181,7 +184,7 @@ function _offsetToLineCol(src, offset) {
 // so that <Item does not match <ItemDetail.
 function _nthTagOpen(src, tag, n) {
   // Matches <tag> <tag/> <tag attr=...>
-  const re = new RegExp(`<${tag}(?=[\\s>/])`, 'g');
+  const re = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
   let count = 0;
   let m;
   while ((m = re.exec(src)) !== null) {
@@ -219,8 +222,8 @@ function _findNodeRange(xmlSrc, el, occurrenceIndex) {
 
   // Find matching </tag> using precise regex, tracking nesting depth
   let depth = 1, j = openTagEnd;
-  const openRe  = new RegExp(`<${tag}(?=[\\s>/])`, 'g');
-  const closeRe = new RegExp(`<\\/${tag}(?=[\\s>])`, 'g');
+  const openRe  = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
+  const closeRe = new RegExp(`<\\/${_escRe(tag)}(?=[\\s>])`, 'g');
 
   while (depth > 0) {
     openRe.lastIndex  = j;
@@ -564,8 +567,8 @@ function _findNodeRangeByTag(xmlSrc, tag, occurrenceIndex) {
   if (xmlSrc[i - 2] === '/') return { startOffset: openOffset, endOffset: openTagEnd };
 
   let depth = 1, j = openTagEnd;
-  const openRe  = new RegExp(`<${tag}(?=[\\s>/])`, 'g');
-  const closeRe = new RegExp(`<\\/${tag}(?=[\\s>])`, 'g');
+  const openRe  = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
+  const closeRe = new RegExp(`<\\/${_escRe(tag)}(?=[\\s>])`, 'g');
   while (depth > 0) {
     openRe.lastIndex  = j;
     closeRe.lastIndex = j;

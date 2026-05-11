@@ -29,7 +29,8 @@ function rewriteCPICalls(xslt) {
 
   // 2. Remove 'cpi' from exclude-result-prefixes (js exclusion handled by ensureJsExcluded)
   xslt = xslt.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
-    const parts = val.split(/\s+/).filter(p => p !== 'cpi');
+    const parts = val.split(/\s+/).filter(p => p !== 'cpi' && p !== '');
+    if (parts.length === 0) return ''; // remove empty attribute entirely
     return attr + q + parts.join(' ') + q;
   });
 
