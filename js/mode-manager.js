@@ -41,6 +41,7 @@ class ModeManager {
 
     console.log(`🔄 Switching from ${this.mode} to ${newMode}...`);
 
+    const previousMode = this.mode;
     try {
       // Step 1: Cleanup current mode
       this.cleanup();
@@ -49,7 +50,6 @@ class ModeManager {
       this.saveColumnState();
 
       // Step 3: Update internal state
-      const previousMode = this.mode;
       this.mode = newMode;
       console.log(`✓ Mode state updated: ${newMode}`);
 
@@ -132,7 +132,7 @@ class ModeManager {
         xmlDecorations.clear();
         xmlDecorations = null;
       } catch (e) {
-        // Silently ignore
+        console.warn('[modeManager] cleanup:', e);
       }
     }
   }

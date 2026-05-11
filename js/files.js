@@ -20,14 +20,14 @@ function handleUpload(event, pane) {
       if (targetModel) {
         targetModel.setValue(text);
         scheduleSave();
-        clog(`Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+        clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
       } else {
         clog('Editor not ready — cannot upload file', 'error');
       }
     } else if (eds.xslt) {
       eds.xslt.setValue(text);
       scheduleSave();
-      clog(`Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+      clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
     } else {
       clog('Editor not ready — cannot upload file', 'error');
     }
@@ -40,7 +40,10 @@ function downloadPane(pane, defaultName) {
   const ed = pane === 'xml' ? eds.xml : pane === 'xslt' ? eds.xslt : eds.out;
   const text = ed?.getValue()?.trim();
   if (!text) { clog(`${pane.toUpperCase()} pane is empty — nothing to download`, 'warn'); return; }
-  const blob = new Blob([text], { type: 'application/xml' });
+  const ext = defaultName.split('.').pop() || 'xml';
+  const mimeMap = { xml: 'application/xml', xsl: 'application/xml', xslt: 'application/xml', json: 'application/json', txt: 'text/plain' };
+  const mime = mimeMap[ext] || 'text/plain';
+  const blob = new Blob([text], { type: mime });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
@@ -74,14 +77,14 @@ function setupDragDrop(editorWrapId, pane) {
         if (targetModel) {
           targetModel.setValue(ev.target.result);
           scheduleSave();
-          clog(`Dropped: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+          clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
         } else {
           clog('Editor not ready — cannot upload file', 'error');
         }
       } else if (eds.xslt) {
         eds.xslt.setValue(ev.target.result);
         scheduleSave();
-        clog(`Dropped: ${file.name} (${(file.size / 1024).toFixed(1)} KB) → ${pane.toUpperCase()} pane`, 'success');
+        clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
       } else {
         clog('Editor not ready — cannot upload file', 'error');
       }

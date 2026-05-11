@@ -1,12 +1,12 @@
-<!-- XSLTDebugX v1.0 — SAP Cloud Integration XSLT IDE -->
+<!-- XSLTDebugX v1.0 — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XSLTDebugX — SAP Cloud Integration XSLT IDE</title>
-  <meta name="description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE for SAP Cloud Integration. Test transformations locally with CPI headers and properties — no deploy needed.">
-  <meta name="keywords" content="XSLT editor, XPath evaluator, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, XSLT debugger, XSLT online, Saxon-JS, XML transformation, XSLT IDE, XML editor online, SAP Integration Suite, iFlow XSLT, CPI mapping">
+  <title>XSLTDebugX — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</title>
+  <meta name="description" content="Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.">
+  <meta name="keywords" content="XSLT editor, XPath evaluator, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, XSLT debugger, XSLT online, Saxon-JS, XML transformation, XSLT IDE, XML editor online, SAP Integration Suite, iFlow XSLT, CPI mapping, XSLT debugger online, XSLT tester, XPath tester online, XSLT playground, online XSLT editor, XSLT testing tool, SAP CPI XSLT debug">
   <meta name="author" content="XSLTDebugX">
   <meta name="google-site-verification" content="2FIJQa0iXMS64h8tWPm5lUdskRuBHUzKXt8RxuyUlis">
   <meta name="robots" content="index, follow">
@@ -19,8 +19,8 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="XSLTDebugX — XSLT 3.0 IDE for SAP Cloud Integration">
-  <meta property="og:description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE. Test SAP CPI transformations locally with headers, properties, and extension functions — no deployment needed.">
+  <meta property="og:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
+  <meta property="og:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally with headers, properties, and extension functions — no deployment needed.">
   <meta property="og:url" content="https://xsltdebugx.pages.dev/">
   <meta property="og:site_name" content="XSLTDebugX">
   <meta property="og:locale" content="en_US">
@@ -31,8 +31,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="XSLTDebugX — XSLT 3.0 IDE for SAP Cloud Integration">
-  <meta name="twitter:description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE. Test SAP CPI transformations locally — no deployment needed.">
+  <meta name="twitter:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
+  <meta name="twitter:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally — no deployment needed.">
   <meta name="twitter:domain" content="xsltdebugx.pages.dev">
   <meta name="twitter:image" content="https://xsltdebugx.pages.dev/og-image.png">
 
@@ -55,10 +55,10 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "XSLTDebugX",
-    "alternateName": "XSLT Debug X",
+    "name": "XSLTDebugX — Online XSLT Debugger",
+    "alternateName": ["XSLT Debug X", "XSLTDebugX"],
     "url": "https://xsltdebugx.pages.dev/",
-    "description": "Free browser-based XSLT 3.0 and XPath 3.1 IDE for SAP Cloud Integration. Test transformations locally with CPI simulation — no deployment needed.",
+    "description": "Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "XML/XSLT Development Tool",
     "operatingSystem": "Any (browser-based)",
@@ -74,18 +74,20 @@
     },
     "featureList": [
       "XSLT 3.0 transformation engine (Saxon-JS 2)",
-      "XPath 3.1 expression evaluator",
+      "XPath 3.1 expression evaluator and tester",
+      "Online XSLT debugger — no installation needed",
       "SAP CPI header and property simulation",
       "SAP CPI extension function support",
       "61 built-in examples across 6 categories",
       "Monaco Editor with XML/XSLT syntax highlighting",
-      "Real-time XML validation",
+      "Real-time XML validation and error detection",
       "Dark and light theme",
       "Share transformations via URL",
+      "XSLT testing without deploying to SAP Integration Suite",
       "No server — runs entirely in-browser"
     ],
     "screenshot": "https://xsltdebugx.pages.dev/og-image.png",
-    "keywords": "XSLT, XPath, SAP CPI, SAP Cloud Integration, XML editor, XSLT IDE, Saxon-JS",
+    "keywords": "XSLT debugger, XSLT IDE online, XPath tester, SAP CPI XSLT, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT editor, XSLT testing tool, XML editor, Saxon-JS, XSLT playground",
     "inLanguage": "en",
     "isAccessibleForFree": true,
     "license": "https://opensource.org/licenses/MIT",
@@ -98,27 +100,29 @@
 <!-- SEO: visible text for crawlers that don't execute JS -->
 <noscript>
   <div style="padding:2rem;max-width:800px;margin:0 auto;font-family:system-ui,sans-serif">
-    <h1>XSLTDebugX — Free XSLT 3.0 IDE for SAP Cloud Integration</h1>
-    <p>XSLTDebugX is a free, browser-based XSLT 3.0 and XPath 3.1 integrated development environment designed for SAP Cloud Integration (CPI) developers.</p>
-    <h2>Features</h2>
+    <h1>XSLTDebugX — Free Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</h1>
+    <p>XSLTDebugX is a free online XSLT debugger and XPath 3.1 tester designed for SAP Cloud Integration (CPI) developers. Debug, test, and validate XSLT transformations directly in your browser without deploying to SAP Integration Suite.</p>
+    <h2>XSLT Debugger Features</h2>
     <ul>
-      <li>XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
-      <li>XPath 3.1 expression evaluator with syntax highlighting</li>
-      <li>SAP CPI simulation — test with headers, properties, and extension functions</li>
+      <li>Online XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
+      <li>XPath 3.1 expression tester with syntax highlighting and history</li>
+      <li>SAP CPI runtime simulation — debug with headers, properties, and extension functions</li>
       <li>61 built-in examples covering basic to advanced XSLT patterns</li>
-      <li>Monaco Editor with XML/XSLT syntax highlighting and error detection</li>
-      <li>Share transformations via URL — no server needed</li>
+      <li>Monaco Editor with XML/XSLT syntax highlighting and real-time error detection</li>
+      <li>Share XSLT transformations via URL — no server or account needed</li>
       <li>Dark and light theme support</li>
-      <li>Works entirely in your browser — no installation, no data sent to servers</li>
+      <li>Runs entirely in your browser — no installation, no data sent to servers</li>
     </ul>
     <h2>Use Cases</h2>
     <ul>
-      <li>Develop and debug XSLT mappings for SAP Integration Suite iFlows</li>
-      <li>Test XPath expressions against sample XML documents</li>
-      <li>Learn XSLT 3.0 with interactive examples</li>
-      <li>Validate XML structure and transformation output</li>
+      <li>Debug and test XSLT mappings for SAP Integration Suite iFlows offline</li>
+      <li>Test XPath expressions against sample XML documents online</li>
+      <li>Learn XSLT 3.0 with interactive examples and instant feedback</li>
+      <li>Validate XML structure and XSLT transformation output before deployment</li>
     </ul>
-    <p>Please enable JavaScript to use the XSLTDebugX editor.</p>
+    <h2>Why Use an Online XSLT Debugger?</h2>
+    <p>Testing XSLT in SAP CPI requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and CPI extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
+    <p>Please enable JavaScript to use the XSLTDebugX online XSLT debugger.</p>
   </div>
 </noscript>
 

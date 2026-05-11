@@ -521,7 +521,7 @@ XSLTDebugX/
 
 ## Architecture Overview
 
-XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules (~8,520 lines of code) and no external dependencies.
+XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules (~8,544 lines of code) and no external dependencies.
 
 ### Key Design Principles
 

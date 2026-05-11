@@ -41,7 +41,7 @@ function openExModal() {
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
   renderExSidebar();
   renderExGrid();
-  setTimeout(() => document.getElementById('exModalSearch').focus(), 60);
+  requestAnimationFrame(() => document.getElementById('exModalSearch').focus());
 }
 
 function closeExModal() {
@@ -80,12 +80,15 @@ function renderExGrid() {
   const query  = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
   const wrap   = document.getElementById('exGridWrap');
 
-  // Filter keys — iterate EXAMPLES directly, meta fields now live there
-  const keys = Object.keys(EXAMPLES).filter(k => {
+  // Single-pass: filter and group examples simultaneously
+  const groups = {};
+  const keys = [];
+  Object.keys(EXAMPLES).forEach(k => {
     const ex = EXAMPLES[k];
-    if (exActiveCat !== 'all' && ex.cat !== exActiveCat) return false;
-    if (query && !ex.label.toLowerCase().includes(query) && !ex.desc.toLowerCase().includes(query)) return false;
-    return true;
+    if (exActiveCat !== 'all' && ex.cat !== exActiveCat) return;
+    if (query && !ex.label.toLowerCase().includes(query) && !ex.desc.toLowerCase().includes(query)) return;
+    keys.push(k);
+    (groups[ex.cat] = groups[ex.cat] || []).push(k);
   });
 
   document.getElementById('exModalCount').textContent = keys.length + ' example' + (keys.length !== 1 ? 's' : '');
@@ -94,14 +97,6 @@ function renderExGrid() {
     wrap.innerHTML = '<div class="ex-no-results">No examples match your search.</div>';
     return;
   }
-
-  // Group by category for section labels (only when showing all)
-  const groups = {};
-  keys.forEach(k => {
-    const cat = EXAMPLES[k].cat;
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push(k);
-  });
 
   let html = '';
   // Preserve CATEGORIES order for section grouping
@@ -140,16 +135,17 @@ function loadExample(key) {
   if (!ex) return;
 
   // ── Step 1: Switch mode based on example type BEFORE loading content ──
-  if (ex.xpathExpr && !modeManager.isXpath) {
-    // XPath example — switch to XPath mode
-    const colCenter = document.getElementById('colCenter');
-    modeManager.setMode('XPATH');
-    clog('Switched to XPath mode', 'info');
-  } else if (!ex.xpathExpr && modeManager.isXpath) {
-    // XSLT example — switch to XSLT mode
-    modeManager.setMode('XSLT');
-    if (typeof clearXPathResults === 'function') clearXPathResults();
-    clog('Switched to XSLT mode', 'info');
+  try {
+    if (ex.xpathExpr && !modeManager.isXpath) {
+      modeManager.setMode('XPATH');
+      clog('Switched to XPath mode', 'info');
+    } else if (!ex.xpathExpr && modeManager.isXpath) {
+      modeManager.setMode('XSLT');
+      if (typeof clearXPathResults === 'function') clearXPathResults();
+      clog('Switched to XSLT mode', 'info');
+    }
+  } catch (e) {
+    logError('loadExample mode switch', e);
   }
 
   // ── Step 2: Load content ──

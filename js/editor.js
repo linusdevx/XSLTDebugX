@@ -347,6 +347,22 @@ require(['vs/editor/editor.main'], () => {
         const before   = model.getLineContent(pos.lineNumber).substring(0, pos.column - 1);
         if (!before.endsWith('>') || before.endsWith('/>')) continue;
         if (/<\/[^>]+>$/.test(before)) continue;
+        // Skip if inside a comment or CDATA section
+        const fullBefore = model.getValueInRange({
+          startLineNumber: 1, startColumn: 1,
+          endLineNumber: pos.lineNumber, endColumn: pos.column
+        });
+        // Find last unclosed <!-- by checking that --> doesn't appear AFTER the <!--
+        const lastComment = fullBefore.lastIndexOf('<!--');
+        if (lastComment !== -1) {
+          const lastCommentEnd = fullBefore.indexOf('-->', lastComment + 4);
+          if (lastCommentEnd === -1) continue;
+        }
+        const lastCdata = fullBefore.lastIndexOf('<![CDATA[');
+        if (lastCdata !== -1) {
+          const lastCdataEnd = fullBefore.indexOf(']]>', lastCdata + 9);
+          if (lastCdataEnd === -1) continue;
+        }
         const m = before.match(/<([a-zA-Z_][a-zA-Z0-9_:.-]*)(?:\s[^>]*)?>$/);
         if (!m) continue;
         _inserting = true;
@@ -404,6 +420,29 @@ require(['vs/editor/editor.main'], () => {
     if (edits.length) editor.executeEdits('toggle-comment', edits);
   }
 
+  // ── Minify helper: collapses whitespace outside quoted attributes ──
+  function _minifyXml(src) {
+    let result = src.replace(/>\s+</g, '><');
+    const parts = [];
+    let inDouble = false, inSingle = false;
+    for (let i = 0; i < result.length; i++) {
+      const ch = result[i];
+      if (!inDouble && !inSingle) {
+        if (ch === '"') { inDouble = true; parts.push(ch); }
+        else if (ch === "'") { inSingle = true; parts.push(ch); }
+        else if (/\s/.test(ch)) {
+          while (i + 1 < result.length && /\s/.test(result[i + 1])) i++;
+          parts.push(' ');
+        } else { parts.push(ch); }
+      } else {
+        if (inDouble && ch === '"') inDouble = false;
+        else if (inSingle && ch === "'") inSingle = false;
+        parts.push(ch);
+      }
+    }
+    return parts.join('');
+  }
+
   // ── XML editor actions ──
   eds.xml.addAction({
     id:    'xd-format-xml',
@@ -429,7 +468,7 @@ require(['vs/editor/editor.main'], () => {
     run(ed) {
       const src = ed.getValue().trim();
       if (!src) return;
-      const minified = src.replace(/>\s+</g, '><').replace(/\s{2,}/g, ' ');
+      const minified = _minifyXml(src);
       ed.executeEdits('minify-xml', [{
         range: ed.getModel().getFullModelRange(), text: minified
       }]);
@@ -527,7 +566,7 @@ require(['vs/editor/editor.main'], () => {
     run(ed) {
       const src = ed.getValue().trim();
       if (!src) return;
-      const minified = src.replace(/>\s+</g, '><').replace(/\s{2,}/g, ' ');
+      const minified = _minifyXml(src);
       ed.executeEdits('minify-xslt', [{
         range: ed.getModel().getFullModelRange(), text: minified
       }]);

@@ -67,6 +67,7 @@ function copyPane(which) {
     ta.focus();
     ta.select();
     const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
+    if (ok) console.info('[clipboard] used execCommand fallback');
     document.body.removeChild(ta);
     ok ? onSuccess() : clog('Clipboard access denied', 'error');
   };
@@ -78,104 +79,72 @@ function copyPane(which) {
   }
 }
 
-function prettyXML(xml) {
-  // Tokenise with a regex that captures each XML token whole,
-  // then decide indentation per token type.
-  try {
-    const INDENT = '  ';
-    // Strip inter-tag whitespace so we start clean
-    xml = xml.replace(/>\s+</g, '><').trim();
+// ── XML Token regex — cached at module scope for performance ──
+const _ATTR_VAL   = `"[^"]*"|'[^']*'`;
+const _TAG_INNER  = `(?:${_ATTR_VAL}|[^<>])*`;
+const _TOKEN_RE   = new RegExp(
+  `<\\?[\\s\\S]*?\\?>` +
+  `|<!--[\\s\\S]*?-->` +
+  `|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>` +
+  `|</${_TAG_INNER}>` +
+  `|<${_TAG_INNER}>` +
+  `|[^<]+`,
+  'g'
+);
 
-    // Token regex — handles attribute values containing > or < via ATTR_VAL,
-    // and avoids the separate self-closing branch that caused ambiguity when
-    // TAG_INNER consumed / characters inside attribute values.
-    //
-    //   PI / declaration   <?...?>
-    //   comment            <!--...-->
-    //   CDATA              <![CDATA[...]]>
-    //   closing tag        </foo>
-    //   any other tag      <foo ...>  or  <foo .../>
-    //   text               anything else
-    //
-    // ATTR_VAL matches "..." or '...' to skip > chars inside quoted values.
-    // [^<>] ensures TAG_INNER never crosses a tag boundary.
-    const ATTR_VAL  = `"[^"]*"|'[^']*'`;
-    const TAG_INNER = `(?:${ATTR_VAL}|[^<>])*`;
-    const TOKEN_RE  = new RegExp(
-      `<\\?[\\s\\S]*?\\?>` +                   // PI / XML declaration
-      `|<!--[\\s\\S]*?-->` +                    // comment
-      `|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>` +       // CDATA section
-      `|</${TAG_INNER}>` +                      // closing tag  </foo>
-      `|<${TAG_INNER}>` +                       // opening or self-closing tag
-      `|[^<]+`,                                  // text node
-      'g'
-    );
-    const tokens = xml.match(TOKEN_RE) || [];
+function _tokenizeXML(xml) {
+  return (xml.replace(/>\s+</g, '><').trim()).match(_TOKEN_RE) || [];
+}
 
-    let out   = '';
-    let depth = 0;
+function _indentTokens(tokens) {
+  const INDENT = '  ';
+  let out = '';
+  let depth = 0;
 
-    for (let i = 0; i < tokens.length; i++) {
-      const tok = tokens[i];
-      if (!tok.trim()) continue;
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    if (!tok.trim()) continue;
 
-      const isClose     = tok.startsWith('</');
-      const isSelfClose = !isClose && tok.endsWith('/>');
-      const isPI        = tok.startsWith('<?') || tok.startsWith('<!--') || tok.startsWith('<!');
+    const isClose     = tok.startsWith('</');
+    const isSelfClose = !isClose && tok.endsWith('/>');
+    const isPI        = tok.startsWith('<?') || tok.startsWith('<!--') || tok.startsWith('<!');
 
-      if (isClose) {
-        // Closing tag — dedent before printing
-        depth = Math.max(0, depth - 1);
-        out += INDENT.repeat(depth) + tok + '\n';
+    if (isClose) {
+      depth = Math.max(0, depth - 1);
+      out += INDENT.repeat(depth) + tok + '\n';
+    } else if (isSelfClose || isPI) {
+      out += INDENT.repeat(depth) + tok + '\n';
+    } else if (!tok.startsWith('<')) {
+      out += INDENT.repeat(depth) + tok.trim() + '\n';
+    } else {
+      const nextTok  = tokens[i + 1];
+      const afterTok = tokens[i + 2];
 
-      } else if (isSelfClose || isPI) {
-        // Self-closing tag, PI, comment, CDATA — no depth change
-        out += INDENT.repeat(depth) + tok + '\n';
-
-      } else if (!tok.startsWith('<')) {
-        // ── Text node ──
-        // Text tokens don't start with '<'. They must be handled before the
-        // opening-tag branch, otherwise they fall through to it and the
-        // lookahead logic consumes closing tags without decrementing depth,
-        // causing every subsequent element to be over-indented by one level.
-        // Emit the text at current depth and leave the closing tag to be
-        // handled by the isClose branch on the next iteration — this keeps
-        // text and its closing tag on separate lines at the correct indentation.
-        out += INDENT.repeat(depth) + tok.trim() + '\n';
-
+      if (nextTok && nextTok.startsWith('</')) {
+        out += INDENT.repeat(depth) + tok + nextTok + '\n';
+        i += 1;
+      } else if (nextTok && !nextTok.startsWith('<') && afterTok && afterTok.startsWith('</')) {
+        out += INDENT.repeat(depth) + tok + nextTok.trim() + afterTok + '\n';
+        i += 2;
+      } else if (nextTok && !nextTok.startsWith('<')) {
+        const trimmed = nextTok.trim();
+        out += INDENT.repeat(depth) + tok + (trimmed ? trimmed + ' ' : '') + '\n';
+        depth++;
+        i += 1;
       } else {
-        // Opening tag — look ahead for special inline cases
-        const nextTok  = tokens[i + 1];
-        const afterTok = tokens[i + 2];
-
-        if (nextTok && nextTok.startsWith('</')) {
-          // <open></close> — empty element pair, keep on one line
-          out += INDENT.repeat(depth) + tok + nextTok + '\n';
-          i += 1;
-
-        } else if (nextTok && !nextTok.startsWith('<') && afterTok && afterTok.startsWith('</')) {
-          // <open>text</close> — simple inline content, keep on one line
-          out += INDENT.repeat(depth) + tok + nextTok.trim() + afterTok + '\n';
-          i += 2;
-
-        } else if (nextTok && !nextTok.startsWith('<')) {
-          // <open>text<child... — mixed content; emit tag+text prefix, indent children
-          const trimmed = nextTok.trim();
-          out += INDENT.repeat(depth) + tok + (trimmed ? trimmed + ' ' : '') + '\n';
-          depth++;
-          i += 1; // text token consumed; child elements follow
-
-        } else {
-          // Normal opening tag with child elements
-          out += INDENT.repeat(depth) + tok + '\n';
-          depth++;
-        }
+        out += INDENT.repeat(depth) + tok + '\n';
+        depth++;
       }
     }
+  }
+  return out.trim();
+}
 
-    return out.trim();
+function prettyXML(xml) {
+  try {
+    return _indentTokens(_tokenizeXML(xml));
   } catch(e) {
-    return xml; // fallback: return original if anything goes wrong
+    return xml;
   }
 }
 

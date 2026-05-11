@@ -29,7 +29,8 @@ function rewriteCPICalls(xslt) {
 
   // 2. Remove 'cpi' from exclude-result-prefixes (js exclusion handled by ensureJsExcluded)
   xslt = xslt.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
-    const parts = val.split(/\s+/).filter(p => p !== 'cpi');
+    const parts = val.split(/\s+/).filter(p => p !== 'cpi' && p !== '');
+    if (parts.length === 0) return ''; // remove empty attribute entirely
     return attr + q + parts.join(' ') + q;
   });
 
@@ -187,6 +188,9 @@ function deleteKVRow(type, id) {
 function updateKV(type, id, field, val) {
   const row = kvData[type].find(r => r.id === id);
   if (row) row[field] = val;
+  if (field === 'name' && val.length > 128) {
+    clog('Name too long (max 128 chars)', 'warn');
+  }
   const countId = type === 'headers' ? 'hdrCount' : 'propCount';
   document.getElementById(countId).textContent =
     kvData[type].filter(r => r.name.trim()).length;
@@ -268,7 +272,7 @@ function renderKV(type) {
 //  TRANSFORM
 // ════════════════════════════════════════════
 function runTransform() {
-  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return; }
+  if (!guardReady()) return;
 
   // Reset error badge for fresh run
   consoleErrCount = 0;
