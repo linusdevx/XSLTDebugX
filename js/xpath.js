@@ -427,7 +427,8 @@ function runXPath() {
     const restore = () => {
       _btn.disabled = false;
       _btn.onclick = runXPath;
-      _btn.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M3 1.5l11 6.5-11 6.5V1.5z"/></svg> Run XPath <span class="kbd">⌘↵</span>`;
+      _btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XPath <span class="kbd">⌘↵</span>`;
+      reinitIcons(_btn);
     };
     const remaining = _MIN_SPINNER_MS - elapsed;
     if (remaining > 0) setTimeout(restore, remaining);
