@@ -48,6 +48,28 @@ function _flashPaneResult(success) {
 //   'cpi' removed from exclude-result-prefixes
 //   'js'  added  to  exclude-result-prefixes (avoids leaking to output)
 
+// Replace XML comments and CDATA sections with placeholder tokens so the CPI
+// rewrite does not match `cpi:setHeader` etc. inside them. Placeholders keep
+// the original newline count so Saxon-reported line numbers remain accurate.
+//
+// Returns { stripped, restore } where restore(s) swaps placeholders back.
+// Placeholder token:  + index +  — U+0001 is forbidden in
+// well-formed XML 1.0 so it cannot collide with real source.
+function _extractInsensitiveRegions(xslt) {
+  const regions = [];
+  const re = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g;
+  const stripped = xslt.replace(re, (match) => {
+    const newlines = (match.match(/\n/g) || []).length;
+    const idx = regions.length;
+    regions.push(match);
+    return '' + idx + '' + '\n'.repeat(newlines);
+  });
+  const restore = (s) => s.replace(/(\d+)\n*/g, (full, idxStr) => {
+    return regions[Number(idxStr)] ?? full;
+  });
+  return { stripped, restore };
+}
+
 function rewriteCPICalls(xslt) {
   const JS_NS = 'http://saxonica.com/ns/globalJS';
 
