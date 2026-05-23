@@ -59,6 +59,19 @@ export default defineConfig({
 
         const hash = createHash('sha256').update(combined).digest('hex').slice(0, 8);
         const jsFilename = `app.${hash}.js`;
+        // Discover current-build CSS now so we can exclude it from the purge.
+        const currentCssFile = readdirSync('dist').find(f => f.endsWith('.css'));
+
+        // Purge prior hashed bundles so Cloudflare's immutable cache headers
+        // don't ride orphans forever. emptyOutDir already cleared dist/ before
+        // Vite ran, but Vite's CSS pass writes app.*.css before this plugin
+        // fires, and any prior closeBundle output also accumulates across
+        // partial-failure runs. Anchored regex prevents matching unrelated files.
+        readdirSync('dist')
+          .filter(f => /^app\.[a-f0-9]{8}\.(js|css)$/.test(f))
+          .filter(f => f !== jsFilename && f !== currentCssFile) // keep current build's bundle
+          .forEach(f => rmSync(`dist/${f}`, { force: true }));
+
         writeFileSync(`dist/${jsFilename}`, combined);
 
         // ── Vendor + config files ─────────────────────────────────────────
@@ -78,7 +91,7 @@ export default defineConfig({
         rmSync('dist/assets', { recursive: true, force: true });
 
         // ── HTML: strip 12 <script src="js/..."> tags, inject bundle ─────
-        const cssFile = readdirSync('dist').find(f => f.endsWith('.css'));
+        const cssFile = currentCssFile;
 
         let html = readFileSync('index.html', 'utf8');
         html = html.replace(/<script src="js\/[^"]+"><\/script>\n?/g, '');
