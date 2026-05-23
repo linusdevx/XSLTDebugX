@@ -1475,6 +1475,17 @@
       border-color: rgba(0,112,242,0.6);
       background: rgba(0,112,242,0.18);
     }
+    .xf-session-share:disabled,
+    .xf-session-share[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .xf-session-share:disabled:hover,
+    .xf-session-share[disabled]:hover {
+      color: #60a0f8;
+      border-color: rgba(0,112,242,0.3);
+      background: rgba(0,112,242,0.08);
+    }
 
     /* ── SHARE MODAL ── */
     .share-modal {

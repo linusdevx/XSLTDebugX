@@ -248,7 +248,10 @@ class ModeManager {
     if (hdrPanel) hdrPanel.style.display = visibility;
     if (propPanel) propPanel.style.display = visibility;
     if (outSection) outSection.style.display = visibility;
-    if (shareBtn) shareBtn.classList.toggle('hidden', this.isXpath);
+    if (shareBtn) {
+      shareBtn.disabled = this.isXpath;
+      shareBtn.title = this.isXpath ? 'Sharing is only available in XSLT mode' : '';
+    }
 
     // Show XPath bar only in XPath mode
     const bar = document.getElementById('xpathBar');
