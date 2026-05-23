@@ -47,6 +47,16 @@ function clog(msg, type = 'info') {
   const matchesText = !term || msg.toLowerCase().includes(term);
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
+  // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
+  // evicted line was an error/warn so the badge stays in sync with what the
+  // user can actually see and copy.
+  while (body.childElementCount > 500) {
+    const evicted = body.firstElementChild;
+    const t = evicted.dataset.type;
+    if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
+    body.removeChild(evicted);
+  }
+  if (consoleErrCount === 0) updateConsoleErrBadge();
   body.scrollTop = body.scrollHeight;
   // Track errors/warnings for the minimised-console badge
   if (type === 'error' || type === 'warn') {
@@ -139,6 +149,9 @@ function loadSavedState() {
 }
 
 function _resetXPathMode() {
+  // Cancel pending validation timers so they don't fire against the freshly-reset content
+  clearTimeout(xmlDebounce);  xmlDebounce  = null;
+  clearTimeout(xsltDebounce); xsltDebounce = null;
   if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
   if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
   if (eds.xml) clearAllMarkers();
@@ -156,6 +169,9 @@ function _resetXPathMode() {
 }
 
 function _resetXsltMode() {
+  // Cancel pending validation timers so they don't fire against the freshly-reset content
+  clearTimeout(xmlDebounce);  xmlDebounce  = null;
+  clearTimeout(xsltDebounce); xsltDebounce = null;
   if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
   if (eds.xslt) { _suppressNextSave = true; eds.xslt.setValue(EXAMPLES.identityTransform.xslt); }
   _suppressNextSave = false;

@@ -48,8 +48,37 @@ function _flashPaneResult(success) {
 //   'cpi' removed from exclude-result-prefixes
 //   'js'  added  to  exclude-result-prefixes (avoids leaking to output)
 
+// Replace XML comments and CDATA sections with placeholder tokens so the CPI
+// rewrite does not match `cpi:setHeader` etc. inside them. Placeholders keep
+// the original newline count so Saxon-reported line numbers remain accurate.
+//
+// Returns { stripped, restore } where restore(s) swaps placeholders back.
+// Placeholder token:  + index +  — U+0001 is forbidden in
+// well-formed XML 1.0 so it cannot collide with real source.
+function _extractInsensitiveRegions(xslt) {
+  const regions = [];
+  const re = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g;
+  const stripped = xslt.replace(re, (match) => {
+    const newlines = (match.match(/\n/g) || []).length;
+    const idx = regions.length;
+    regions.push(match);
+    return '' + idx + '' + '\n'.repeat(newlines);
+  });
+  const restore = (s) => s.replace(/(\d+)\n*/g, (full, idxStr) => {
+    return regions[Number(idxStr)] ?? full;
+  });
+  return { stripped, restore };
+}
+
 function rewriteCPICalls(xslt) {
   const JS_NS = 'http://saxonica.com/ns/globalJS';
+
+  // Step 0: hide comment/CDATA content so steps 1–3 don't mutate it.
+  // Steps 1–2 rewrite XML attributes (xmlns:cpi, exclude-result-prefixes) which
+  // by definition cannot live inside comments/CDATA, so the protection is
+  // strictly for step 3 (the cpi:* function-call rewrite).
+  const { stripped, restore } = _extractInsensitiveRegions(xslt);
+  xslt = stripped;
 
   // 1. Replace xmlns:cpi="..." with xmlns:js="..." (if js not already present)
   const hasJsNs = /xmlns:js\s*=/.test(xslt);
@@ -69,7 +98,8 @@ function rewriteCPICalls(xslt) {
   xslt = xslt.replace(/cpi:getHeader\s*\(/g,    'js:cpiGetHeader(');
   xslt = xslt.replace(/cpi:getProperty\s*\(/g,  'js:cpiGetProperty(');
 
-  return { rewritten: xslt };
+  // Restore comments/CDATA. Their content is unchanged.
+  return { rewritten: restore(xslt) };
 }
 
 // Ensure the js: namespace is always in exclude-result-prefixes so it never
@@ -355,7 +385,8 @@ function runTransform() {
     // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
     // Saxon evaluates all arguments (including dynamic ones) and calls our
     // JS interceptor functions on window. Results collected into cpiCaptured.
-    const hasCPI = /cpi:(?:set|get)(?:Header|Property)/.test(xsltSrc);
+    const { stripped: _xsltStrippedForCpiTest } = _extractInsensitiveRegions(xsltSrc);
+    const hasCPI = /cpi:(?:set|get)(?:Header|Property)/.test(_xsltStrippedForCpiTest);
     const cpiCaptured = { headers: {}, properties: {} };
     let _prevCpiSetHeader, _prevCpiSetProperty, _prevCpiGetHeader, _prevCpiGetProperty;
 

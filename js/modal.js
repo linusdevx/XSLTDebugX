@@ -105,21 +105,24 @@ function renderExGrid() {
   orderedCats.filter(cat => groups[cat]).forEach(cat => {
     const catDef = CATEGORIES[cat] || { label: cat, accent: 'var(--sap-blue)' };
     if (exActiveCat === 'all') {
-      html += `<div class="ex-grid-section-label">${catDef.label}</div>`;
+      html += `<div class="ex-grid-section-label">${escHtml(catDef.label)}</div>`;
     }
     html += '<div class="ex-grid">';
     groups[cat].forEach(k => {
       const ex = EXAMPLES[k];
       const accent = catDef.accent;
+      // ex.icon is a Lucide icon name (matches [a-z-]+) and k is the bundled
+      // example key (matches [a-zA-Z0-9]+). Both are bundled-internal — do NOT
+      // start interpolating external sources here without adding escapes.
       html += `
         <div class="ex-card" style="--card-accent:${accent}" onclick="loadExample('${k}')">
           <div class="ex-card-top">
             <span class="ex-card-icon"><i data-lucide="${ex.icon}" width="16" height="16"></i></span>
-            <span class="ex-card-name">${ex.label}</span>
+            <span class="ex-card-name">${escHtml(ex.label)}</span>
           </div>
-          <div class="ex-card-desc">${ex.desc}</div>
+          <div class="ex-card-desc">${escHtml(ex.desc)}</div>
           <div class="ex-card-footer">
-            <span class="ex-card-tag">${catDef.label}</span>
+            <span class="ex-card-tag">${escHtml(catDef.label)}</span>
             <span class="ex-card-load">Load →</span>
           </div>
         </div>`;
