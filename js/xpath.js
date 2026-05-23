@@ -426,8 +426,9 @@ function runXPath() {
     const elapsed = performance.now() - _xpathRunStart;
     const restore = () => {
       _btn.disabled = false;
-      _btn.onclick = runXPath;
-      _btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XPath <span class="kbd">⌘↵</span>`;
+      // Delegate to mode manager — user may have flipped to XSLT during the spinner window.
+      // Hardcoding _btn.onclick = runXPath here would silently break Run after the flip.
+      modeManager.updateRunButton();
       reinitIcons(_btn);
     };
     const remaining = _MIN_SPINNER_MS - elapsed;
