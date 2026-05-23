@@ -429,7 +429,7 @@ Analytics via [GoatCounter](https://www.goatcounter.com) (privacy-friendly, no c
 
 ## Testing
 
-XSLTDebugX comes with a comprehensive Playwright E2E test suite (88 tests across 9 files).
+XSLTDebugX comes with a comprehensive Playwright E2E test suite (75 tests across 8 files).
 
 **For writing and running tests:**
 - **[.github/docs/TESTING.md](.github/docs/TESTING.md)** — E2E testing guide: setup, Playwright patterns, test structure, example workflows
