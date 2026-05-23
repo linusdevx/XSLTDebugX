@@ -24,7 +24,7 @@ We are committed to providing a welcoming and inclusive environment. Please be r
 
 ## Before You Start
 
-- **Check existing issues** — Search [GitHub Issues](https://github.com/SunilPharswan/XSLTDebugX/issues) to see if your idea is already being discussed
+- **Check existing issues** — Search [GitHub Issues](https://github.com/linusdevx/XSLTDebugX/issues) to see if your idea is already being discussed
 - **Open an issue first** — For significant features or breaking changes, open an issue to discuss the approach before coding
 - **Small fixes** — Bug fixes and documentation improvements can go straight to a PR
 

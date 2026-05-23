@@ -370,6 +370,9 @@ class ModeManager {
     } else {
       this.setMode('XSLT');
     }
+    // Always sync UI — setMode is a no-op if already in the target mode,
+    // but panel visibility must still be applied on initial load
+    this.updatePanelVisibility();
   }
 
   /**

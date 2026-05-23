@@ -748,13 +748,14 @@ function renderXPathHints(hints) {
   const toggle = document.createElement('button');
   toggle.className = 'xpath-hints-toggle';
   toggle.title = 'Show more hints';
-  toggle.innerHTML = '<svg viewBox="0 0 10 6" width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 1l4 4 4-4"/></svg>';
+  toggle.innerHTML = '<i data-lucide="chevron-down" width="12" height="12"></i>';
   toggle.addEventListener('click', () => {
     const isExpanded = strip.classList.toggle('expanded');
     toggle.classList.toggle('expanded', isExpanded);
     toggle.title = isExpanded ? 'Show less' : 'Show more hints';
   });
   strip.appendChild(toggle);
+  reinitIcons(toggle);
 
   strip.style.display = 'flex';
 }

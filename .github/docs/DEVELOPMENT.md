@@ -26,7 +26,7 @@ Quick-start guide for local development, debugging, and testing XSLTDebugX.
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/SunilPharswan/XSLTDebugX.git
+git clone https://github.com/linusdevx/XSLTDebugX.git
 cd XSLTDebugX
 ```
 
