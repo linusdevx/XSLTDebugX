@@ -31,7 +31,7 @@ XSLTDebugX runs entirely in the browser with full CPI runtime simulation. Nothin
 ### Run locally
 
 ```bash
-git clone https://github.com/SunilPharswan/XSLTDebugX.git
+git clone https://github.com/linusdevx/XSLTDebugX.git
 cd XSLTDebugX
 npm install         # installs devDependencies (Playwright, http-server, Vite)
 npm run serve       # serve source files directly — no build needed for local dev
@@ -672,7 +672,7 @@ Check `exclude-result-prefixes="cpi xs"` in your stylesheet declaration. Namespa
 ### For Issues & Questions
 
 - Check [FAQ](#faq) section above
-- Search [GitHub Issues](https://github.com/SunilPharswan/XSLTDebugX/issues)
+- Search [GitHub Issues](https://github.com/linusdevx/XSLTDebugX/issues)
 - See [Browser Compatibility](#browser-compatibility) & [Known Limitations](#known-limitations)
 
 ---
