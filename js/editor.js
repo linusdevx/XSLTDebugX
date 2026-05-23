@@ -511,7 +511,10 @@ require(['vs/editor/editor.main'], () => {
     } else {
       // XPath mode — populate bar, run, and copy
       const input = document.getElementById('xpathInput');
-      if (input) { input.value = xpath; scheduleSave(); }
+      if (input) {
+        input.value = xpath;
+        input.dispatchEvent(new Event('input'));
+      }
       if (typeof runXPath === 'function') runXPath();
       _copyXPathToClipboard(xpath, label);
     }
