@@ -49,7 +49,8 @@ function downloadPane(pane, defaultName) {
   a.href     = url;
   a.download = defaultName;
   a.click();
-  URL.revokeObjectURL(url);
+  // Defer for Safari: synchronous revocation can cancel the download.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
   clog(`Downloaded: ${defaultName}`, 'success');
 }
 

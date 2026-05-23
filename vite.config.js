@@ -44,10 +44,14 @@ export default defineConfig({
         // No IIFE wrapping = function declarations stay on window, so
         // onclick="runTransform()" HTML event handlers keep working.
         const TMP = '.esbuild-tmp';
+        // Pre-clean: a previous run that errored mid-build can leave stale .js
+        // files here; a removed/renamed module would then concatenate dead code.
+        rmSync(TMP, { recursive: true, force: true });
         buildSync({
           entryPoints: JS_MODULES,
           bundle: false,
           minify: true,
+          keepNames: true,    // forward-compat: prevent future esbuild from renaming the underscore-prefixed functions referenced by inline onclick=
           outdir: TMP,
         });
 
