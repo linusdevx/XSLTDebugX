@@ -74,11 +74,22 @@ function applyShareData(data) {
     eds.xml.setModel(xmlModelXslt);
   }
 
-  // Write directly to XSLT model (share is always XSLT context)
-  if (data.xml  !== undefined) xmlModelXslt?.setValue(data.xml);
+  // Write directly to XSLT model (share is always XSLT context).
+  // Suppress save per setValue: each setValue fires Monaco's onDidChangeModelContent
+  // listener (editor.js) which calls scheduleSave() synchronously. Setting the flag
+  // before each setValue lets that listener-driven scheduleSave() consume it, so the
+  // 800ms _saveTimer is never armed and the user's existing localStorage session is
+  // preserved until they explicitly edit. Mirrors the pattern in state.js:_resetXsltMode.
+  if (data.xml  !== undefined) {
+    _suppressNextSave = true;
+    xmlModelXslt?.setValue(data.xml);
+    _suppressNextSave = false;
+  }
   if (data.xslt !== undefined) {
     _suppressNextValidation = true;
+    _suppressNextSave       = true;
     eds.xslt?.setValue(data.xslt);
+    _suppressNextSave       = false;
     _suppressNextValidation = false;
   }
 
@@ -96,7 +107,6 @@ function applyShareData(data) {
   if (_shdr)  _parts.push(`${_shdr} header${_shdr  > 1 ? 's' : ''}`);
   if (_sprop) _parts.push(`${_sprop} propert${_sprop > 1 ? 'ies' : 'y'}`);
   clog(`Shared session loaded — ${_parts.join(' · ')} ✓`, 'success');
-  scheduleSave();
 }
 
 // ── Modal ────────────────────────────────────
