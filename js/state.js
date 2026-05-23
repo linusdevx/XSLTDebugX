@@ -47,12 +47,16 @@ function clog(msg, type = 'info') {
   const matchesText = !term || msg.toLowerCase().includes(term);
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
-  // Cap visible console DOM at 500 lines. Older lines are evicted; the
-  // session-cumulative consoleErrCount (used for the badge) is intentionally
-  // not adjusted because it tracks totals, not visible DOM.
+  // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
+  // evicted line was an error/warn so the badge stays in sync with what the
+  // user can actually see and copy.
   while (body.childElementCount > 500) {
-    body.removeChild(body.firstElementChild);
+    const evicted = body.firstElementChild;
+    const t = evicted.dataset.type;
+    if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
+    body.removeChild(evicted);
   }
+  if (consoleErrCount === 0) updateConsoleErrBadge();
   body.scrollTop = body.scrollHeight;
   // Track errors/warnings for the minimised-console badge
   if (type === 'error' || type === 'warn') {
