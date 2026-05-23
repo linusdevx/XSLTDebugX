@@ -1465,12 +1465,12 @@
     .ex-card:hover .ex-card-load { opacity: 1; }
 
     /* ── SHARE BUTTON ── */
-    .share-btn {
+    .xf-session-share {
       color: #60a0f8;
       border-color: rgba(0,112,242,0.3);
       background: rgba(0,112,242,0.08);
     }
-    .share-btn:hover {
+    .xf-session-share:hover {
       color: #fff;
       border-color: rgba(0,112,242,0.6);
       background: rgba(0,112,242,0.18);
