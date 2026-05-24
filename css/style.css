@@ -408,20 +408,6 @@
       text-transform: uppercase;
     }
 
-    .pane-act-btn {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--text-dim);
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 4px;
-      padding: 2px 7px; cursor: pointer;
-      transition: all 0.15s;
-    }
-    .pane-act-btn:hover {
-      color: var(--text-primary);
-      background: rgba(128,128,128,0.1);
-      border-color: var(--border);
-    }
     .pane-icon-btn {
       display: flex; align-items: center; justify-content: center;
       width: 26px; height: 22px;
