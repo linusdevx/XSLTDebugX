@@ -212,8 +212,8 @@
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
           <div class="pane-actions">
             <span class="lang-badge">XQuery</span>
-            <button class="pane-act-btn" onclick="copyXPathInput()">Copy</button>
-            <button class="pane-act-btn" onclick="clearXPathInput()">Clear</button>
+            <button class="pane-icon-btn" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
             <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" title="Next expression (↓)"><i data-lucide="chevron-down" width="14" height="14"></i></button>
@@ -244,9 +244,9 @@
         </span>
         <div class="pane-actions">
           <span class="lang-badge">XML</span>
-          <button class="pane-act-btn" onclick="fmtEditor('xml')">Format</button>
-          <button class="pane-act-btn" onclick="copyPane('xml')">Copy</button>
-          <button class="pane-act-btn" onclick="clearPane('xml')">Clear</button>
+          <button class="pane-icon-btn" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Clear XML" onclick="clearPane('xml')"><i data-lucide="eraser" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
           <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
           <button class="pane-icon-btn" title="Upload XML file" onclick="triggerUpload('xml')"><i data-lucide="upload" width="14" height="14"></i></button>
@@ -300,9 +300,9 @@
       <span class="pane-title">XSLT Stylesheet</span>
       <div class="pane-actions">
         <span class="lang-badge">XSLT</span>
-        <button class="pane-act-btn" onclick="fmtEditor('xslt')">Format</button>
-        <button class="pane-act-btn" onclick="copyPane('xslt')">Copy</button>
-        <button class="pane-act-btn" onclick="clearPane('xslt')">Clear</button>
+        <button class="pane-icon-btn" title="Format XSLT" onclick="fmtEditor('xslt')"><i data-lucide="align-left" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Clear XSLT" onclick="clearPane('xslt')"><i data-lucide="eraser" width="14" height="14"></i></button>
         <div class="pane-divider"></div>
         <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
         <button class="pane-icon-btn" title="Upload XSLT file" onclick="triggerUpload('xslt')"><i data-lucide="upload" width="14" height="14"></i></button>
@@ -330,8 +330,8 @@
           <div class="pane-divider"></div>
           <input class="console-search" id="consoleSearch" type="text" placeholder="search…" aria-label="Search console output" oninput="applyConsoleSearch(this.value)" title="Filter console by text"/>
           <div class="pane-divider"></div>
-          <button class="pane-act-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()">Copy</button>
-          <button class="pane-act-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()">Clear</button>
+          <button class="pane-icon-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()"><i data-lucide="eraser" width="14" height="14"></i></button>
         </div>
         <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron"></i>
       </div>
@@ -356,8 +356,8 @@
           <span class="xpath-results-title">XPath Results</span>
           <span class="xpath-match-count" id="xpathMatchCount">0 matches</span>
           <div class="xpath-results-actions">
-            <button class="pane-act-btn" onclick="copyXPathResults()" title="Copy all results">Copy</button>
-            <button class="pane-act-btn" onclick="clearXPathResults()" title="Close results panel">Clear</button>
+            <button class="pane-icon-btn" onclick="copyXPathResults()" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="clearXPathResults()" title="Close results panel"><i data-lucide="eraser" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-results-body" id="xpathResultsBody"></div>
@@ -372,8 +372,8 @@
             <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <span class="lang-badge" id="outLangBadge">XML</span>
-            <button class="pane-act-btn" onclick="copyPane('out')">Copy</button>
-            <button class="pane-act-btn" onclick="clearPane('out')">Clear</button>
+            <button class="pane-icon-btn" title="Copy output" onclick="copyPane('out')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" title="Clear output" onclick="clearPane('out')"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" title="Toggle word wrap" onclick="toggleWordWrap('out')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
             <button class="pane-icon-btn" id="outDownloadBtn" title="Download output as XML" onclick="downloadPane('out','output.xml')"><i data-lucide="download" width="14" height="14"></i></button>
