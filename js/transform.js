@@ -252,6 +252,9 @@ function toggleKVSearch(panelId) {
   const opening = bar.style.display === 'none';
   bar.style.display = opening ? 'flex' : 'none';
   const input = bar.querySelector('input');
+  // Mirror open/closed state on the toggle button so the icon stays lit while the bar is open
+  const btn = document.querySelector('#' + panelId + ' .kv-header .kv-search-btn');
+  if (btn) btn.classList.toggle('kv-search-open', opening);
   if (opening) {
     input.focus();
     input.select();

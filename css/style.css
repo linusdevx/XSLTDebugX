@@ -469,6 +469,7 @@
       color: var(--text-secondary);
     }
     .kv-count {
+      margin-left: auto;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       background: rgba(0,112,242,0.2);
@@ -476,8 +477,9 @@
       padding: 0 5px; border-radius: 8px;
       min-width: 18px; text-align: center;
     }
+    /* count starts the right-aligned cluster; give search-btn breathing room after it */
+    .kv-count + .kv-search-btn { margin-left: 4px; }
     .kv-add-btn {
-      margin-left: auto;
       width: 18px; height: 18px;
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.3);
@@ -501,8 +503,10 @@
       padding: 0;
     }
     .kv-search-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
-    /* Active state: filter currently has a non-empty query */
-    .kv-search-btn.kv-search-active {
+    /* Active state: filter currently has a non-empty query.
+       Open state: search bar is visible (regardless of query). Same visual cue. */
+    .kv-search-btn.kv-search-active,
+    .kv-search-btn.kv-search-open {
       background: rgba(0,112,242,0.15);
       border-color: rgba(0,112,242,0.3);
       color: #60a0f8;
@@ -514,7 +518,7 @@
       display: flex; align-items: center;
       padding: 3px 6px 3px 10px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      background: rgba(0,112,242,0.06);
       gap: 4px;
     }
     .kv-search-bar input {
@@ -524,7 +528,6 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px; color: var(--text-primary);
       padding: 3px 0;
-      width: 100%;
     }
     .kv-search-bar input::placeholder { color: var(--text-dim); }
     .kv-search-clear {
@@ -546,8 +549,6 @@
     .kv-panel.collapsed .kv-chevron { transform: rotate(-90deg); }
     /* add-btn followed by chevron — 6px gap */
     .kv-add-btn + .kv-chevron { margin-left: 6px; }
-    /* Output panels have no add-btn — push chevron to right */
-    .kv-header .kv-chevron:last-child:not(.kv-add-btn + .kv-chevron) { margin-left: auto; }
 
     .kv-body {
       flex: 1; overflow-y: auto;
@@ -644,12 +645,9 @@
     .kv-row-out .kv-k { color: var(--text-secondary); border-right: 1px solid var(--border); }
     .kv-row-out .kv-v { color: var(--success); }
 
-    .kv-empty {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--text-dim);
-      padding: 8px 10px; font-style: italic;
-    }
-    /* Shown by _applyKVFilter when every row is filtered out */
+    /* .kv-no-matches is appended by _applyKVFilter when every row is filtered out;
+       same look as the existing "Click + to add" / "— none —" empty state. */
+    .kv-empty,
     .kv-no-matches {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; color: var(--text-dim);
