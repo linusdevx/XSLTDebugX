@@ -335,6 +335,9 @@
     /* Editor fills the available vertical space in its column */
     .editor-wrap { flex: 1; overflow: hidden; position: relative; min-height: 0; }
     .editor-wrap > div { position: absolute; inset: 0; }
+    /* Side columns: keep the XML / Output editor readable even when the
+       Headers + Properties panels below are packed with rows. */
+    .col-side .editor-wrap { min-height: 200px; }
 
     /* ── PANE BAR ── */
     .pane-bar {
