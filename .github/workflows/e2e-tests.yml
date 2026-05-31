@@ -45,7 +45,6 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install-deps chromium
 
       - name: Install Playwright browsers
