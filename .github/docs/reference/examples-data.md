@@ -15,9 +15,10 @@ Single source of truth for sidebar buttons and example sections:
 
 ```javascript
 const CATEGORIES = {
-  categoryKey: { 
+  categoryKey: {
     label: 'Display Name',        // Shows in sidebar + grid
-    accent: '#hexcolor'            // Tag background color
+    accent: '#hexcolor',           // Tag background color
+    icon: 'lucide-name'            // Lucide icon name (kebab-case) for sidebar button
   }
 }
 ```
@@ -28,12 +29,12 @@ const CATEGORIES = {
 - Accent colors should be distinct and accessible
 
 **Current categories (6):**
-- `transform` — Data Transformation (#3fb950, green)
-- `aggregation` — Aggregation & Splitting (#f5a524, amber)
-- `format` — Format Conversion (#c084fc, purple)
-- `advanced` — XSLT 3.0 Advanced (#e06c75, coral)
-- `cpi` — SAP CPI Patterns (#0070f2, blue)
-- `xpath` — XPath Explorer (#f5a524, amber)
+- `transform` — Data Transformation (#3fb950, green, icon: `repeat-2`)
+- `aggregation` — Aggregation & Splitting (#f5a524, amber, icon: `layers`)
+- `format` — Format Conversion (#c084fc, purple, icon: `file-output`)
+- `advanced` — XSLT 3.0 Advanced (#e06c75, coral, icon: `sparkles`)
+- `cpi` — SAP CPI Patterns (#0070f2, blue, icon: `cloud`)
+- `xpath` — XPath Explorer (#f5a524, amber, icon: `crosshair`)
 
 ### EXAMPLES
 
@@ -50,12 +51,17 @@ const EXAMPLES = {
 <xsl:stylesheet version="3.0"...>
   <!-- Comment explaining pattern -->
 </xsl:stylesheet>`,                // XSLT 3.0 transformation
-    xpathExprs: ['//Item', '...']  // Optional: XPath mode only
+    xpathExpr: '//Item',           // Optional: XPath mode only — single expression string
+    xpathHints: ['//Item', '...'], // Optional: XPath mode only — chip suggestions array
+    headers:    [['name','value']],// Optional: CPI headers preloaded into kvData
+    properties: [['name','value']] // Optional: CPI properties preloaded into kvData
   }
 }
 ```
 
 ## Validation Rules
+
+> These rules are a manual checklist — not enforced by code at load time. `loadExample()` is defensive (guards on missing fields) but does not validate length, comment block presence, prelude, or hint counts.
 
 ### Example Key
 - ✅ `dateFormatConversion`, `idocOrders05`, `splitMessage`
@@ -84,7 +90,7 @@ const EXAMPLES = {
 
 ### XSLT Stylesheet
 - Always `version="3.0"`
-- Include namespace declarations: `xmlns:xsl`, `xmlns:xs`
+- Include namespace declarations: `xmlns:xsl` is required; add `xmlns:xs` only when the XSLT references `xs:*` types (e.g. `xs:date`, `xs:decimal`)
 - Use `exclude-result-prefixes` to prevent namespace leakage
 - Add 3-5 line comment block explaining the pattern
 - Show idiomatic XSLT 3.0 (avoid 1.0 workarounds)
@@ -168,10 +174,20 @@ xpathExample: {
   icon: 'compass',
   desc: 'Axis navigation with positional predicates',
   cat: 'xpath',
+  xml: `<Orders><Order><Id>1</Id></Order></Orders>`,
+  xslt: '',
+  xpathExpr: '//Order[1]',
+  xpathHints: [
+    '//Order[1]',
+    '//Order/Id',
+    'count(//Order)'
+  ]
+}
+```
 
 ## Validation Checklist (M1–M13)
 
-Before committing new or modified examples, verify all checks pass:
+These rules are a manual checklist — not enforced by code at load time. Before committing new or modified examples, verify all checks pass:
 
 ### Metadata (M1–M3)
 - [ ] **M1**: Example key is camelCase, descriptive, unique
@@ -185,7 +201,7 @@ Before committing new or modified examples, verify all checks pass:
 - [ ] **M6**: XSLT starts with `<?xml version="1.0" encoding="UTF-8"?>` and `version="3.0"`
 
 ### XSLT Syntax (M7–M9)
-- [ ] **M7**: Namespace declarations present (`xmlns:xsl`, `xmlns:xs` for XSLT examples)
+- [ ] **M7**: `xmlns:xsl` namespace declaration is required; `xmlns:xs` only when XSLT references `xs:*` types
 - [ ] **M8**: `exclude-result-prefixes` prevents namespace leakage
 - [ ] **M9**: Opening comment block explains pattern (3–5 lines)
 
@@ -204,15 +220,6 @@ Before committing new or modified examples, verify all checks pass:
 - [ ] XSLT mode: Click Run, output appears without errors
 - [ ] XPath mode: Click hint chips, matched nodes highlight in amber
 - [ ] Console shows no red errors
-  xml: `<Orders><Order><Id>1</Id></Order></Orders>`,
-  xslt: '',
-  xpathExprs: [
-    '//Order[1]',
-    '//Order/Id',
-    'count(//Order)'
-  ]
-}
-```
 
 ## Testing Checklist
 

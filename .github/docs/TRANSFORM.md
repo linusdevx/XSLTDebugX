@@ -22,13 +22,15 @@ Orchestrates XSLT transformation execution with SAP CPI runtime simulation:
 Rewrites XSLT to use Saxon-JS JavaScript extension functions.
 
 **Input:** Original XSLT with `cpi:` calls
-**Output:** `{ rewritten }` with `js:` calls
+**Output:** `{ rewritten, hasCPI }` — `rewritten` is the (possibly modified) XSLT string; `hasCPI` is a boolean flag callers use to decide whether to install JS interceptors. When no `cpi:*` calls are present, the function returns `{ rewritten: <original xslt>, hasCPI: false }` (early return — no transformation).
 
-**Transformations:**
-1. Replace `xmlns:cpi="..."` → `xmlns:js="http://saxonica.com/ns/globalJS"`
-2. Strip `cpi` from `exclude-result-prefixes`
+**Transformations (only when `hasCPI` is true):**
+1. Replace `xmlns:cpi="..."` → `xmlns:js="http://saxonica.com/ns/globalJS"` (or strip `xmlns:cpi` entirely if `xmlns:js` is already declared)
+2. Strip `cpi` from `exclude-result-prefixes` (if the resulting list is empty, the entire attribute is removed). NOTE: `js` is **not** added here — that's `ensureJsExcluded`'s job (called separately by `runTransform`).
 3. Rewrite function calls: `cpi:setHeader(` → `js:cpiSetHeader(`
 4. Same for `setProperty`, `getHeader`, `getProperty`
+
+**Comment/CDATA safety:** `_extractInsensitiveRegions()` swaps out `<!-- ... -->` and `<![CDATA[ ... ]]>` regions with placeholders before rewriting, then restores them. Placeholders preserve newline counts so Saxon-reported line numbers stay accurate.
 
 **Why this works:**
 - Saxon-JS evaluates ALL function arguments before calling JS interceptors
@@ -39,14 +41,14 @@ Rewrites XSLT to use Saxon-JS JavaScript extension functions.
 
 ### 2. ensureJsExcluded(xslt)
 
-Prevents `js:` namespace from leaking into output.
+Prevents `js:` namespace from leaking into output. **Status: actively called** by `runTransform()` immediately after `rewriteCPICalls()` (transform.js ~L529, unconditionally — runs even when CPI rewriting did nothing, in case the user authored their own `xmlns:js`). This is the step that actually adds `js` to `exclude-result-prefixes`; `rewriteCPICalls` only strips `cpi`.
 
 **Rule:** `exclude-result-prefixes` must include `js` to mirror CPI runtime
 
 **Scenarios:**
-- No `exclude-result-prefixes` → inject it on `<xsl:stylesheet>`
-- Has `exclude-result-prefixes` → append `"js"` to value
-- Already contains `js` → no-op
+- No `xmlns:js` declared at all → no-op (early return)
+- `xmlns:js` declared, no `exclude-result-prefixes` → inject `exclude-result-prefixes="js"` on `<xsl:stylesheet>` / `<xsl:transform>`
+- `xmlns:js` declared, has `exclude-result-prefixes` → append `"js"` to value (de-duped)
 
 **Critical:** Without this, output XML gets polluted with `xmlns:js="..."`.
 
@@ -68,28 +70,31 @@ Constructs Saxon-JS `stylesheet-params` map from Headers/Properties panels.
 - Invalid names skipped with console warning
 - Values escaped: single quotes doubled (`'` → `''`)
 
-**Always inject:** `$exchange` param (dummy value) even if not in panels.
+**Always inject:** a dummy `exchange` stylesheet-param (`QName('','exchange'): 'exchange'`) so stylesheets that declare an `<xsl:param name="exchange"/>` don't error. All other params come solely from `kvData.headers` ++ `kvData.properties` (properties win on name collision; a warning is logged).
+
+**Note:** Do not confuse this `exchange` stylesheet-param with the `_exchange` argument passed to JS interceptors (see "JavaScript Interceptors" below). They are unrelated — `_exchange` is the implicit first argument Saxon-JS passes to every `js:` extension function call site, not a param injected here.
 
 ### 4. JavaScript Interceptors
 
-Installed during transform if `cpi:` calls detected.
+Installed during transform if `cpi:` calls detected. Saxon-JS passes the implicit Saxon "context" object as the first argument (we name it `_exchange` — underscore prefix, **not** `$exchange`; the dollar sign is XPath syntax, not JavaScript). It's accepted but unused by these handlers.
 
 ```javascript
-window.cpiSetHeader = ($exchange, name, value) => {
-  cpiCaptured.headers[name] = value;
+window.cpiSetHeader = (_exchange, name, value) => {
+  cpiCaptured.headers[_cpiStrVal(name)] = _cpiStrVal(value);
   return '';  // Empty string return mirrors CPI
 };
 
-window.cpiGetHeader = ($exchange, name) => {
-  const row = kvData.headers.find(r => r.name === name);
-  if (!row) clog(`cpi:getHeader — '${name}' not found`, 'warn');
+window.cpiGetHeader = (_exchange, name) => {
+  const key = _cpiStrVal(name).trim();           // .trim() guards against
+  const row = kvData.headers.find(r => r.name === key);  // whitespace from XPath
+  if (!row) clog(`cpi:getHeader — '${key}' not found in Headers panel, returning empty string`, 'warn');
   return row?.value ?? '';
 };
 ```
 
-**Value coercion:** `_cpiStrVal()` handles Saxon-JS types (nodes, arrays, objects) → strings.
+**Value coercion:** `_cpiStrVal()` handles Saxon-JS types (nodes, arrays, objects) → strings. **It is defined as a closure inside `runTransform()`**, not a module-level helper — each transform run gets its own copy. If you need the same coercion elsewhere, hoist it deliberately rather than relying on a global.
 
-**Cleanup:** Restore previous functions after transform completes.
+**Cleanup:** Restore previous `window.cpi*` functions (or `delete` them if previously absent) in the `finally` block after the transform completes.
 
 ### 5. xsl:message Interception
 
@@ -99,17 +104,20 @@ Saxon-JS logs messages as `console.log("xsl:message: <text>")`.
 ```javascript
 const _origConsoleLog = console.log;
 console.log = function(...args) {
-  if (args[0]?.startsWith('xsl:message: ')) {
-    _xslMessages.push(args[0].slice(13));
+  const first = args[0];
+  if (typeof first === 'string' && first.startsWith('xsl:message: ')) {
+    _xslMessages.push(first.slice(13));
   } else {
     _origConsoleLog.apply(console, args);
   }
 };
 ```
 
-**Post-transform:** Emit all messages to `clog()` in execution order.
+The explicit `typeof first === 'string'` guard (rather than `args[0]?.startsWith(...)`) is intentional — Saxon-JS may call `console.log` with non-string first arguments (numbers, objects), and `?.startsWith` would throw `TypeError` on those.
 
-**Special case:** `terminate="yes"` logged as warning, not error.
+**Post-transform flush order:** Messages are flushed via `clog()` **before the final completion log on success and before the error log on failure** — this preserves natural execution order (trace → outcome) in the console panel. The patched `console.log` is restored in the `finally` block immediately after.
+
+**Special case:** `terminate="yes"` is logged as a warning (`xsl:message terminate="yes" — ...`), not an error.
 
 ## Modification Guidelines
 
@@ -124,7 +132,7 @@ Example: Add `cpi:deleteHeader` support
 
 2. **Add interceptor:**
    ```javascript
-   window.cpiDeleteHeader = ($exchange, name) => {
+   window.cpiDeleteHeader = (_exchange, name) => {
      const key = _cpiStrVal(name);
      delete cpiCaptured.headers[key];
      return '';
@@ -147,8 +155,8 @@ Example: Add `cpi:deleteHeader` support
 **Verify rewritten XSLT:**
 ```javascript
 // Add temporary logging in runTransform():
+const { rewritten, hasCPI } = rewriteCPICalls(xsltSrc);
 if (hasCPI) {
-  const { rewritten } = rewriteCPICalls(xsltSrc);
   console.log('--- REWRITTEN XSLT ---\n', rewritten);  // DEBUG
   xsltSrc = rewritten;
 }
@@ -237,8 +245,8 @@ if (hasCPI) {
 
 **Why:**
 - XPath mode has no concept of "headers/properties" (XPath is pure expression evaluation)
-- Headers and Properties UI panels are hidden in XPath mode
-- `kvData` (headers/properties storage) is not cleared, but isolated from XPath evaluator
+- The Headers and Properties UI panels are **hidden in XPath mode by `mode-manager.js`** (`updateUI()` toggles `display: none` based on `isXslt`); `kvData` itself is never cleared
+- The XPath evaluation path doesn't read `kvData` regardless of UI state — even if the panels were forced visible, edits would not feed into `xpath.js`
 
 **Behavior Summary:**
 
@@ -281,9 +289,9 @@ Result: Saxon XPath evaluator rejects `cpi:` namespace as undefined. No graceful
 **Answer: Yes, with caveats.**
 
 **How it works:**
-1. XSLT mode: Rewritten XSLT line numbers are offset due to rewriting (lines added for `xmlns:js`, stripped `cpi:` namespace)
-2. Mode switch to XPath: Rewritten XSLT persists in `eds.xslt` (the model)
-3. Mode switch back to XSLT: Same rewritten XSLT is used again
+1. XSLT mode: Rewriting (`rewriteCPICalls` + `ensureJsExcluded`) happens **inside `runTransform()` against a local string** (`_xsltRewritten` / `xsltSrc`). The rewritten XSLT is handed to Saxon-JS and discarded; it is **never written back to the editor model** (`eds.xslt` keeps the user's original source verbatim).
+2. Saxon error line numbers therefore refer to a transient rewritten buffer that no longer exists once the transform returns. `findXPathExpressionLine()` text-searches the **original** XSLT in the editor for the failing expression and remaps the line for highlighting.
+3. Mode switch to XPath / back to XSLT: only the Monaco model swaps (`xmlModelXslt` ↔ `xmlModelXpath`); the XSLT editor content is untouched, so the next run produces the same rewriting and same line mapping.
 
 **Safe Expectation:**
 - Error line numbers are consistent **for the same XSLT code within one session**
@@ -398,7 +406,7 @@ expect(results).toMatch(/^\d+/);  // E.g., "42"
 - Validate NCNames before building params
 - Clean up interceptors even on error path
 - Verify mode context before testing CPI or `<xsl:message>` features
-- Use `getMode()` to assert current mode in timing-sensitive tests
+- Use `modeManager.isXslt` / `modeManager.isXpath` getters to assert current mode in timing-sensitive tests (there is no `getMode()` method on `ModeManager` — the public surface is the `isXslt`/`isXpath` boolean getters and `setMode(mode)` / `isMode(mode)`)
 
 ## References
 

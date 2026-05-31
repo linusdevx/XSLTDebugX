@@ -24,7 +24,7 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        index.html                             │
-│  (loads CSS + 12 JS modules + Monaco Editor + Saxon-JS + Lucide Icons)      │
+│  (loads CSS + 12 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
 └──────────────────────────────────────────────────────────────┘
                               ↓
               ┌─────────────────────────────────┐
@@ -34,7 +34,8 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
                               ↓
         ┌─────────────────────────────────────────────┐
         │  Monaco Editor (XML, XSLT, Output panes)   │
-        │  Saxon-JS 2.7 (XSLT 3.0 + XPath 3.1)       │
+        │  Saxon-JS 2 (XSLT 3.0 + XPath 3.1)         │
+        │  pako (deflate/inflate for share URLs)      │
         │  Lucide Icons (SVG icon library)             │
         │  CSS (Light & Dark themes)                  │
         └─────────────────────────────────────────────┘
@@ -92,17 +93,17 @@ dist/
 | Module | Responsibility | Key Functions |
 |--------|-----------------|----------------|
 | **state.js** | Global state, shared utilities, localStorage persistence, console | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()`, `logError()`, `guardReady()` |
-| **mode-manager.js** | Centralized mode management (XSLT vs XPath) | `setMode()`, `isXpath`, `isXslt`, `getMode()` |
+| **mode-manager.js** | Centralized mode management (XSLT vs XPath) | `setMode()`, `isXpath`, `isXslt`, `currentModel` |
 | **validate.js** | XML/XSLT validation, Monaco error markers, Saxon error parsing | `validateXML()`, `markErrorLine()`, `preflight()`, `parseSaxonErrorLine()` |
 | **panes.js** | Word wrap, copy/clear/format, XML tokenizer | `toggleWordWrap()`, `copyPane()`, `fmtEditor()`, `prettyXML()`, `_tokenizeXML()`, `_indentTokens()` |
 | **transform.js** | XSLT execution, CPI simulation, output rendering | `runTransform()`, `rewriteCPICalls()`, `buildParamsXPath()`, `renderOutputKV()` |
-| **examples-data.js** | 61 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
+| **examples-data.js** | ~62 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
 | **modal.js** | Examples library UI, filtering, loading | `openExModal()`, `loadExample()`, `renderExGrid()`, `filterExamples()` |
 | **files.js** | File upload/download, drag-and-drop | `triggerUpload()`, `handleUpload()`, `downloadPane()`, `setupDragDrop()` |
 | **ui.js** | Console state, theme toggle, help modal, column collapse | `setConsoleState()`, `toggleTheme()`, `applyConsoleSearch()`, `setConsoleFilter()` |
 | **share.js** | URL encoding/decoding of session state | `buildSharePayload()`, `generateShareUrl()`, `loadFromShareHash()` |
 | **xpath.js** | XPath mode UI, expression evaluation, node highlighting, syntax coloring | `runXPath()`, `toggleXPath()`, `_highlightXPath()`, `_highlightMatchedNodes()` |
-| **editor.js** | Monaco initialization, themes, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `toggleTheme()`, `_toggleXmlComment()` |
+| **editor.js** | Monaco initialization, themes, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `_toggleXmlComment()` |
 
 ---
 
@@ -116,7 +117,7 @@ index.html
 state.js ←─────────────────────────────────────────────────────┐
     ↓ (provides global state, clog, scheduleSave)               │
 mode-manager.js (uses state)                                    │
-    ↓ (provides setMode, isXpath, isXslt, getMode)             │
+    ↓ (provides setMode, isXpath, isXslt, currentModel)         │
 validate.js (uses state)                                        │
     ↓ (provides validateXML, markErrorLine, preflight)          │
 panes.js (uses state)                                           │
@@ -230,15 +231,13 @@ User clicks theme toggle button
     ↓
 toggleTheme() [ui.js]
     ↓
-1. Toggle xthemeMode between 'dark' and 'light'
-2. Save to localStorage
+1. Toggle 'light' class on <body>
+2. Save to localStorage ('xdebugx-theme')
     ↓
 3. Apply CSS class to <body> for styling
     ↓
-4. Update Monaco theme on all 3 editors:
-   - eds.xml.updateOptions({ theme: 'xdebugx' or 'xdebugx-light' })
-   - eds.xslt.updateOptions({ theme: 'xdebugx' or 'xdebugx-light' })
-   - eds.out.updateOptions({ theme: 'xdebugx' or 'xdebugx-light' })
+4. Update Monaco theme globally (applies to all editors at once):
+   - monaco.editor.setTheme('xdebugx-light' or 'xdebugx')
     ↓
 5. If XPath results visible → refreshXPathColors() [xpath.js]
    - Re-colorize results using new theme palette
@@ -253,14 +252,15 @@ On startup:
     loadSavedState() [state.js] → parse localStorage[xdebugx-session-v1]
     ↓
     Restore to all editors and panels:
-    - eds.xml.setValue(saved.xmlXslt)
+    - xmlModelXslt.setValue(saved.xmlXslt)
+    - xmlModelXpath.setValue(saved.xmlXpath)
     - eds.xslt.setValue(saved.xslt)
-    - eds.out.setValue(saved.out)
     - kvData.headers = saved.headers
     - kvData.properties = saved.properties
-    - xpathEnabled = saved.xpathEnabled
-    - Current XPath expression
-    - Column collapse states
+    - modeManager.restoreFromSession() — applies saved.xpathEnabled
+    - Column collapse states (saved.leftCollapsed, rightCollapsed, centerCollapsed)
+    - XPath expression (saved.xpathExpr)
+    - Last example key (saved.lastExampleKey)
     ↓
 On user edit:
     Any change to XML, XSLT, headers, properties, or mode
@@ -269,7 +269,12 @@ On user edit:
     ↓
     (debounced for 800ms)
     ↓
-    persistSession() [state.js] → serialize to localStorage[xdebugx-session-v1]
+    saveState() [state.js] → serialize to localStorage[xdebugx-session-v1]
+    ↓
+    Persisted fields: xmlXslt, xmlXpath, xslt, headers, properties,
+    leftCollapsed, rightCollapsed, centerCollapsed, xpathExpr,
+    xpathEnabled, lastExampleKey, savedAt.
+    (Note: rendered output is NOT persisted — it's recomputed on demand.)
     ↓
     Complete
 ```
@@ -310,21 +315,20 @@ let _xpathHistoryCursor = -1;       // -1 = not browsing
 let _xpathDraftExpr = '';           // Saves text while browsing history
 
 // Decorations/highlights
-let xpathDecorations = null;        // Monaco decoration collection
-let xsltDecorations = null;         // Monaco decoration collection
-let xmlDecorations = null;          // Monaco decoration collection
+let xpathDecorations = null;        // Monaco decoration collection (xpath.js)
+// Note: xsltDecorations / xmlDecorations live in validate.js for error markers.
 
 // XPath results state
 let _showXPathGen = 0;              // Generation counter
 let _lastXPathRenderArgs = null;    // For re-colorize on theme switch
 ```
 
-### Console State (state.js)
+### Console State (state.js, ui.js)
 
 ```javascript
-let clog_msgs = [];  // Array of { type, msg }
-let consoleErrCount = 0;
-let consoleWarnCount = 0;
+// clog() appends a <div class="log-line"> directly to #consoleBody — no
+// in-memory message buffer is kept. Filtering reads from the DOM.
+let consoleErrCount = 0;  // declared in ui.js; counts both errors and warnings
 // Console filters and search state managed by setConsoleFilter(), applyConsoleSearch()
 ```
 
@@ -332,11 +336,10 @@ let consoleWarnCount = 0;
 
 ```javascript
 let xsltDebounce = null;            // Debounce XSLT validation
-let xmlDebounce = null;             // Debounce XML validation
-let saveDebounce = null;            // Debounce session save
+let xmlDebounce  = null;            // Debounce XML validation
+let _saveTimer   = null;            // Debounce session save (in state.js)
 
-const VALIDATION_DEBOUNCE_MS = 800;
-const SAVE_DEBOUNCE_MS = 500;
+// Both validation and save use 800ms inline literals (no shared constant).
 ```
 
 ### Saxon-JS Readiness (state.js)
@@ -423,12 +426,12 @@ editors.xslt.onDidChangeModelContent(() => {
   }, 800);
 });
 
-// Session save — debounce 500ms
+// Session save — debounce 800ms
 function scheduleSave() {
-  clearTimeout(saveDebounce);
-  saveDebounce = setTimeout(() => {
-    persistSession();
-  }, 500);
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => {
+    saveState();
+  }, 800);
 }
 ```
 
@@ -443,14 +446,13 @@ function scheduleSave() {
 xmlModelXslt = monaco.editor.createModel(xmlContent, 'xml');
 xmlModelXpath = monaco.editor.createModel(xmlContent, 'xml');
 
-// In toggleXPath(), swap the active model
-function toggleXPath() {
-  xpathEnabled = !xpathEnabled;
-  if (eds.xml && xmlModelXpath && xmlModelXslt) {
-    eds.xml.setModel(xpathEnabled ? xmlModelXpath : xmlModelXslt);
-  }
-  // ... update UI
-}
+// Mode switches go through ModeManager — it picks the matching model and
+// swaps it on the shared editor (eds.xml).
+modeManager.setMode('XPATH');
+// Internally:
+//   const target = this.isXpath ? this.models.xpath : this.models.xslt;
+//   _suppressNextXmlChange = true;          // skip the synthetic change event
+//   eds.xml.setModel(target);
 ```
 
 **Why**: Prevents validation decorations, highlights, and cursor positions from interfering between modes.
@@ -484,12 +486,11 @@ window.cpiSetHeader = (exchange, name, value) => {
 **Pattern**: Use flags to skip validation after programmatic edits that shouldn't trigger error checking.
 
 ```javascript
-function toggleXPath() {
-  _suppressNextXmlChange = true;  // Set the flag
-  eds.xml.setModel(newModel);     // Change model triggers onDidChangeModelContent
-  // The event handler checks _suppressNextXmlChange and skips validation
-  _suppressNextXmlChange = false; // Clear the flag
-}
+// Inside ModeManager.setup() before swapping the XML model:
+_suppressNextXmlChange = true;       // arm the flag
+eds.xml.setModel(targetModel);       // synthetic onDidChangeModelContent fires
+// editor.js's listener checks _suppressNextXmlChange, skips validation,
+// and resets it back to false — do NOT clear it here on the same line.
 ```
 
 **Why**: Prevents stale error markers after loading examples or switching modes.
@@ -523,9 +524,10 @@ The order in [../../index.html](../../index.html) is **critical**:
 <!-- 1. CSS first -->
 <link rel="stylesheet" href="css/style.css">
 
-<!-- 2. Vendor libs (Monaco, Saxon-JS) -->
+<!-- 2. Vendor libs (Monaco, Saxon-JS, pako) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/..."></script>
 <script src="lib/SaxonJS2.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/..."></script>  <!-- used by share.js -->
 
 <!-- 3. JS modules in dependency order -->
 <script src="js/state.js"></script>      <!-- Global state, clog -->
@@ -547,7 +549,7 @@ The order in [../../index.html](../../index.html) is **critical**:
 1. **Browser parses HTML** → loads CSS
 2. **Vendor libs load asynchronously** (Monaco, Saxon-JS)
 3. **Module scripts execute in order**
-4. **state.js** → Initializes global state, sets up saveDebounce
+4. **state.js** → Initializes global state, sets up `_saveTimer`
 5. **mode-manager.js** → Registers mode switching logic
 6. **validate.js** → Provides XML validation functions
 7. **transform.js** → Registers transform button handler
@@ -580,7 +582,7 @@ if (!eds.xml || !eds.xslt || !eds.out) {
 - `eds` — Editor instances
 - `xmlModelXslt`, `xmlModelXpath` — Monaco XML models
 - `kvData` — Headers/properties data
-- `saxophone` — Saxon-JS ready flag
+- `saxonReady` — Saxon-JS ready flag
 - `clog()` — Console logging function
 - Functions run by user: `runTransform()`, `runXPath()`, `toggleXPath()`, etc.
 
@@ -588,8 +590,9 @@ if (!eds.xml || !eds.xslt || !eds.out) {
 - `_wrapState` — word wrap state
 - `_xpathHistory` — expression history
 - `_highlightXPath()` — internal highlighting
-- `_rewriteCPICalls()` — internal CPI rewriting
 - `_suppressNextXmlChange` — internal flag
+
+Note: `rewriteCPICalls()` (in `transform.js`) is public — no leading underscore — even though it's only called from within `transform.js`.
 
 ### Why Prefixes?
 
@@ -622,7 +625,7 @@ These patterns prevent the most common bugs. See also `CLAUDE.md` Critical Const
 
 ### 1. Global Namespace
 
-Public API functions: unprefixed (`runTransform()`). Private/internal: `_` prefix (`_rewriteCPICalls()`). Never add an unprefixed function without checking `state.js` for conflicts.
+Public API functions: unprefixed (`runTransform()`, `rewriteCPICalls()`). Private/internal: `_` prefix (`_highlightXPath()`). Never add an unprefixed function without checking `state.js` for conflicts.
 
 ### 2. Editor Model Isolation
 

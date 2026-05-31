@@ -4,30 +4,32 @@
 
 XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the complete user workflows without mocking any backend systems.
 
-**Status**: ✅ 75 tests passing (7 test suites + smoke tests)
+**Status**: ✅ 87 tests passing (smoke + 8 workflow specs)
 
 ---
 
 ## Test Structure
 
 ```
-tests/
-├── e2e/
-│   ├── smoke.spec.js                    # Quick smoke tests (UI elements, basic transforms)
-│   ├── utils/
-│   │   └── test-helpers.js              # EditorPage class - all test utilities
-│   ├── fixtures/
-│   │   └── sample-data.js               # Test data (XML, XSLT, XPath examples)
-│   └── workflows/
-│       ├── mode-switching.spec.js       # 13 tests: XSLT ↔ XPath mode switching
-│       ├── session-management.spec.js   # 8 tests: localStorage persistence
-│       ├── xpath-evaluation.spec.js     # 7 tests: XPath expression evaluation
-│       ├── xslt-transform.spec.js       # 8 tests: XSLT transformations
-│       ├── cpi-simulation.spec.js       # 12 tests: CPI headers/properties, interceptors
-│       ├── examples-library.spec.js     # 14 tests: Examples modal, search, categories
-│       └── share-url.spec.js            # 9 tests: URL encoding, session sharing
-├── playwright.config.js                 # Playwright configuration
-└── package.json                         # Test dependencies
+<repo root>/
+├── playwright.config.js                 # Playwright configuration (project: chromium)
+├── package.json                         # Test scripts and dependencies
+└── tests/
+    ├── utils/
+    │   └── test-helpers.js              # EditorPage class - all test utilities
+    ├── fixtures/
+    │   └── sample-data.js               # Test data (XML, XSLT, XPath examples)
+    └── e2e/
+        ├── smoke.spec.js                    # 4 tests: smoke checks (incl. 1 SUMMARY)
+        └── workflows/
+            ├── mode-switching.spec.js       # 13 tests: XSLT ↔ XPath mode switching
+            ├── session-management.spec.js   #  8 tests: localStorage persistence
+            ├── xpath-evaluation.spec.js     #  7 tests: XPath expression evaluation
+            ├── xslt-transform.spec.js       #  8 tests: XSLT transformations
+            ├── cpi-simulation.spec.js       # 12 tests: CPI headers/properties, interceptors
+            ├── examples-library.spec.js     # 14 tests: Examples modal, search, categories
+            ├── share-url.spec.js            #  9 tests: URL encoding, session sharing
+            └── kv-search.spec.js            # 12 tests: KV header/property search filter
 ```
 
 ---
@@ -41,27 +43,39 @@ npm run test:e2e
 
 ### Run specific test file
 ```bash
-npm run test:e2e -- tests/e2e/workflows/mode-switching.spec.js
+npx playwright test tests/e2e/workflows/mode-switching.spec.js
 ```
 
 ### Run single test
 ```bash
-npm run test:e2e -- tests/e2e/workflows/mode-switching.spec.js -g "should switch from XSLT"
+npx playwright test tests/e2e/workflows/mode-switching.spec.js -g "should switch from XSLT"
 ```
 
 ### Run with UI (watch mode)
 ```bash
-npm run test:e2e -- --ui
+npm run test:e2e:ui
 ```
 
 ### Run with headed browser (see browser actions)
 ```bash
-npm run test:e2e -- --headed
+npm run test:e2e:headed
 ```
 
-### Run specific browser
+### Run in debug mode (Playwright Inspector)
 ```bash
-npm run test:e2e -- --project=chrome
+npm run test:e2e:debug
+```
+
+### Filter to the only configured project
+```bash
+# Only the `chromium` project is enabled in playwright.config.js
+npx playwright test --project=chromium
+```
+
+### Run against the production build
+```bash
+npm run build
+TEST_SERVER=dist npx playwright test --workers=4
 ```
 
 ---
@@ -69,106 +83,129 @@ npm run test:e2e -- --project=chrome
 ## Test Suites
 
 ### 1. Smoke Tests (`smoke.spec.js`)
-Quick sanity checks - 4 tests:
-- ✅ App loads with all UI elements
-- ✅ Basic XSLT transform works
-- ✅ Mode switching (XSLT ↔ XPath)
-- ✅ Saxon-JS engine ready
+Quick sanity checks - 4 tests (3 real + 1 SUMMARY):
+- ✅ should load app with all UI elements visible
+- ✅ should perform basic XSLT transform
+- ✅ should switch between XSLT and XPath modes
+- (SUMMARY pseudo-test prints suite summary)
 
-**Run**: `npm run test:e2e -- tests/e2e/smoke.spec.js`
+**Run**: `npx playwright test tests/e2e/smoke.spec.js`
 
 ### 2. Mode Switching (`workflows/mode-switching.spec.js`)
-Tests switching between XSLT and XPath modes - 13 tests:
-- ✅ Switch from XSLT → XPath
-- ✅ Switch from XPath → XSLT
-- ✅ Preserve content when switching
-- ✅ Mode indicator badge
-- ✅ Rapid mode switches
-- ✅ Persist mode preference across reload
+Tests switching between XSLT and XPath modes - 13 tests (12 real + 1 SUMMARY):
+- ✅ should switch from XSLT mode to XPath mode
+- ✅ should switch from XPath mode to XSLT mode
+- ✅ should preserve XML content when switching modes
+- ✅ should preserve XSLT content when switching modes and back
+- ✅ should preserve transform output when mode is preserved
+- ✅ should show correct mode indicator badge for XSLT
+- ✅ should show correct mode indicator badge for XPath
+- ✅ should have separate XML state per mode (isolation test)
+- ✅ should update mode indicator when button is clicked
+- ✅ should clear transform output when switching modes
+- ✅ should support rapid mode switching
+- ✅ should persist mode preference across page reload
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/mode-switching.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/mode-switching.spec.js`
 
 ### 3. Session Management (`workflows/session-management.spec.js`)
-Tests localStorage persistence - 8 tests:
-- ✅ Auto-save session to localStorage
-- ✅ Persist session after page reload
-- ✅ Store transform output
-- ✅ Maintain mode in session
-- ✅ Restore mode after reload
-- ✅ Preserve session across mode switches
-- ✅ Handle empty session gracefully
+Tests localStorage persistence - 8 tests (7 real + 1 SUMMARY):
+- ✅ should auto-save session to localStorage
+- ✅ should persist session after page reload
+- ✅ should store output when transform runs
+- ✅ should maintain session mode (XSLT vs XPath) in localStorage
+- ✅ should restore session mode after reload
+- ✅ should preserve session across mode switches
+- ✅ should load empty editors on fresh start
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/session-management.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/session-management.spec.js`
 
 ### 4. XPath Evaluation (`workflows/xpath-evaluation.spec.js`)
-Tests XPath expressions - 7 tests:
-- ✅ Evaluate count expressions
-- ✅ Select text nodes
-- ✅ Handle predicates
-- ✅ Select attributes
-- ✅ Handle empty results
-- ✅ Work with namespaces
+Tests XPath expressions - 7 tests (6 real + 1 SUMMARY):
+- ✅ should evaluate simple XPath expression (count)
+- ✅ should select nodes with XPath
+- ✅ should handle XPath with predicates
+- ✅ should handle empty result set gracefully
+- ✅ should switch mode from XPath to XSLT
+- ✅ should preserve XML content in XPath mode
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/xpath-evaluation.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/xpath-evaluation.spec.js`
 
 ### 5. XSLT Transform (`workflows/xslt-transform.spec.js`)
-Tests XSLT transformations - 8 tests:
-- ✅ Basic XML → XSLT → output
-- ✅ Detect malformed XML
-- ✅ Ctrl+Enter keyboard shortcut
-- ✅ Handle empty XML
-- ✅ Preserve XSLT across mode switch
-- ✅ Store session after transform
-- ✅ Show mode indicator
+Tests XSLT transformations - 8 tests (7 real + 1 SUMMARY):
+- ✅ should perform a basic XSLT transform (XML → XSLT → Output)
+- ✅ should detect malformed XML
+- ✅ should run XSLT via Ctrl+Enter keyboard shortcut
+- ✅ should handle empty XML input
+- ✅ should preserve XSLT across mode switch
+- ✅ should store session after transform
+- ✅ should be in XSLT mode initially
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/xslt-transform.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/xslt-transform.spec.js`
 
 ### 6. CPI Simulation (`workflows/cpi-simulation.spec.js`)
-Tests SAP CPI (Cloud Integration) simulation features - 12 tests:
-- ✅ Add single header and display count
-- ✅ Add multiple headers
-- ✅ Add property and display count
-- ✅ Add both headers and properties together
-- ✅ Update existing header
-- ✅ Delete header
-- ✅ Execute XSLT with headers and verify in output
-- ✅ Execute XSLT with multiple headers and properties
-- ✅ Persist headers/properties across page reload
-- ✅ Clear headers/properties when clearing session
-- ✅ Don't include headers/properties in XPath mode
+Tests SAP CPI (Cloud Integration) simulation features - 12 tests (11 real + 1 SUMMARY):
+- ✅ should add a single header and display count
+- ✅ should add multiple headers
+- ✅ should add a property and display count
+- ✅ should add both headers and properties together
+- ✅ should update an existing header
+- ✅ should delete a header
+- ✅ should execute XSLT with headers and verify in output
+- ✅ should execute XSLT with multiple headers and properties
+- ✅ should persist headers/properties across page reload
+- ✅ should clear headers/properties when clearing session
+- ✅ should not include headers/properties in XPath mode
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/cpi-simulation.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/cpi-simulation.spec.js`
 
 ### 7. Examples Library (`workflows/examples-library.spec.js`)
-Tests example modal, search, filtering, and loading - 14 tests:
-- ✅ Open examples modal and render sidebar categories
-- ✅ Close modal on backdrop click
-- ✅ Load transform example and populate XML/XSLT
-- ✅ Load XPath example and switch to XPath mode
-- ✅ Load CPI example with auto-populated headers
-- ✅ Search examples by keyword
-- ✅ Return to full list when clearing search
-- ✅ Toggle auto-run checkbox and persist preference
-- ✅ Auto-run example when preference is enabled
-- ✅ Clear validation errors when loading example
-- ✅ Display correct mode indicator in modal
-- ✅ Isolate examples by category
-- ✅ Not populate headers in XPath examples
+Tests example modal, search, filtering, and loading - 14 tests (13 real + 1 SUMMARY):
+- ✅ should open examples modal and render sidebar categories
+- ✅ should close modal on backdrop click
+- ✅ should load transform example and populate XML/XSLT
+- ✅ should load XPath example and switch to XPath mode
+- ✅ should load CPI example with auto-populated headers
+- ✅ should search examples by keyword
+- ✅ should return to full list when clearing search
+- ✅ should toggle auto-run checkbox and persist preference
+- ✅ should auto-run example when preference is enabled
+- ✅ should clear validation errors when loading example
+- ✅ should display correct mode indicator in modal
+- ✅ should isolate examples by category
+- ✅ should not populate headers in XPath examples
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/examples-library.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/examples-library.spec.js`
 
 ### 8. Share URL (`workflows/share-url.spec.js`)
-Tests session sharing via encoded URLs - 9 tests:
-- ✅ Generate share URL from current editor state
-- ✅ Include headers in share URL and decode correctly
-- ✅ Include properties in share URL and decode correctly
-- ✅ Generate consistent share URL for same content
-- ✅ Handle corrupted share URL gracefully
-- ✅ Perform round-trip: generate → load → generate with same result
-- ✅ Clean up hash from URL after loading share data
-- ✅ Close share modal when clicking outside
+Tests session sharing via encoded URLs - 9 tests (8 real + 1 SUMMARY):
+- ✅ should generate a share URL from current editor state
+- ✅ should include headers in share URL and decode correctly
+- ✅ should include properties in share URL and decode correctly
+- ✅ should generate consistent share URL for same content
+- ✅ should handle corrupted share URL gracefully
+- ✅ should perform round-trip: generate URL, load, generate again with same result
+- ✅ should clean up hash from URL after loading share data, and verify content is decoded
+- ✅ should close share modal when clicking outside
 
-**Run**: `npm run test:e2e -- tests/e2e/workflows/share-url.spec.js`
+**Run**: `npx playwright test tests/e2e/workflows/share-url.spec.js`
+
+### 9. KV Search (`workflows/kv-search.spec.js`)
+Tests substring filter on Headers / Properties / output KV panels - 12 tests:
+- ✅ toggles the search bar open and closed
+- ✅ filters rows by substring match against the name column
+- ✅ filters rows by substring match against the value column
+- ✅ clear button restores all rows
+- ✅ shows a "No matches" line when query matches nothing
+- ✅ keeps filter active across adding a new row
+- ✅ keeps filter active across deleting a matching row
+- ✅ closing the search bar clears the query and restores rows
+- ✅ does not mutate kvData (persistence unchanged)
+- ✅ search-toggle button shows active state when query is non-empty
+- ✅ Properties panel filter works the same way
+- ✅ filters output Headers panel after a transform sets multiple headers
+
+**Run**: `npx playwright test tests/e2e/workflows/kv-search.spec.js`
 
 ---
 
@@ -296,32 +333,26 @@ expect(session.xmlXslt).toBeTruthy();
 
 ## CI/CD Integration
 
-Add to `.github/workflows/test.yml`:
+The CI workflow already exists at [`.github/workflows/e2e-tests.yml`](../workflows/e2e-tests.yml).
 
-```yaml
-name: E2E Tests
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main]
+It runs on push and pull request to `dev` and `main`, and:
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
+- Uses **Node.js 24** with `npm ci`
+- Runs `npm run build` to produce `dist/`
+- Verifies the built bundle (asserts no raw `js/` script tags remain in `dist/index.html`)
+- Installs Chromium via `npx playwright install chromium` (+ `install-deps`)
+- Runs the suite against the production build with:
+  ```bash
+  TEST_SERVER=dist npx playwright test --workers=4
+  ```
+- Uploads the HTML report (`playwright-report/`) and JUnit/JSON results (`test-results/`) as artifacts
+
+To reproduce the CI run locally:
+
+```bash
+npm ci
+npm run build
+TEST_SERVER=dist npx playwright test --workers=4
 ```
 
 ---
@@ -380,7 +411,7 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 
 ## Current Status
 
-✅ **75 tests passing**
+✅ **87 tests passing** (across 9 spec files)
 - Smoke tests: 4/4
 - Mode switching: 13/13
 - Session management: 8/8
@@ -389,5 +420,6 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 - CPI simulation: 12/12
 - Examples library: 14/14
 - Share URL: 9/9
+- KV search: 12/12
 
-Last updated: May 3, 2026
+Last updated: June 1, 2026

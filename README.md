@@ -401,11 +401,11 @@ Before pushing to `main`:
 
 1. **Update version** in `README.md`
 2. **Run example validator** — ensure all 61 examples pass checks
-4. **Test all features** — click through each category/workflow in the browser
-5. **Clear old sessions** — remove `xdebugx-session-v1*` test data from localStorage
-6. **Check bundle size** — `lib/SaxonJS2.js` should be ~10-12MB (minified)
-7. **Verify links** — all internal links in docs point to correct files
-8. **Create GitHub release** — tag version, attach any build artifacts
+3. **Test all features** — click through each category/workflow in the browser
+4. **Clear old sessions** — remove `xdebugx-session-v1*` test data from localStorage
+5. **Check bundle size** — `lib/SaxonJS2.js` should be ~10-12MB (minified)
+6. **Verify links** — all internal links in docs point to correct files
+7. **Create GitHub release** — tag version, attach any build artifacts
 
 ### CDN Dependencies
 
@@ -429,7 +429,7 @@ Analytics via [GoatCounter](https://www.goatcounter.com) (privacy-friendly, no c
 
 ## Testing
 
-XSLTDebugX comes with a comprehensive Playwright E2E test suite (75 tests across 8 files).
+XSLTDebugX comes with a comprehensive Playwright E2E test suite (87 tests across 9 files).
 
 **For writing and running tests:**
 - **[.github/docs/TESTING.md](.github/docs/TESTING.md)** — E2E testing guide: setup, Playwright patterns, test structure, example workflows
@@ -438,7 +438,7 @@ XSLTDebugX comes with a comprehensive Playwright E2E test suite (75 tests across
 **Running tests:**
 ```bash
 # All tests
-npm test
+npm run test:e2e
 
 # Specific file
 npx playwright test tests/e2e/smoke.spec.js
@@ -880,11 +880,11 @@ XSLTDebugX uses [GoatCounter](https://www.goatcounter.com) for anonymous, privac
 
 **Setting up local development, understanding the codebase, writing tests, contributing code, and managing releases?**
 
-- **[Setting up locally?](docs/DEVELOPMENT.md)** → [.github/docs/DEVELOPMENT.md](.github/docs/DEVELOPMENT.md)
-- **[Writing or running tests?](docs/TESTING.md)** → [.github/docs/TESTING.md](.github/docs/TESTING.md)
-- **[Understanding the architecture?](docs/ARCHITECTURE.md)** → [.github/docs/ARCHITECTURE.md](.github/docs/ARCHITECTURE.md)
-- **[Code style & contributing?](CONTRIBUTING.md)** → [CONTRIBUTING.md](CONTRIBUTING.md)
-- **[Feature API reference?](.github/docs/reference/features.md)** → [.github/docs/reference/features.md](.github/docs/reference/features.md)
+- **[Setting up locally?](.github/docs/DEVELOPMENT.md)**
+- **[Writing or running tests?](.github/docs/TESTING.md)**
+- **[Understanding the architecture?](.github/docs/ARCHITECTURE.md)**
+- **[Code style & contributing?](CONTRIBUTING.md)**
+- **[Feature API reference?](.github/docs/reference/features.md)**
 
 ---
 
