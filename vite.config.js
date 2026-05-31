@@ -51,7 +51,19 @@ export default defineConfig({
           entryPoints: JS_MODULES,
           bundle: false,
           minify: true,
-          keepNames: true,    // forward-compat: prevent future esbuild from renaming the underscore-prefixed functions referenced by inline onclick=
+          // keepNames intentionally OFF. esbuild's keepNames helper injects
+          //   var p = Object.defineProperty;
+          //   var l = (e,t) => p(e,"name",{value:t,configurable:true});
+          // into every minified module. Because we concatenate at top level
+          // (no IIFE wrapper — function decls must stay on window for inline
+          // onclick=), every module's `var p` and `var l` collide globally.
+          // esbuild picks letter assignments per-build; one unlucky pick makes
+          // a later module's `var l = Object.defineProperty` overwrite an
+          // earlier module's wrapper, and every subsequent l(...) call hits
+          // defineProperty with one argument and throws "Property description
+          // must be an object: undefined". We don't need keepNames anyway —
+          // every name referenced from inline onclick="..." is a top-level
+          // function declaration, which esbuild minify never renames.
           outdir: TMP,
         });
 
