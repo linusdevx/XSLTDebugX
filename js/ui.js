@@ -108,28 +108,10 @@ function copyConsole() {
     }).join('\n');
   if (!text.trim()) return clog('Console is empty — nothing to copy', 'warn');
 
-  const onSuccess = () => {
+  _clipboardWrite(text, () => {
     clog('Console copied to clipboard ✓', 'success');
     showCopyToast('✓ Copied console output');
-  };
-  const onFail    = () => {
-    // execCommand fallback for file:// or non-HTTPS contexts
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(text).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  });
 }
 
 // ════════════════════════════════════════════

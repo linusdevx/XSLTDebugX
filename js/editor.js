@@ -486,20 +486,10 @@ require(['vs/editor/editor.main'], () => {
 
   // ── Shared clipboard helper for XPath copy actions ──
   function _copyXPathToClipboard(xpath, label) {
-    const onSuccess = () => {
+    _clipboardWrite(xpath, () => {
       clog(`ƒx  ${label}: ${xpath}`, 'success');
       showCopyToast(`✓ ${label}`);
-    };
-    const onFail = () => {
-      const ta = document.createElement('textarea');
-      ta.value = xpath; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-      document.body.appendChild(ta); ta.focus(); ta.select();
-      const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-      document.body.removeChild(ta);
-      ok ? onSuccess() : clog('Clipboard access denied', 'error');
-    };
-    if (window.navigator?.clipboard?.writeText) navigator.clipboard.writeText(xpath).then(onSuccess, onFail);
-    else onFail();
+    });
   }
 
   // ── Mode-aware handler: XSLT mode → log + copy only; XPath mode → set bar + run ──

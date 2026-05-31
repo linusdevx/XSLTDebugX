@@ -568,7 +568,7 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
     if (tag.startsWith('/') || tag.startsWith('?') || tag.startsWith('!')) continue;
     tagOccurrences[tag] = (tagOccurrences[tag] || 0) + 1;
     const occ   = tagOccurrences[tag];
-    const range = _findNodeRangeByTag(xmlSrc, tag, occ);
+    const range = _findNodeRangeForTag(xmlSrc, tag, occ);
     if (!range) continue;
     if (offset >= range.startOffset && offset <= range.endOffset) {
       if (range.startOffset >= bestStart) {
@@ -580,50 +580,6 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   if (!bestTag) return null;
   const allNodes = [...doc.getElementsByTagName('*')].filter(el => el.nodeName === bestTag);
   return allNodes[bestOcc - 1] ?? null;
-}
-
-// Variant of _findNodeRange that takes tag + occurrence directly (no DOM element needed)
-function _findNodeRangeByTag(xmlSrc, tag, occurrenceIndex) {
-  const openOffset = _nthTagOpen(xmlSrc, tag, occurrenceIndex);
-  if (openOffset === -1) return null;
-
-  let i = openOffset + tag.length + 1;
-  let inDouble = false, inSingle = false;
-  while (i < xmlSrc.length) {
-    const ch = xmlSrc[i];
-    if (!inDouble && !inSingle) {
-      if (ch === '"')  { inDouble = true;  i++; continue; }
-      if (ch === "'")  { inSingle = true;  i++; continue; }
-      if (ch === '>')  { i++; break; }
-    } else if (inDouble && ch === '"') { inDouble = false; }
-      else if (inSingle && ch === "'") { inSingle = false; }
-    i++;
-  }
-  const openTagEnd = i;
-  if (xmlSrc[i - 2] === '/') return { startOffset: openOffset, endOffset: openTagEnd };
-
-  let depth = 1, j = openTagEnd;
-  const openRe  = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
-  const closeRe = new RegExp(`<\\/${_escRe(tag)}(?=[\\s>])`, 'g');
-  while (depth > 0) {
-    openRe.lastIndex  = j;
-    closeRe.lastIndex = j;
-    const nextOpen  = openRe.exec(xmlSrc);
-    const nextClose = closeRe.exec(xmlSrc);
-    if (!nextClose) break;
-    if (nextOpen && nextOpen.index < nextClose.index) {
-      depth++;
-      j = nextOpen.index + nextOpen[0].length;
-    } else {
-      depth--;
-      if (depth === 0) {
-        const closeEnd = xmlSrc.indexOf('>', nextClose.index);
-        return { startOffset: openOffset, endOffset: closeEnd === -1 ? nextClose.index + nextClose[0].length : closeEnd + 1 };
-      }
-      j = nextClose.index + nextClose[0].length;
-    }
-  }
-  return { startOffset: openOffset, endOffset: openTagEnd };
 }
 
 // ── Render results panel ───────────────────────────────────────────────────────
@@ -802,51 +758,25 @@ function renderXPathHints(hints) {
 function copyXPathInput() {
   const expr = document.getElementById('xpathInput')?.value?.trim();
   if (!expr) return clog('XPath bar is empty — nothing to copy', 'warn');
-  const onSuccess = () => {
+  _clipboardWrite(expr, () => {
     clog(`ƒx  Expression copied to clipboard ✓`, 'success');
     showCopyToast('✓ Copied XPath expression');
-  };
-  const onFail    = () => {
-    const ta = document.createElement('textarea');
-    ta.value = expr;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-  if (window.navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(expr).then(onSuccess, onFail);
-  } else { onFail(); }
+  });
 }
 
 // ── Copy results to clipboard ──────────────────────────────────────────────────
 function copyXPathResults() {
   const body = document.getElementById('xpathResultsBody');
   if (!body) return;
-  const text = [...body.querySelectorAll('.xpath-result-content')]
-    .map((el, i) => `[${i + 1}] ${el.textContent}`)
-    .join('\n' + '─'.repeat(40) + '\n');
+  // M-8: compute count from the array we already built rather than re-querying
+  const items = [...body.querySelectorAll('.xpath-result-content')];
+  const text  = items.map((el, i) => `[${i + 1}] ${el.textContent}`)
+                     .join('\n' + '─'.repeat(40) + '\n');
   if (!text.trim()) return clog('XPath results are empty — nothing to copy', 'warn');
 
-  const count = [...body.querySelectorAll('.xpath-result-content')].length;
-  const onSuccess = () => {
+  const count = items.length;
+  _clipboardWrite(text, () => {
     clog('XPath results copied to clipboard ✓', 'success');
     showCopyToast(`✓ Copied ${count} result${count !== 1 ? 's' : ''}`);
-  };
-  const onFail    = () => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-
-  if (window.navigator?.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).then(onSuccess, onFail);
-  } else { onFail(); }
+  });
 }

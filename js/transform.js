@@ -355,10 +355,10 @@ function runTransform() {
       btn.disabled = false;
       if (modeManager.isXpath) {
         btn.onclick = runXPath;
-        btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XPath <span class="kbd">⌘↵</span>`;
+        btn.innerHTML = _runBtnHtml('XPATH');
       } else {
         btn.onclick = runTransform;
-        btn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XSLT <span class="kbd">⌘↵</span>`;
+        btn.innerHTML = _runBtnHtml('XSLT');
       }
       reinitIcons(btn);
     };

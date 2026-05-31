@@ -300,12 +300,12 @@ class ModeManager {
       runBtn.onclick = () => {
         if (typeof runXPath === 'function') runXPath();
       };
-      runBtn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XPath <span class="kbd">⌘↵</span>`;
+      runBtn.innerHTML = _runBtnHtml('XPATH');
     } else {
       runBtn.onclick = () => {
         if (typeof runTransform === 'function') runTransform();
       };
-      runBtn.innerHTML = `<i data-lucide="play" width="14" height="14"></i> Run XSLT <span class="kbd">⌘↵</span>`;
+      runBtn.innerHTML = _runBtnHtml('XSLT');
     }
     reinitIcons(runBtn);
   }

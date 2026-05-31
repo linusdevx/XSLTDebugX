@@ -30,32 +30,13 @@ function handleUpload(event, pane) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    if (pane === 'xml') {
-      // Route to the currently active XML model based on mode
-      const targetModel = modeManager.currentModel;
-      if (targetModel) {
-        targetModel.setValue(text);
-        scheduleSave();
-        clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-      } else {
-        clog('Editor not ready — cannot upload file', 'error');
-      }
-    } else if (eds.xslt) {
-      eds.xslt.setValue(text);
-      scheduleSave();
-      clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-    } else {
-      clog('Editor not ready — cannot upload file', 'error');
-    }
-  };
+  reader.onload  = e => _applyFileContent(e.target.result, file, pane, 'Uploaded');
   reader.onerror = e => clog(`Failed to read file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
   reader.readAsText(file);
 }
 
 function downloadPane(pane, defaultName) {
-  const ed = pane === 'xml' ? eds.xml : pane === 'xslt' ? eds.xslt : eds.out;
+  const ed = _getPaneEd(pane);
   const text = ed?.getValue()?.trim();
   if (!text) { clog(`${pane.toUpperCase()} pane is empty — nothing to download`, 'warn'); return; }
   const ext = defaultName.split('.').pop() || 'xml';
@@ -96,26 +77,8 @@ function setupDragDrop(editorWrapId, pane) {
     if (!file) return;
     if (pane === 'out') { clog('Cannot drop onto Output pane', 'warn'); return; }
     const reader = new FileReader();
-    reader.onload = ev => {
-      if (pane === 'xml') {
-        // Route to the currently active XML model based on mode
-        const targetModel = modeManager.currentModel;
-        if (targetModel) {
-          targetModel.setValue(ev.target.result);
-          scheduleSave();
-          clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-        } else {
-          clog('Editor not ready — cannot upload file', 'error');
-        }
-      } else if (eds.xslt) {
-        eds.xslt.setValue(ev.target.result);
-        scheduleSave();
-        clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-      } else {
-        clog('Editor not ready — cannot upload file', 'error');
-      }
-    };
-    reader.onerror = e => clog(`Failed to read dropped file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
+    reader.onload  = ev => _applyFileContent(ev.target.result, file, pane, 'Dropped');
+    reader.onerror = e  => clog(`Failed to read dropped file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
     reader.readAsText(file);
   });
 }

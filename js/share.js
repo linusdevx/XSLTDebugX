@@ -145,18 +145,14 @@ function _copyShareUrl(url, silent) {
     clog('Share URL copied to clipboard', 'success');
   };
 
+  // Custom onFail: select the URL input so the user can press Ctrl+C manually,
+  // then log a "press Ctrl+C" affordance instead of the generic clipboard-denied
+  // error from _clipboardWrite's default fallback.
   const onFail = () => {
-    // execCommand fallback for file:// or non-HTTPS
     const input = document.getElementById('shareUrlInput');
     if (input) input.select();
-    let ok = false;
-    try { ok = document.execCommand('copy'); } catch(_) {}
-    ok ? onSuccess() : clog('Auto-copy unavailable — URL selected, press Ctrl+C to copy', 'warn');
+    clog('Auto-copy unavailable — URL selected, press Ctrl+C to copy', 'warn');
   };
 
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(url).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  _clipboardWrite(url, onSuccess, onFail);
 }
