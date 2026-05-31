@@ -81,7 +81,14 @@ function setupDragDrop(editorWrapId, pane) {
     e.preventDefault();
     el.classList.add('drag-over');
   });
-  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  // C-4: Monaco's wrapper has many nested children; dragleave fires on every
+  // internal boundary, so a naive remove() flickers continuously while dragging.
+  // Only clear when the pointer actually leaves the wrapper. relatedTarget is
+  // null when the drag leaves the window — el.contains(null) is false, so the
+  // class is correctly removed in that case too.
+  el.addEventListener('dragleave', e => {
+    if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
+  });
   el.addEventListener('drop', e => {
     e.preventDefault();
     el.classList.remove('drag-over');
