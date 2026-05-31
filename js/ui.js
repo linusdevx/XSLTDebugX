@@ -161,7 +161,7 @@ function toggleTheme() {
   }
 }
 
-// M-7: symmetric theme restore — handle both 'light' and 'dark'. Surviving a
+// Symmetric theme restore — handle both 'light' and 'dark'. Surviving a
 // future flip of the default theme in index.html requires touching the class
 // in both directions, not just removing 'light' on saved=='dark'.
 (function() {
@@ -181,7 +181,7 @@ function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
 }
 
-// M-6: factory in state.js. `var` keeps it on window for inline onclick=.
+// Factory in state.js. `var` keeps it on window for inline onclick=.
 var handleHelpBackdropClick = _makeBackdropClose('helpModalBackdrop', closeHelpModal);
 
 function switchHelpTab(tab) {

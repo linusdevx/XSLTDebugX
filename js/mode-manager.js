@@ -126,7 +126,7 @@ class ModeManager {
       }
     }
 
-    // I-1 / I-2: use clearAllMarkers (validate.js) instead of clearing only
+    // Use clearAllMarkers (validate.js) instead of clearing only
     // xmlDecorations. clearAllMarkers handles BOTH decoration collections
     // (xml + xslt) plus markers on both XML models — strict superset of the
     // previous inline xmlDecorations.clear(). xsltDecorations was previously
@@ -145,7 +145,7 @@ class ModeManager {
         ? this.models.xpath
         : this.models.xslt;
 
-      // C-1: arm the synthetic-change guard BEFORE setModel. Monaco fires
+      // Arm the synthetic-change guard BEFORE setModel. Monaco fires
       // onDidChangeModelContent synchronously inside setModel, and the listener
       // in editor.js:893 is exactly designed to consume this flag — without it
       // every mode switch fires a spurious scheduleSave + marker clear +

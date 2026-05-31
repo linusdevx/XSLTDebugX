@@ -85,7 +85,7 @@ let xmlDebounce  = null;
 // ════════════════════════════════════════════
 //  CONSOLE
 // ════════════════════════════════════════════
-// M-1: lazy-cache the console DOM elements. They don't exist when state.js
+// Lazy-cache the console DOM elements. They don't exist when state.js
 // loads, but once they appear (loader hides → consoleBody mounts) they live
 // for the rest of the session. Falls back gracefully — if a lookup misses we
 // just retry next call.
@@ -115,7 +115,7 @@ function clog(msg, type = 'info') {
   // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
   // evicted line was an error/warn so the badge stays in sync with what the
   // user can actually see and copy.
-  // M-2: track count before/after so we only repaint the badge when it changes.
+  // Track count before/after so we only repaint the badge when it changes.
   const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
@@ -219,7 +219,7 @@ function _resetXPathMode() {
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
 
-  // C-2: arm _suppressNextSave BEFORE setValue. Monaco fires
+  // Arm _suppressNextSave BEFORE setValue. Monaco fires
   // onDidChangeModelContent synchronously inside setValue, and the editor.js
   // listener calls scheduleSave() — without arming the flag, the reset would
   // queue a save against mid-transition state. try/finally restores the
@@ -252,7 +252,7 @@ function _resetXsltMode() {
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
 
-  // C-2: arm _suppressNextSave BEFORE the FIRST setValue. Previously the XML
+  // Arm _suppressNextSave BEFORE the FIRST setValue. Previously the XML
   // setValue ran before the flag was set, so its synchronous scheduleSave()
   // queued a save with mid-reset XSLT. try/finally restores the previous flag
   // value rather than blindly clearing one set by an outer caller.
@@ -279,7 +279,7 @@ function _resetXsltMode() {
   if (typeof renderXPathHints === 'function') renderXPathHints(null);
   window._lastExampleKey = null;
 
-  // M-3: XPath bar is hidden in XSLT mode — only sync if we're actually in XPath
+  // XPath bar is hidden in XSLT mode — only sync if we're actually in XPath
   if (modeManager.isXpath) {
     const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
     if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);

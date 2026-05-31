@@ -40,7 +40,7 @@ function openExModal() {
   if (checkbox) checkbox.checked = savedAutoRun;
   // Pre-select category based on current mode
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
-  // I-6: force a fresh render — examples list / icons may have changed since last open
+  // Force a fresh render — examples list / icons may have changed since last open
   _exRendered = false;
   renderExSidebar();
   renderExGrid();
@@ -51,9 +51,10 @@ function closeExModal() {
   document.getElementById('exModalBackdrop').classList.remove('open');
 }
 
-// M-6: factory in state.js builds the e.target.id === id && close() handler.
-// `var` keeps it on window so inline onclick="handleModalBackdropClick(event)"
-// in index.html still resolves at top level.
+// Backdrop click-to-close — factory in state.js builds the
+// e.target.id === id && close() handler. `var` keeps it on window so
+// inline onclick="handleModalBackdropClick(event)" in index.html still
+// resolves at top level.
 var handleModalBackdropClick = _makeBackdropClose('exModalBackdrop', closeExModal);
 
 // Close modal on Escape; run transform on Ctrl/Cmd+Enter from anywhere
@@ -81,7 +82,7 @@ function setExCat(cat) {
   renderExGrid();
 }
 
-// I-6: filterExamples runs on every search keystroke. Previously it called
+// filterExamples runs on every search keystroke. Previously it called
 // renderExGrid which rebuilt the entire HTML and re-ran lucide.createIcons over
 // ~60 SVGs — visibly stuttery. Now it only flips display:none on the cards
 // already in the DOM, keeping the icon layer untouched.
@@ -133,7 +134,7 @@ function filterExamples() {
   }
 }
 
-// I-6: track whether the grid DOM has been built so filterExamples can decide
+// Track whether the grid DOM has been built so filterExamples can decide
 // between rebuild (first call after open / category change) and toggle.
 let _exRendered = false;
 
@@ -175,7 +176,7 @@ function renderExGrid() {
       // ex.icon is a Lucide icon name (matches [a-z-]+) and k is the bundled
       // example key (matches [a-zA-Z0-9]+). Both are bundled-internal — do NOT
       // start interpolating external sources here without adding escapes.
-      // I-6: data-ex-key lets filterExamples look up EXAMPLES[key] cheaply
+      // data-ex-key lets filterExamples look up EXAMPLES[key] cheaply
       // without re-reading anything else off the card.
       html += `
         <div class="ex-card" data-ex-key="${k}" style="--card-accent:${accent}" onclick="loadExample('${k}')">
@@ -229,8 +230,8 @@ function loadExample(key) {
       targetXmlModel.setValue(ex.xml);
     }
 
-    // M-5: arm/restore _suppressNextValidation only around the setValue that
-    // actually needs it. Previously the finally cleared the flag unconditionally,
+    // Arm/restore _suppressNextValidation only around the setValue that
+    // actually needs it. A blanket finally would clear the flag unconditionally,
     // potentially clobbering one set by an outer caller when the conditional
     // didn't even run (XPath mode / no XSLT content).
     if (!modeManager.isXpath && ex.xslt && eds.xslt) {

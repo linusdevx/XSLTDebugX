@@ -62,7 +62,7 @@ function setupDragDrop(editorWrapId, pane) {
     e.preventDefault();
     el.classList.add('drag-over');
   });
-  // C-4: Monaco's wrapper has many nested children; dragleave fires on every
+  // Monaco's wrapper has many nested children; dragleave fires on every
   // internal boundary, so a naive remove() flickers continuously while dragging.
   // Only clear when the pointer actually leaves the wrapper. relatedTarget is
   // null when the drag leaves the window — el.contains(null) is false, so the

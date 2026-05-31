@@ -12,7 +12,7 @@ let xpathDecorations = null;
 // ── XPath syntax highlight overlay ───────────────────────────────────────────
 // Tokenizes the expression and injects colored <span>s into the overlay div.
 // Token order matters — strings first to prevent keywords inside them matching.
-// M-9: sticky-anchored regexes (y flag) match only at lastIndex, so we don't
+// Sticky-anchored regexes (y flag) match only at lastIndex, so we don't
 // allocate a fresh substring (src.slice(i)) per character. The y flag has been
 // stable in all browsers since 2019 and the codebase already uses ES2020+
 // features (optional chaining), so no compat regression.
@@ -156,7 +156,7 @@ function clearXPathHighlights() {
 }
 
 // ── Convert a character offset in a string to { line, col } (1-based) ────────
-// I-5: when called many times against the same `src` (e.g. one highlight pass
+// When called many times against the same `src` (e.g. one highlight pass
 // over N matches), pass `newlineIdx` from _buildNewlineIndex(src) so each
 // translation is O(log N) binary-search instead of O(M) substring + split.
 function _offsetToLineCol(src, offset, newlineIdx) {
@@ -276,10 +276,10 @@ function _highlightMatchedNodes(items, xmlSrc) {
   if (!eds.xml || !items.length) return;
 
   const decorations = [];
-  // I-5: precompute newline offsets once per call so _offsetToLineCol can binary-search.
+  // Precompute newline offsets once per call so _offsetToLineCol can binary-search.
   const newlineIdx = _buildNewlineIndex(xmlSrc);
 
-  // C-3: occurrence index is resolved per DOM node identity, not via a shared
+  // Occurrence index is resolved per DOM node identity, not via a shared
   // tagCounts dict. The previous implementation used one counter for elements,
   // text-node parents, and attribute owners — when a result set contained both
   // an element and its text/attr children, the same owner element got counted
@@ -561,7 +561,7 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   const doc    = parser.parseFromString(xmlSrc, 'application/xml');
   if (doc.querySelector('parsererror')) return null;
 
-  // I-3: blank out comments and CDATA so tag-shaped strings inside them don't
+  // Blank out comments and CDATA so tag-shaped strings inside them don't
   // bump the regex occurrence counter past the DOM's actual count. Replacing
   // each region with spaces of identical length preserves character positions,
   // so the offset and the ranges from _findNodeRangeForTag (computed on the
@@ -604,7 +604,7 @@ let _showXPathGen = 0;
 let _lastXPathRenderArgs = null; // saved for re-colorize on theme switch
 async function _showXPathResults(items, errorMsg, isError) {
   const gen = ++_showXPathGen; // capture generation for this call
-  // I-11: pin the XML model that was active when this run started. eds.xml
+  // Pin the XML model that was active when this run started. eds.xml
   // points at whichever model the user is currently viewing — if they switch
   // mode while we await monaco.editor.colorize() (potentially hundreds of ms),
   // eds.xml will swap to the other XML model and any decoration application
@@ -669,7 +669,7 @@ async function _showXPathResults(items, errorMsg, isError) {
 
   // Bail if a newer run has started while we were awaiting colorize
   if (gen !== _showXPathGen) return;
-  // I-11: also bail if the user switched modes mid-await — the highlights and
+  // Also bail if the user switched modes mid-await — the highlights and
   // results panel belong to the previous mode's XML model.
   if (eds.xml?.getModel?.() !== xmlModelAtStart) {
     clearXPathHighlights();
@@ -795,7 +795,7 @@ function copyXPathInput() {
 function copyXPathResults() {
   const body = document.getElementById('xpathResultsBody');
   if (!body) return;
-  // M-8: compute count from the array we already built rather than re-querying
+  // Compute count from the array we already built rather than re-querying
   const items = [...body.querySelectorAll('.xpath-result-content')];
   const text  = items.map((el, i) => `[${i + 1}] ${el.textContent}`)
                      .join('\n' + '─'.repeat(40) + '\n');
