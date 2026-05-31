@@ -275,63 +275,81 @@ function _highlightMatchedNodes(items, xmlSrc) {
   if (!eds.xml || !items.length) return;
 
   const decorations = [];
-  const tagCounts   = {};
+
+  // C-3: occurrence index is resolved per DOM node identity, not via a shared
+  // tagCounts dict. The previous implementation used one counter for elements,
+  // text-node parents, and attribute owners — when a result set contained both
+  // an element and its text/attr children, the same owner element got counted
+  // multiple times across branches and _findNodeRange received an index past
+  // what the source actually contains, producing silent mis-highlights or
+  // dropped highlights.
+  //
+  // Memoize the same-tag sibling array per (doc, tag) so getElementsByTagName
+  // isn't called once per item. Cache is local to this call.
+  const sameTagCache = new Map();
+  const _sameTagSiblings = owner => {
+    const tag = owner.nodeName;
+    const doc = owner.ownerDocument;
+    const key = doc ? `${tag}\0doc` : tag;
+    let arr = sameTagCache.get(key);
+    if (!arr) {
+      arr = doc ? [...doc.getElementsByTagName(tag)] : [owner];
+      sameTagCache.set(key, arr);
+    }
+    return arr;
+  };
 
   items.forEach(item => {
     if (!item || typeof item !== 'object') return; // skip atomics
 
-    // Text node → highlight parent element's opening line
-    if (item.nodeType === 3) {
-      const parent = item.parentNode;
-      if (!parent || parent.nodeType !== 1) return;
-      const tag = parent.nodeName;
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      const range = _findNodeRange(xmlSrc, parent, tagCounts[tag]);
-      if (!range) return;
-      const { line } = _offsetToLineCol(xmlSrc, range.startOffset);
-      decorations.push(_makeLineDecoration(line));
-      return;
-    }
+    // Resolve the owner element + any text/attr-specific hover prefix.
+    // Owner determines the source-order occurrence used for highlighting.
+    let owner = null, hoverPrefix = null, isAttr = false, isText = false;
+    if (item.nodeType === 1)      { owner = item; }
+    else if (item.nodeType === 3) { owner = item.parentNode?.nodeType === 1 ? item.parentNode : null; isText = true; }
+    else if (item.nodeType === 2) { owner = item.ownerElement; hoverPrefix = `attr \`${item.name}\``; isAttr = true; }
+    if (!owner) return;
 
-    // Attribute node → highlight owner element's opening line
-    if (item.nodeType === 2) {
-      const owner = item.ownerElement;
-      if (!owner) return;
-      const tag = owner.nodeName;
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      const range = _findNodeRange(xmlSrc, owner, tagCounts[tag]);
-      if (!range) return;
+    // 1-based source-order occurrence among same-tag elements in the SAME
+    // document Saxon parsed (parse-xml($xml) in runXPath). Document order is
+    // authoritative — independent of how often this owner appears in `items`.
+    const occ = _sameTagSiblings(owner).indexOf(owner) + 1;
+    if (occ < 1) return;
+
+    const range = _findNodeRange(xmlSrc, owner, occ);
+    if (!range) return;
+
+    if (isText || isAttr) {
+      // Text / attr → highlight owner's opening line
       const { line } = _offsetToLineCol(xmlSrc, range.startOffset);
-      decorations.push(_makeLineDecoration(line, `**XPath match** attr \`${item.name}\``));
+      decorations.push(_makeLineDecoration(
+        line,
+        hoverPrefix ? `**XPath match** ${hoverPrefix}` : null
+      ));
       return;
     }
 
     // Element node → full range highlight
-    if (item.nodeType === 1) {
-      const tag = item.nodeName;
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      const range = _findNodeRange(xmlSrc, item, tagCounts[tag]);
-      if (!range) return;
-      const start = _offsetToLineCol(xmlSrc, range.startOffset);
-      const end   = _offsetToLineCol(xmlSrc, range.endOffset - 1);
-      if (start.line === end.line) {
-        // Single-line: inline highlight
-        decorations.push({
-          range: new monaco.Range(start.line, start.col, start.line, end.col + 1),
-          options: {
-            className: 'xf-xpath-match-inline',
-            glyphMarginClassName: 'xf-xpath-match-glyph',
-            glyphMarginHoverMessage: { value: `**XPath match** \`<${tag}>\`` },
-          }
-        });
-      } else {
-        // Multi-line: whole-line background on each line
-        for (let ln = start.line; ln <= end.line; ln++) {
-          decorations.push(_makeLineDecoration(
-            ln,
-            ln === start.line ? `**XPath match** \`<${tag}>\`` : null
-          ));
+    const tag   = owner.nodeName;
+    const start = _offsetToLineCol(xmlSrc, range.startOffset);
+    const end   = _offsetToLineCol(xmlSrc, range.endOffset - 1);
+    if (start.line === end.line) {
+      // Single-line: inline highlight
+      decorations.push({
+        range: new monaco.Range(start.line, start.col, start.line, end.col + 1),
+        options: {
+          className: 'xf-xpath-match-inline',
+          glyphMarginClassName: 'xf-xpath-match-glyph',
+          glyphMarginHoverMessage: { value: `**XPath match** \`<${tag}>\`` },
         }
+      });
+    } else {
+      // Multi-line: whole-line background on each line
+      for (let ln = start.line; ln <= end.line; ln++) {
+        decorations.push(_makeLineDecoration(
+          ln,
+          ln === start.line ? `**XPath match** \`<${tag}>\`` : null
+        ));
       }
     }
   });
