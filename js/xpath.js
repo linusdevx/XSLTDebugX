@@ -170,10 +170,25 @@ function clearXPathHighlights() {
 }
 
 // ── Convert a character offset in a string to { line, col } (1-based) ────────
-function _offsetToLineCol(src, offset) {
-  const before = src.substring(0, offset);
-  const lines  = before.split('\n');
-  return { line: lines.length, col: lines[lines.length - 1].length + 1 };
+// I-5: when called many times against the same `src` (e.g. one highlight pass
+// over N matches), pass `newlineIdx` from _buildNewlineIndex(src) so each
+// translation is O(log N) binary-search instead of O(M) substring + split.
+function _offsetToLineCol(src, offset, newlineIdx) {
+  if (!newlineIdx) {
+    // Fallback for ad-hoc callers — same behaviour as before the binary-search variant
+    const before = src.substring(0, offset);
+    const lines  = before.split('\n');
+    return { line: lines.length, col: lines[lines.length - 1].length + 1 };
+  }
+  // Binary search for the count of newlines strictly before `offset`.
+  let lo = 0, hi = newlineIdx.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (newlineIdx[mid] < offset) lo = mid + 1; else hi = mid;
+  }
+  const line      = lo + 1;
+  const lineStart = lo === 0 ? 0 : newlineIdx[lo - 1] + 1;
+  return { line, col: offset - lineStart + 1 };
 }
 
 // ── Find the character offset of the Nth occurrence of a tag open/close ──────
@@ -275,6 +290,8 @@ function _highlightMatchedNodes(items, xmlSrc) {
   if (!eds.xml || !items.length) return;
 
   const decorations = [];
+  // I-5: precompute newline offsets once per call so _offsetToLineCol can binary-search.
+  const newlineIdx = _buildNewlineIndex(xmlSrc);
 
   // C-3: occurrence index is resolved per DOM node identity, not via a shared
   // tagCounts dict. The previous implementation used one counter for elements,
@@ -321,7 +338,7 @@ function _highlightMatchedNodes(items, xmlSrc) {
 
     if (isText || isAttr) {
       // Text / attr → highlight owner's opening line
-      const { line } = _offsetToLineCol(xmlSrc, range.startOffset);
+      const { line } = _offsetToLineCol(xmlSrc, range.startOffset, newlineIdx);
       decorations.push(_makeLineDecoration(
         line,
         hoverPrefix ? `**XPath match** ${hoverPrefix}` : null
@@ -331,8 +348,8 @@ function _highlightMatchedNodes(items, xmlSrc) {
 
     // Element node → full range highlight
     const tag   = owner.nodeName;
-    const start = _offsetToLineCol(xmlSrc, range.startOffset);
-    const end   = _offsetToLineCol(xmlSrc, range.endOffset - 1);
+    const start = _offsetToLineCol(xmlSrc, range.startOffset, newlineIdx);
+    const end   = _offsetToLineCol(xmlSrc, range.endOffset - 1, newlineIdx);
     if (start.line === end.line) {
       // Single-line: inline highlight
       decorations.push({

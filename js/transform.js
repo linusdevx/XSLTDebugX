@@ -134,6 +134,13 @@ function isValidNCName(name) {
 }
 
 // ── XML Validation Badge ──
+// I-4: cache the last validated source so we don't re-parse on every keystroke.
+// Wired to onDidChangeModelContent which fires per character; DOMParser cost is
+// O(N) on the source. Cache key is the trimmed source itself, so any real edit
+// busts it. Mode swaps swap the *model*, not the content, so the cache is fine
+// across modes — each model's content is its own cache key.
+let _lastValidatedXmlSrc = null;
+
 function updateXMLValidationBadge() {
   const badge = document.getElementById('xmlValidationBadge');
   if (!badge) return;
@@ -142,8 +149,12 @@ function updateXMLValidationBadge() {
   if (!xmlSrc) {
     // Empty XML — hide badge
     badge.style.display = 'none';
+    _lastValidatedXmlSrc = '';
     return;
   }
+
+  if (xmlSrc === _lastValidatedXmlSrc) return;
+  _lastValidatedXmlSrc = xmlSrc;
 
   // Try to parse XML
   try {

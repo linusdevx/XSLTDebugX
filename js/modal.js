@@ -40,6 +40,8 @@ function openExModal() {
   if (checkbox) checkbox.checked = savedAutoRun;
   // Pre-select category based on current mode
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
+  // I-6: force a fresh render — examples list / icons may have changed since last open
+  _exRendered = false;
   renderExSidebar();
   renderExGrid();
   requestAnimationFrame(() => document.getElementById('exModalSearch').focus());
@@ -72,10 +74,67 @@ document.addEventListener('keydown', e => {
 function setExCat(cat) {
   exActiveCat = cat;
   renderExSidebar();
+  // Category change rebuilds the grid (cheap, one click). The expensive path is
+  // search keystrokes — those go through filterExamples and just toggle visibility.
+  _exRendered = false;
   renderExGrid();
 }
 
-function filterExamples() { renderExGrid(); }
+// I-6: filterExamples runs on every search keystroke. Previously it called
+// renderExGrid which rebuilt the entire HTML and re-ran lucide.createIcons over
+// ~60 SVGs — visibly stuttery. Now it only flips display:none on the cards
+// already in the DOM, keeping the icon layer untouched.
+function filterExamples() {
+  if (!_exRendered) { renderExGrid(); return; }
+  const wrap  = document.getElementById('exGridWrap');
+  if (!wrap) return;
+  const query = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
+  let visibleCount = 0;
+
+  wrap.querySelectorAll('.ex-grid').forEach(grid => {
+    let sectionVisible = 0;
+    grid.querySelectorAll('.ex-card').forEach(card => {
+      const key = card.dataset.exKey;
+      const ex  = EXAMPLES[key];
+      if (!ex) return;
+      const matchesCat  = exActiveCat === 'all' || ex.cat === exActiveCat;
+      const matchesText = !query
+        || ex.label.toLowerCase().includes(query)
+        || ex.desc.toLowerCase().includes(query);
+      const show = matchesCat && matchesText;
+      card.style.display = show ? '' : 'none';
+      if (show) sectionVisible++;
+    });
+    visibleCount += sectionVisible;
+    // Hide the section's label too — it's the immediately-preceding sibling
+    const labelEl = grid.previousElementSibling;
+    if (labelEl?.classList.contains('ex-grid-section-label')) {
+      labelEl.style.display = sectionVisible ? '' : 'none';
+    }
+    grid.style.display = sectionVisible ? '' : 'none';
+  });
+
+  document.getElementById('exModalCount').textContent =
+    visibleCount + ' example' + (visibleCount !== 1 ? 's' : '');
+
+  // No-results fallback — show/hide a single placeholder we keep around
+  let empty = wrap.querySelector('.ex-no-results');
+  if (visibleCount === 0) {
+    if (!empty) {
+      empty = document.createElement('div');
+      empty.className = 'ex-no-results';
+      empty.textContent = 'No examples match your search.';
+      wrap.appendChild(empty);
+    }
+    empty.style.display = '';
+  } else if (empty) {
+    empty.style.display = 'none';
+  }
+}
+
+// I-6: track whether the grid DOM has been built so filterExamples can decide
+// between rebuild (first call after open / category change) and toggle.
+let _exRendered = false;
 
 function renderExGrid() {
   const query  = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
@@ -96,6 +155,7 @@ function renderExGrid() {
 
   if (!keys.length) {
     wrap.innerHTML = '<div class="ex-no-results">No examples match your search.</div>';
+    _exRendered = false;
     return;
   }
 
@@ -114,8 +174,10 @@ function renderExGrid() {
       // ex.icon is a Lucide icon name (matches [a-z-]+) and k is the bundled
       // example key (matches [a-zA-Z0-9]+). Both are bundled-internal — do NOT
       // start interpolating external sources here without adding escapes.
+      // I-6: data-ex-key lets filterExamples look up EXAMPLES[key] cheaply
+      // without re-reading anything else off the card.
       html += `
-        <div class="ex-card" style="--card-accent:${accent}" onclick="loadExample('${k}')">
+        <div class="ex-card" data-ex-key="${k}" style="--card-accent:${accent}" onclick="loadExample('${k}')">
           <div class="ex-card-top">
             <span class="ex-card-icon"><i data-lucide="${ex.icon}" width="16" height="16"></i></span>
             <span class="ex-card-name">${escHtml(ex.label)}</span>
@@ -132,6 +194,7 @@ function renderExGrid() {
 
   wrap.innerHTML = html;
   reinitIcons(wrap);
+  _exRendered = true;
 }
 
 // ── Load an example ──
