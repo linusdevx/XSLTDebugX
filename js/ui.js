@@ -161,12 +161,14 @@ function toggleTheme() {
   }
 }
 
-// Restore saved theme preference
+// M-7: symmetric theme restore — handle both 'light' and 'dark'. Surviving a
+// future flip of the default theme in index.html requires touching the class
+// in both directions, not just removing 'light' on saved=='dark'.
 (function() {
   const saved = localStorage.getItem('xdebugx-theme');
-  if (saved === 'dark') {
-    document.body.classList.remove('light');
-  }
+  if (saved === 'light')      document.body.classList.add('light');
+  else if (saved === 'dark')  document.body.classList.remove('light');
+  // saved === null (first visit) → leave whatever index.html shipped
 })();
 // ════════════════════════════════════════════
 //  HELP MODAL
@@ -179,9 +181,8 @@ function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
 }
 
-function handleHelpBackdropClick(e) {
-  if (e.target === document.getElementById('helpModalBackdrop')) closeHelpModal();
-}
+// M-6: factory in state.js. `var` keeps it on window for inline onclick=.
+var handleHelpBackdropClick = _makeBackdropClose('helpModalBackdrop', closeHelpModal);
 
 function switchHelpTab(tab) {
   document.querySelectorAll('.help-tab').forEach(btn => {

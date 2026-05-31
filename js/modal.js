@@ -51,9 +51,10 @@ function closeExModal() {
   document.getElementById('exModalBackdrop').classList.remove('open');
 }
 
-function handleModalBackdropClick(e) {
-  if (e.target === document.getElementById('exModalBackdrop')) closeExModal();
-}
+// M-6: factory in state.js builds the e.target.id === id && close() handler.
+// `var` keeps it on window so inline onclick="handleModalBackdropClick(event)"
+// in index.html still resolves at top level.
+var handleModalBackdropClick = _makeBackdropClose('exModalBackdrop', closeExModal);
 
 // Close modal on Escape; run transform on Ctrl/Cmd+Enter from anywhere
 document.addEventListener('keydown', e => {
@@ -228,13 +229,21 @@ function loadExample(key) {
       targetXmlModel.setValue(ex.xml);
     }
 
-    // Only set XSLT if in XSLT mode (and example has XSLT content)
+    // M-5: arm/restore _suppressNextValidation only around the setValue that
+    // actually needs it. Previously the finally cleared the flag unconditionally,
+    // potentially clobbering one set by an outer caller when the conditional
+    // didn't even run (XPath mode / no XSLT content).
     if (!modeManager.isXpath && ex.xslt && eds.xslt) {
+      const _prevSV = _suppressNextValidation;
       _suppressNextValidation = true;
-      eds.xslt.setValue(ex.xslt);
+      try {
+        eds.xslt.setValue(ex.xslt);
+      } finally {
+        _suppressNextValidation = _prevSV;
+      }
     }
-  } finally {
-    _suppressNextValidation = false;
+  } catch (e) {
+    logError('loadExample setValue', e);
   }
   eds.out?.updateOptions({ readOnly: false });
   eds.out?.setValue('');

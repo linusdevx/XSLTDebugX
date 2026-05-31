@@ -39,7 +39,10 @@ function generateShareUrl() {
 function loadFromShareHash() {
   if (!location.hash.startsWith('#share/')) return false;
   try {
-    const raw    = decodeURIComponent(location.hash.slice(7)).replace(/-/g, '+').replace(/_/g, '/');
+    // M-4: encodeShareData only emits base64url chars [A-Za-z0-9_-] (no '+' / '/' / '=').
+    // None require URL escaping, so decodeURIComponent is a no-op on valid links and
+    // throws on hand-edited links containing a stray '%'. Read the hash raw.
+    const raw    = location.hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
     const b64    = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
     const binary = atob(b64);
     const bytes  = new Uint8Array(binary.length);
@@ -127,9 +130,8 @@ function closeShareModal() {
   document.getElementById('shareModalBackdrop').classList.remove('open');
 }
 
-function handleShareBackdropClick(e) {
-  if (e.target === document.getElementById('shareModalBackdrop')) closeShareModal();
-}
+// M-6: see modal.js for `var` rationale (kept on window for inline onclick=).
+var handleShareBackdropClick = _makeBackdropClose('shareModalBackdrop', closeShareModal);
 
 function _copyShareUrl(url, silent) {
   if (!url) return;

@@ -58,6 +58,15 @@ function _resetOutputPane(lang, defaultName) {
   eds.out.updateOptions({ readOnly: true });
 }
 
+// ── Backdrop click-to-close factory. The three modals share an identical
+// `e.target.id === backdropId && close()` pattern. Returns a handler suitable
+// for the inline onclick="..." attributes in index.html.
+function _makeBackdropClose(backdropId, closeFn) {
+  return function(e) {
+    if (e.target.id === backdropId) closeFn();
+  };
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 
@@ -76,15 +85,28 @@ let xmlDebounce  = null;
 // ════════════════════════════════════════════
 //  CONSOLE
 // ════════════════════════════════════════════
+// M-1: lazy-cache the console DOM elements. They don't exist when state.js
+// loads, but once they appear (loader hides → consoleBody mounts) they live
+// for the rest of the session. Falls back gracefully — if a lookup misses we
+// just retry next call.
+let _consoleBodyEl   = null;
+let _consoleSearchEl = null;
+function _getConsoleEls() {
+  if (!_consoleBodyEl)   _consoleBodyEl   = document.getElementById('consoleBody');
+  if (!_consoleSearchEl) _consoleSearchEl = document.getElementById('consoleSearch');
+  return { body: _consoleBodyEl, search: _consoleSearchEl };
+}
+
 function clog(msg, type = 'info') {
-  const body = document.getElementById('consoleBody');
+  const { body, search } = _getConsoleEls();
+  if (!body) return; // DOM not ready yet — caller's message is dropped, matches old behaviour
   const line = document.createElement('div');
   line.className = `log-line ${type}`;
   line.dataset.type = type;
   const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
   line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${escHtml(msg)}</span>`;
   // Apply current search filter to new line before appending
-  const term = document.getElementById('consoleSearch')?.value.trim().toLowerCase() ?? '';
+  const term = search?.value.trim().toLowerCase() ?? '';
   const typeFilter = consoleFilter || 'all';
   const matchesType = typeFilter === 'all' || type === typeFilter || (typeFilter === 'info' && type === 'success');
   const matchesText = !term || msg.toLowerCase().includes(term);
@@ -93,21 +115,22 @@ function clog(msg, type = 'info') {
   // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
   // evicted line was an error/warn so the badge stays in sync with what the
   // user can actually see and copy.
+  // M-2: track count before/after so we only repaint the badge when it changes.
+  const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
     const t = evicted.dataset.type;
     if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
     body.removeChild(evicted);
   }
-  if (consoleErrCount === 0) updateConsoleErrBadge();
   body.scrollTop = body.scrollHeight;
   // Track errors/warnings for the minimised-console badge
   if (type === 'error' || type === 'warn') {
     consoleErrCount++;
-    updateConsoleErrBadge();
     // Auto-restore console if minimised so errors aren't silently hidden
     if (consoleState === 'minimized') setConsoleState('normal');
   }
+  if (consoleErrCount !== errCountBefore) updateConsoleErrBadge();
 }
 
 function escHtml(s) {

@@ -12,64 +12,50 @@ let xpathDecorations = null;
 // ── XPath syntax highlight overlay ───────────────────────────────────────────
 // Tokenizes the expression and injects colored <span>s into the overlay div.
 // Token order matters — strings first to prevent keywords inside them matching.
+// M-9: sticky-anchored regexes (y flag) match only at lastIndex, so we don't
+// allocate a fresh substring (src.slice(i)) per character. The y flag has been
+// stable in all browsers since 2019 and the codebase already uses ES2020+
+// features (optional chaining), so no compat regression.
+const _XPT_RE_STR  = /'[^']*'|"[^"]*"/y;
+const _XPT_RE_FN   = /[a-zA-Z_][\w-]*(?::[a-zA-Z_][\w-]*)?\s*(?=\()/y;
+const _XPT_RE_ATTR = /@[\w:.-]+/y;
+const _XPT_RE_NUM  = /\d+(\.\d+)?/y;
+const _XPT_RE_KW   = /(and|or|not|eq|ne|lt|le|gt|ge|div|mod|idiv|return|for|in|if|then|else|every|some|satisfies|instance|of|treat|as|cast|castable|union|intersect|except)\b/y;
+const _XPT_RE_SEP  = /\/\/|\//y;
+const _XPT_RE_PRED = /[\[\]]/y;
+const _XPT_RE_VAR  = /\$[a-zA-Z_][\w.-]*(?::[a-zA-Z_][\w.-]*)?/y;
+const _XPT_RE_NODE = /[a-zA-Z_*][\w:.-]*(?:::[a-zA-Z_*][\w:.-]*)?/y;
+
 function _highlightXPath(expr) {
   const overlay = document.getElementById('xpathOverlay');
   if (!overlay) return;
   if (!expr) { overlay.innerHTML = ''; return; }
 
   const out = [];
-  let i = 0;
   const src = expr;
   const len = src.length;
+  let i = 0;
+
+  // Try a sticky regex at the current index; on match, push a coloured span and advance.
+  const tryMatch = (re, cls) => {
+    re.lastIndex = i;
+    const m = re.exec(src);
+    if (!m || m.index !== i) return false;
+    out.push(`<span class="${cls}">${escHtml(m[0])}</span>`);
+    i += m[0].length;
+    return true;
+  };
 
   while (i < len) {
-    let m;
-
-    // String literals — single or double quoted
-    if ((m = /^'[^']*'|^"[^"]*"/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-str">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Functions — word or ns:word immediately followed by (
-    if ((m = /^[a-zA-Z_][\w-]*(?::[a-zA-Z_][\w-]*)?\s*(?=\()/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-fn">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Attributes — @name
-    if ((m = /^@[\w:.-]+/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-attr">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Numbers — integer or decimal
-    if ((m = /^\d+(\.\d+)?/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-num">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Keywords / operators
-    if ((m = /^(and|or|not|eq|ne|lt|le|gt|ge|div|mod|idiv|return|for|in|if|then|else|every|some|satisfies|instance|of|treat|as|cast|castable|union|intersect|except)\b/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-op">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Path separators — // before /
-    if ((m = /^\/\/|^\//.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-sep">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Predicates [ ]
-    if ((m = /^[\[\]]/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-pred">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Variables — $name or $ns:name
-    if ((m = /^\$[a-zA-Z_][\w.-]*(?::[a-zA-Z_][\w.-]*)?/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-attr">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
-    // Node / axis names — word, wildcard *, or axis::step
-    if ((m = /^[a-zA-Z_*][\w:.-]*(?:::[a-zA-Z_*][\w:.-]*)?/.exec(src.slice(i)))) {
-      out.push(`<span class="xpt-node">${escHtml(m[0])}</span>`);
-      i += m[0].length; continue;
-    }
+    if (tryMatch(_XPT_RE_STR,  'xpt-str'))  continue;
+    if (tryMatch(_XPT_RE_FN,   'xpt-fn'))   continue;
+    if (tryMatch(_XPT_RE_ATTR, 'xpt-attr')) continue;
+    if (tryMatch(_XPT_RE_NUM,  'xpt-num'))  continue;
+    if (tryMatch(_XPT_RE_KW,   'xpt-op'))   continue;
+    if (tryMatch(_XPT_RE_SEP,  'xpt-sep'))  continue;
+    if (tryMatch(_XPT_RE_PRED, 'xpt-pred')) continue;
+    if (tryMatch(_XPT_RE_VAR,  'xpt-attr')) continue;
+    if (tryMatch(_XPT_RE_NODE, 'xpt-node')) continue;
     // Everything else — punctuation, operators, whitespace
     out.push(escHtml(src[i]));
     i++;
