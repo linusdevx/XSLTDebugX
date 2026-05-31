@@ -31,7 +31,7 @@ XSLTDebugX runs entirely in the browser with full CPI runtime simulation. Nothin
 ### Run locally
 
 ```bash
-git clone https://github.com/SunilPharswan/XSLTDebugX.git
+git clone https://github.com/linusdevx/XSLTDebugX.git
 cd XSLTDebugX
 npm install         # installs devDependencies (Playwright, http-server, Vite)
 npm run serve       # serve source files directly — no build needed for local dev
@@ -126,6 +126,7 @@ XSLTDebugX is built for **zero friction** — the **app itself** has zero npm ru
 | Component | Type | Source | Impact |
 |-----------|------|--------|--------|
 | **Monaco Editor** | CDN | `cdn.jsdelivr.net` | Syntax highlighting, code editing |
+| **Lucide Icons** | CDN | `unpkg.com` | UI iconography (SVG icon library) |
 | **pako** (compression) | CDN | `cdnjs.cloudflare.com` | Share URL encoding/decoding |
 | **Saxon-JS 2.x** | Bundled | `/lib/SaxonJS2.js` (in repo) | XSLT 3.0 + XPath 3.1 processor |
 | **npm packages** | Development only | `@playwright/test`, `http-server`, `vite` | E2E testing, local dev server, production build |
@@ -428,7 +429,7 @@ Analytics via [GoatCounter](https://www.goatcounter.com) (privacy-friendly, no c
 
 ## Testing
 
-XSLTDebugX comes with a comprehensive Playwright E2E test suite (88 tests across 9 files).
+XSLTDebugX comes with a comprehensive Playwright E2E test suite (75 tests across 8 files).
 
 **For writing and running tests:**
 - **[.github/docs/TESTING.md](.github/docs/TESTING.md)** — E2E testing guide: setup, Playwright patterns, test structure, example workflows
@@ -521,7 +522,7 @@ XSLTDebugX/
 
 ## Architecture Overview
 
-XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules (~8,520 lines of code) and no external dependencies.
+XSLTDebugX uses a **zero-build vanilla JavaScript architecture** with 12 modules and no external dependencies.
 
 ### Key Design Principles
 
@@ -567,7 +568,7 @@ See [ARCHITECTURE.md](./.github/docs/ARCHITECTURE.md) for full data flow diagram
 
 ```js
 myExample: {
-  label: 'My Example', icon: '🗂️', desc: 'One sentence',
+  label: 'My Example', icon: 'file-output', desc: 'One sentence',
   cat: 'cpi',   // transform | aggregation | format | cpi | xpath
   xml:  `<Root>...</Root>`,
   xslt: `<xsl:stylesheet version="3.0" ...>...</xsl:stylesheet>`,
@@ -580,7 +581,7 @@ myExample: {
 
 ```js
 myXPathExample: {
-  label: 'My XPath Example', icon: '🔍', desc: 'One sentence',
+  label: 'My XPath Example', icon: 'search', desc: 'One sentence',
   cat: 'xpath',
   xml:       `<Root>...</Root>`,
   xslt:      '',
@@ -671,7 +672,7 @@ Check `exclude-result-prefixes="cpi xs"` in your stylesheet declaration. Namespa
 ### For Issues & Questions
 
 - Check [FAQ](#faq) section above
-- Search [GitHub Issues](https://github.com/SunilPharswan/XSLTDebugX/issues)
+- Search [GitHub Issues](https://github.com/linusdevx/XSLTDebugX/issues)
 - See [Browser Compatibility](#browser-compatibility) & [Known Limitations](#known-limitations)
 
 ---

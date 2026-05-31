@@ -2,12 +2,12 @@
 //  CATEGORIES — single source of truth for labels, accents and order
 // ════════════════════════════════════════════
 const CATEGORIES = {
-  transform:   { label: 'Data Transformation',    accent: '#3fb950' },
-  aggregation: { label: 'Aggregation & Splitting', accent: '#f5a524' },
-  format:      { label: 'Format Conversion',       accent: '#c084fc' },
-  advanced:    { label: 'XSLT 3.0 Advanced',      accent: '#e06c75' },
-  cpi:         { label: 'SAP CPI Patterns',        accent: '#0070f2' },
-  xpath:       { label: 'XPath Explorer',          accent: '#f5a524' },
+  transform:   { label: 'Data Transformation',    accent: '#3fb950', icon: 'repeat-2' },
+  aggregation: { label: 'Aggregation & Splitting', accent: '#f5a524', icon: 'layers' },
+  format:      { label: 'Format Conversion',       accent: '#c084fc', icon: 'file-output' },
+  advanced:    { label: 'XSLT 3.0 Advanced',      accent: '#e06c75', icon: 'sparkles' },
+  cpi:         { label: 'SAP CPI Patterns',        accent: '#0070f2', icon: 'cloud' },
+  xpath:       { label: 'XPath Explorer',          accent: '#f5a524', icon: 'crosshair' },
 };
 
 // ════════════════════════════════════════════
@@ -19,7 +19,7 @@ const EXAMPLES = {
 
   identityTransform: {
     label: 'Identity Transform',
-    icon: '🔁',
+    icon: 'copy',
     desc: 'Copy XML as-is — foundation for all CPI mappings',
     cat:  'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -67,7 +67,7 @@ const EXAMPLES = {
 
   renameElements: {
     label: 'Rename Elements & Attributes',
-    icon: '✏️',
+    icon: 'pencil',
     desc: 'Map SAP IDoc MATMAS fields to target REST format',
     cat:  'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -139,7 +139,7 @@ const EXAMPLES = {
 
   filterNodes: {
     label: 'Filter / Conditional Output',
-    icon: '🔍',
+    icon: 'filter',
     desc: 'Keep only nodes matching multi-field conditions',
     cat:  'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -211,7 +211,7 @@ const EXAMPLES = {
 
   namespaceHandling: {
     label: 'Namespace Handling',
-    icon: '🏷️',
+    icon: 'tag',
     desc: 'Strip ns prefixes, remap namespaces, enrich inline',
     cat:  'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -282,7 +282,7 @@ const EXAMPLES = {
 
   groupBy: {
     label: 'Group-by & Aggregate',
-    icon: '📦',
+    icon: 'group',
     desc: 'Nested grouping with subtotals — xsl:for-each-group',
     cat:  'aggregation',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -337,7 +337,7 @@ const EXAMPLES = {
 
   splitMessage: {
     label: 'Split Message',
-    icon: '✂️',
+    icon: 'scissors',
     desc: 'Wrap each record as standalone message with index',
     cat:  'aggregation',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -393,7 +393,7 @@ const EXAMPLES = {
 
   mergeMessages: {
     label: 'Merge / Collect Records',
-    icon: '🔀',
+    icon: 'merge',
     desc: 'Flatten nested records, compute open/closed totals',
     cat:  'aggregation',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -469,7 +469,7 @@ const EXAMPLES = {
 
   pivotCrossTab: {
     label: 'Pivot / Cross-Tab',
-    icon: '📈',
+    icon: 'bar-chart-3',
     desc: 'Rotate rows to columns — months as column headers',
     cat:  'aggregation',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -526,7 +526,7 @@ const EXAMPLES = {
 
   dateFormatting: {
     label: 'Date Format Conversion',
-    icon: '📅',
+    icon: 'calendar',
     desc: 'SAP YYYYMMDD ↔ ISO 8601 ↔ display formats',
     cat:  'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -594,7 +594,7 @@ const EXAMPLES = {
 
   currencyAmount: {
     label: 'Currency & Amount Formatting',
-    icon: '💱',
+    icon: 'coins',
     desc: 'format-number, IBAN validation, negative handling',
     cat:  'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -676,7 +676,7 @@ const EXAMPLES = {
 
   idocToXml: {
     label: 'IDoc ORDERS05 → Custom XML',
-    icon: '📄',
+    icon: 'file-text',
     desc: 'Full IDoc parse: control record, header, vendor, items',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -809,7 +809,7 @@ const EXAMPLES = {
 
   lookupEnrich: {
     label: 'Value Mapping / Lookup',
-    icon: '🔗',
+    icon: 'link',
     desc: 'Inline lookup tables — replaces CPI Value Mapping step',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -897,7 +897,7 @@ const EXAMPLES = {
 
   cpiGetSet: {
     label: 'CPI Headers & Properties (Complete)',
-    icon: '🔄',
+    icon: 'refresh-cw',
     desc: 'Set + Get headers/properties with console debugging',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -1107,7 +1107,7 @@ const EXAMPLES = {
 
   errorHandling: {
     label: 'Error Handling (xsl:try)',
-    icon: '🛡️',
+    icon: 'shield',
     desc: 'Per-field try/catch with fallback — XSLT 3.0 resilience',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -1205,7 +1205,7 @@ const EXAMPLES = {
 
   batchProcessing: {
     label: 'Batch Processing (SuccessFactors)',
-    icon: '🗂️',
+    icon: 'folder-open',
     desc: 'OData $batch for EmpEmployment + EmpJob UPSERT',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -1367,7 +1367,7 @@ const EXAMPLES = {
 
   multiCurrencyReport: {
     label: 'Multi-Currency Consolidation',
-    icon: '💹',
+    icon: 'banknote',
     desc: 'Convert to base currency, group by currency code',
     cat:  'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -1448,7 +1448,7 @@ const EXAMPLES = {
 
   batchKeyRecovery: {
     label: 'Batch Key Recovery (SuccessFactors)',
-    icon: '🔑',
+    icon: 'key',
     desc: 'Re-inject saved keys into $batch response by position',
     cat:  'cpi',
     properties: [['Batch_Key', 'userId=20655282;userId=20654955']],
@@ -1529,7 +1529,7 @@ const EXAMPLES = {
 
   xslMessageDebug: {
     label: 'xsl:message Debugging',
-    icon: '🐛',
+    icon: 'bug',
     desc: 'xsl:message as console.log — trace variables and branches',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -1616,7 +1616,7 @@ const EXAMPLES = {
 
   xpathNavigation: {
     label: 'Navigation & Predicates',
-    icon:  '🧭',
+    icon:  'compass',
     desc:  'Filter by attribute, position and multi-condition predicates',
     cat:   'xpath',
     xpathExpr: "//Item[@status='active']",
@@ -1681,7 +1681,7 @@ const EXAMPLES = {
 
   xpathAggregation: {
     label: 'Aggregation Functions',
-    icon:  '∑',
+    icon:  'sigma',
     desc:  'sum(), count(), max(), min(), avg() — CPI payload inspection',
     cat:   'xpath',
     xpathExpr: "sum(//Item/(UnitPrice * Qty))",
@@ -1739,7 +1739,7 @@ const EXAMPLES = {
 
   xpathStringFunctions: {
     label: 'String Functions',
-    icon:  '🔤',
+    icon:  'type',
     desc:  'normalize-space, upper-case, substring — string functions',
     cat:   'xpath',
     xpathExpr: "//Employee[contains(normalize-space(Name), 'Kumar')]",
@@ -1798,7 +1798,7 @@ const EXAMPLES = {
 
   xpathTokenizeJoin: {
     label: 'tokenize() & string-join()',
-    icon:  '🔗',
+    icon:  'unlink',
     desc:  'Split delimited CPI property strings and reassemble',
     cat:   'xpath',
     xpathExpr: "string-join(tokenize(//BatchKeys, ';'), ',')",
@@ -1837,7 +1837,7 @@ const EXAMPLES = {
 
   xpathRegexReplace: {
     label: 'matches() & replace() — Regex',
-    icon:  '⚡',
+    icon:  'regex',
     desc:  'Validate and clean field values with XPath regex',
     cat:   'xpath',
     xpathExpr: "replace(//Invoice[1]/VATNumber, '[^A-Z0-9]', '')",
@@ -1885,7 +1885,7 @@ const EXAMPLES = {
 
   xpathDateFunctions: {
     label: 'Date & Duration Functions',
-    icon:  '📅',
+    icon:  'clock',
     desc:  'Parse, format and compare xs:date — SLA and deadline checks',
     cat:   'xpath',
     xpathExpr: "//Order[xs:date(DeliveryDate) lt current-date()]",
@@ -1936,7 +1936,7 @@ const EXAMPLES = {
 
   xpathNamespaceAgnostic: {
     label: 'Namespace-Agnostic Selection',
-    icon:  '🏷️',
+    icon:  'tags',
     desc:  'local-name() for namespaced payloads, no prefix binding',
     cat:   'xpath',
     xpathExpr: "//*[local-name()='Amount']",
@@ -1987,7 +1987,7 @@ const EXAMPLES = {
 
   xpathBatchErrorDetect: {
     label: 'Batch Error Detection',
-    icon:  '🚨',
+    icon:  'alert-triangle',
     desc:  'Identify failed changesets in SF $batch responses',
     cat:   'xpath',
     xpathExpr: "//batchChangeSetPartResponse[statusCode != '200']",
@@ -2073,7 +2073,7 @@ const EXAMPLES = {
 
   soapFaultHandling: {
     label: 'SOAP Fault Handling',
-    icon:  '⚠️',
+    icon:  'alert-circle',
     desc:  'Extract faultcode, faultstring and detail from a SOAP Fault',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2127,7 +2127,7 @@ const EXAMPLES = {
 
   conditionalRouting: {
     label: 'Conditional Routing Headers',
-    icon:  '🔀',
+    icon:  'git-branch',
     desc:  'Set routing headers from payload — drives CPI router steps',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2192,7 +2192,7 @@ const EXAMPLES = {
 
   xmlToText: {
     label: 'XML to Flat Text / CSV',
-    icon:  '📝',
+    icon:  'file-text',
     desc:  'XML to pipe-delimited flat file — legacy system integration',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2262,7 +2262,7 @@ const EXAMPLES = {
 
   sfEmployeeMapping: {
     label: 'SuccessFactors Employee Mapping',
-    icon:  '👤',
+    icon:  'user',
     desc:  'Map SuccessFactors EmpEmployment + EmpJob to flat HR format',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2375,7 +2375,7 @@ const EXAMPLES = {
 
   xpathConditional: {
     label: 'Conditional & Boolean Logic',
-    icon:  '🔀',
+    icon:  'toggle-left',
     desc:  'if/then/else, and/or, not(), exists() — XPath decision logic',
     cat:   'xpath',
     xslt:  '',
@@ -2423,7 +2423,7 @@ const EXAMPLES = {
 
   xpathNodeInspection: {
     label: 'Node Inspection Functions',
-    icon:  '🔬',
+    icon:  'microscope',
     desc:  'name(), local-name(), namespace-uri() — inspect structure',
     cat:   'xpath',
     xslt:  '',
@@ -2477,7 +2477,7 @@ const EXAMPLES = {
 
   xpathSOAPNavigation: {
     label: 'SOAP Envelope Navigation',
-    icon:  '🧩',
+    icon:  'puzzle',
     desc:  'Navigate SOAP envelope with namespace-aware XPath',
     cat:   'xpath',
     xslt:  '',
@@ -2540,7 +2540,7 @@ const EXAMPLES = {
 
   unwrapRewrap: {
     label: 'Unwrap / Rewrap Payload',
-    icon:  '📦',
+    icon: 'package-open',
     desc:  'Strip envelope and re-wrap under new root \u2014 adapter',
     cat:   'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2615,7 +2615,7 @@ const EXAMPLES = {
 
   sortRecords: {
     label: 'Sort Records',
-    icon:  '🔄',
+    icon: 'arrow-up-down',
     desc:  'Multi-key xsl:sort by priority then net value descending',
     cat:   'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2698,7 +2698,7 @@ const EXAMPLES = {
 
   fieldInjection: {
     label: 'Deep Copy + Field Injection',
-    icon:  '💉',
+    icon: 'syringe',
     desc:  'Identity transform that injects or overrides specific fields',
     cat:   'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2791,7 +2791,7 @@ const EXAMPLES = {
 
   emptyElementCleanup: {
     label: 'Empty Element Cleanup',
-    icon:  '🧹',
+    icon: 'eraser',
     desc:  'Remove blank elements and normalize whitespace \u2014 pre-send',
     cat:   'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2871,7 +2871,7 @@ const EXAMPLES = {
 
   stripSoapEnvelope: {
     label: 'Strip SOAP Envelope',
-    icon:  '✂️',
+    icon:  'scissors',
     desc:  'Extract SOAP Body payload \u2014 bridge to REST or plain-XML',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -2941,7 +2941,7 @@ const EXAMPLES = {
 
   addXmlWrapper: {
     label: 'Add XML Wrapper / Envelope',
-    icon:  '📋',
+    icon:  'package-plus',
     desc:  'Wrap payload under new root with interface metadata',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3014,7 +3014,7 @@ const EXAMPLES = {
 
   idocInvoic01: {
     label: 'IDoc INVOIC01 \u2192 XML',
-    icon:  '🧾',
+    icon:  'receipt',
     desc:  'Parse INVOIC01 IDoc \u2014 maps header, payment terms and items',
     cat:   'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3186,7 +3186,7 @@ const EXAMPLES = {
 
   xpathDistinctValues: {
     label: 'distinct-values()',
-    icon:  '🎯',
+    icon:  'target',
     desc:  'Deduplicate currency, status and category in CPI payloads',
     cat:   'xpath',
     xslt:  '',
@@ -3223,7 +3223,7 @@ const EXAMPLES = {
 
   xpathSiblingAxes: {
     label: 'Sibling Axes',
-    icon:  '↔️',
+    icon:  'move-horizontal',
     desc:  'Sibling axes \u2014 navigate peer elements and IDoc segments',
     cat:   'xpath',
     xslt:  '',
@@ -3288,7 +3288,7 @@ const EXAMPLES = {
 
   xpathSequenceOps: {
     label: 'index-of() & subsequence()',
-    icon:  '🔢',
+    icon:  'list-ordered',
     desc:  'index-of() and subsequence() \u2014 slice sequences',
     cat:   'xpath',
     xslt:  '',
@@ -3322,7 +3322,7 @@ const EXAMPLES = {
 
   xpathDeepEqual: {
     label: 'deep-equal()',
-    icon:  '🔍',
+    icon:  'equal',
     desc:  'Compare XML subtrees for structural equality',
     cat:   'xpath',
     xslt:  '',
@@ -3362,7 +3362,7 @@ const EXAMPLES = {
 
   xpathTypeCasting: {
     label: 'xs: Type Casting',
-    icon:  '🔄',
+    icon:  'arrow-right-left',
     desc:  'xs:integer, xs:decimal, xs:boolean \u2014 type coercion patterns',
     cat:   'xpath',
     xslt:  '',
@@ -3417,7 +3417,7 @@ const EXAMPLES = {
 
   xmlToJson: {
     label: 'XML \u2192 JSON Output',
-    icon:  '🔄',
+    icon:  'braces',
     desc:  'XML to JSON via XSLT 3.0 maps and arrays \u2014 method="json"',
     cat:   'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3513,7 +3513,7 @@ const EXAMPLES = {
 
   xmlToCsv: {
     label: 'XML \u2192 CSV Output',
-    icon:  '📊',
+    icon:  'table',
     desc:  'Export to RFC 4180 CSV \u2014 handles commas and quotes in fields',
     cat:   'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3605,7 +3605,7 @@ const EXAMPLES = {
 
   xmlToFixedLength: {
     label: 'XML \u2192 Fixed-Length Output',
-    icon:  '📐',
+    icon:  'ruler',
     desc:  'Fixed-width flat file with padded/truncated fields',
     cat:   'format',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3701,7 +3701,7 @@ const EXAMPLES = {
 
   mapsAndArrays: {
     label: 'Maps & Arrays',
-    icon: '🗺️',
+    icon: 'map',
     desc: 'XPath 3.1 maps and arrays for structured data routing',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3773,7 +3773,7 @@ const EXAMPLES = {
 
   higherOrderFilter: {
     label: 'Higher-Order: filter() & sort()',
-    icon: '⚡',
+    icon: 'zap',
     desc: 'Functional filter() and sort() with custom comparator',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3849,7 +3849,7 @@ const EXAMPLES = {
 
   higherOrderFold: {
     label: 'Higher-Order: fold-left()',
-    icon: '🔁',
+    icon: 'iteration-cw',
     desc: 'Running totals via fold-left() — no recursion needed',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3933,7 +3933,7 @@ const EXAMPLES = {
 
   groupByAdjacent: {
     label: 'Group-by Adjacent',
-    icon: '📊',
+    icon: 'rows-3',
     desc: 'Detect consecutive runs with group-adjacent',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -3982,7 +3982,7 @@ const EXAMPLES = {
 
   groupByStartingWith: {
     label: 'Group Starting-With',
-    icon: '📑',
+    icon: 'bookmark',
     desc: 'Flat-to-hierarchy via group-starting-with pattern',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -4035,7 +4035,7 @@ const EXAMPLES = {
 
   inlineFunctions: {
     label: 'User-Defined Functions (xsl:function)',
-    icon: '🧩',
+    icon: 'blocks',
     desc: 'Reusable xsl:function for DRY stylesheets',
     cat:  'advanced',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -4106,7 +4106,7 @@ const EXAMPLES = {
 
   s4BusinessPartner: {
     label: 'S/4HANA Business Partner',
-    icon: '👤',
+    icon: 'building-2',
     desc: 'Map BP OData API response to canonical partner format',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -4206,7 +4206,7 @@ const EXAMPLES = {
 
   s4SalesOrder: {
     label: 'S/4HANA Sales Order A2X',
-    icon: '🛒',
+    icon: 'shopping-cart',
     desc: 'Transform S/4 Sales Order API to internal schema',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -4300,7 +4300,7 @@ const EXAMPLES = {
 
   cpiDynamicConfig: {
     label: 'CPI Dynamic Configuration',
-    icon: '⚙️',
+    icon: 'settings',
     desc: 'Set receiver and interface dynamically from payload',
     cat:  'cpi',
     headers: [['SAP_Sender', 'ERP_PROD']],
@@ -4372,7 +4372,7 @@ const EXAMPLES = {
 
   cpiMultiMapping: {
     label: 'Multi-Mapping (1:N Split)',
-    icon: '🔱',
+    icon: 'git-fork',
     desc: 'Produce multiple output documents with routing context',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -4429,7 +4429,7 @@ const EXAMPLES = {
 
   xpathMapsArrays: {
     label: 'XPath Maps & Arrays',
-    icon: '🗂️',
+    icon: 'database',
     desc: 'Construct and query XPath 3.1 maps and arrays',
     cat:  'xpath',
     xpathExpr: "map{ 'name': //Product[1]/Name, 'price': xs:decimal(//Product[1]/Price) }",
@@ -4468,7 +4468,7 @@ const EXAMPLES = {
 
   xpathLetExpressions: {
     label: 'let Expressions',
-    icon: '📝',
+    icon: 'variable',
     desc: 'Readable complex expressions with let $x := ... return',
     cat:  'xpath',
     xpathExpr: "let $items := //Item, $total := sum($items/xs:decimal(Price) * xs:decimal(Qty)) return $total",
@@ -4509,7 +4509,7 @@ const EXAMPLES = {
 
   xpathQuantified: {
     label: 'Quantified Expressions',
-    icon: '∀',
+    icon: 'check-check',
     desc: 'some/every for existence and universal checks',
     cat:  'xpath',
     xpathExpr: "every $item in //Item satisfies xs:decimal($item/Stock) gt 0",

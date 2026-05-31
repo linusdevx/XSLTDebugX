@@ -1,46 +1,125 @@
 // ════════════════════════════════════════════
 //  STATE
 // ════════════════════════════════════════════
+
+// ── Shared Utilities ──
+function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function formatFileSize(bytes) { return (bytes / 1024).toFixed(1); }
+function logError(context, err) {
+  const msg = err?.message || String(err);
+  clog(context + ': ' + msg, 'error');
+  console.warn('[XSLTDebugX]', context, err);
+}
+function guardReady() {
+  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return false; }
+  return true;
+}
+
+// ── Clipboard helper — single source of truth for navigator + execCommand fallback.
+// onFail is optional; when omitted, logs a generic "Clipboard access denied" error.
+// Pass a custom onFail when the UI needs a different affordance (e.g. share.js).
+function _clipboardWrite(text, onSuccess, onFail) {
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch(_) {}
+    document.body.removeChild(ta);
+    if (ok) { onSuccess(); return; }
+    if (onFail) onFail();
+    else clog('Clipboard access denied', 'error');
+  };
+  if (window.navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess, fallback);
+  } else {
+    fallback();
+  }
+}
+
+// Reset the output editor pane to empty + given language. Idempotent on null editor.
+function _resetOutputPane(lang, defaultName) {
+  if (!eds.out) return;
+  monaco.editor.setModelLanguage(eds.out.getModel(), lang);
+  const badge = document.getElementById('outLangBadge');
+  if (badge) badge.textContent = lang.toUpperCase();
+  const dl = document.getElementById('outDownloadBtn');
+  if (dl) {
+    dl.title   = `Download output as ${lang.toUpperCase()}`;
+    dl.onclick = () => downloadPane('out', defaultName);
+  }
+  eds.out.updateOptions({ readOnly: false });
+  eds.out.setValue('');
+  eds.out.updateOptions({ readOnly: true });
+}
+
+// Backdrop click-to-close factory — three modals share an
+// `e.target.id === backdropId && close()` pattern.
+function _makeBackdropClose(backdropId, closeFn) {
+  return function(e) {
+    if (e.target.id === backdropId) closeFn();
+  };
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 
 // Two separate XML models for XSLT/XPath mode isolation
-let xmlModelXslt  = null;  // XML model for XSLT mode
-let xmlModelXpath = null;  // XML model for XPath mode
+let xmlModelXslt  = null;
+let xmlModelXpath = null;
 
-// KV stores: { id, name, value }
 let kvData = { headers: [], properties: [] };
 let kvIdSeq = 0;
 
-// Validation debounce timers — declared at top level so loadExample can cancel them
+// Top-level so loadExample can cancel them
 let xsltDebounce = null;
 let xmlDebounce  = null;
 
 // ════════════════════════════════════════════
 //  CONSOLE
 // ════════════════════════════════════════════
+// Console DOM elements don't exist when state.js loads — lazy-cache on first use.
+let _consoleBodyEl   = null;
+let _consoleSearchEl = null;
+function _getConsoleEls() {
+  if (!_consoleBodyEl)   _consoleBodyEl   = document.getElementById('consoleBody');
+  if (!_consoleSearchEl) _consoleSearchEl = document.getElementById('consoleSearch');
+  return { body: _consoleBodyEl, search: _consoleSearchEl };
+}
+
 function clog(msg, type = 'info') {
-  const body = document.getElementById('consoleBody');
+  const { body, search } = _getConsoleEls();
+  if (!body) return; // DOM not ready — drop message
   const line = document.createElement('div');
   line.className = `log-line ${type}`;
   line.dataset.type = type;
   const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
   line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${escHtml(msg)}</span>`;
   // Apply current search filter to new line before appending
-  const term = document.getElementById('consoleSearch')?.value.trim().toLowerCase() ?? '';
+  const term = search?.value.trim().toLowerCase() ?? '';
   const typeFilter = consoleFilter || 'all';
   const matchesType = typeFilter === 'all' || type === typeFilter || (typeFilter === 'info' && type === 'success');
   const matchesText = !term || msg.toLowerCase().includes(term);
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
+  // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
+  // evicted line was an error/warn so the badge stays in sync.
+  const errCountBefore = consoleErrCount;
+  while (body.childElementCount > 500) {
+    const evicted = body.firstElementChild;
+    const t = evicted.dataset.type;
+    if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
+    body.removeChild(evicted);
+  }
   body.scrollTop = body.scrollHeight;
-  // Track errors/warnings for the minimised-console badge
   if (type === 'error' || type === 'warn') {
     consoleErrCount++;
-    updateConsoleErrBadge();
-    // Auto-restore console if minimised so errors aren't silently hidden
+    // Auto-restore minimised console so errors aren't silently hidden
     if (consoleState === 'minimized') setConsoleState('normal');
   }
+  if (consoleErrCount !== errCountBefore) updateConsoleErrBadge();
 }
 
 function escHtml(s) {
@@ -53,7 +132,6 @@ function clearConsole() {
   body.innerHTML = '';
   consoleErrCount = 0;
   updateConsoleErrBadge();
-  // Reset filter buttons to ALL and clear search
   if (typeof setConsoleFilter === 'function') setConsoleFilter('all');
   const search = document.getElementById('consoleSearch');
   if (search) search.value = '';
@@ -76,8 +154,7 @@ function setStatus(txt, state = 'ok') {
 const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
-// Debounced save — coalesces rapid keystrokes into one write
-// Set _suppressNextSave = true before a programmatic setValue to skip that one save.
+// Set _suppressNextSave = true before a programmatic setValue to skip that save.
 let _suppressNextSave = false;
 
 // Guard against synthetic content-change event when swapping models in toggleXPath
@@ -92,7 +169,6 @@ function scheduleSave() {
 function saveState() {
   try {
     const state = {
-      // Save both XML models independently
       xmlXslt:    xmlModelXslt?.getValue()  ?? '',
       xmlXpath:   xmlModelXpath?.getValue() ?? '',
       xslt:       eds.xslt?.getValue() ?? '',
@@ -107,7 +183,6 @@ function saveState() {
       savedAt: Date.now(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    // Flash a subtle "saved" indicator
     showSavedIndicator();
   } catch (e) {
     // localStorage full or unavailable — fail silently
@@ -124,63 +199,97 @@ function loadSavedState() {
   }
 }
 
+function _resetXPathMode() {
+  // Cancel pending validation/save timers so they don't fire against the freshly-reset content
+  clearTimeout(xmlDebounce);  xmlDebounce  = null;
+  clearTimeout(xsltDebounce); xsltDebounce = null;
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
+
+  // Arm _suppressNextSave BEFORE setValue — Monaco fires onDidChangeModelContent
+  // synchronously and editor.js's listener calls scheduleSave(). try/finally
+  // restores any flag set by an outer caller.
+  const _prevSuppress = _suppressNextSave;
+  _suppressNextSave = true;
+  try {
+    if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
+  } finally {
+    _suppressNextSave = _prevSuppress;
+  }
+
+  _resetOutputPane('xml', 'output.xml');
+  if (eds.xml) clearAllMarkers();
+  if (typeof clearXPathResults === 'function') clearXPathResults();
+  if (typeof renderXPathHints === 'function') renderXPathHints(null);
+  window._lastExampleKey = null;
+
+  const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
+  if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
+  else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+
+  setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
+  setStatus('Ready', 'ok');
+  clog('XPath session cleared — XML and expression reset to defaults.', 'info');
+}
+
+function _resetXsltMode() {
+  clearTimeout(xmlDebounce);  xmlDebounce  = null;
+  clearTimeout(xsltDebounce); xsltDebounce = null;
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
+
+  const _prevSuppress = _suppressNextSave;
+  try {
+    if (xmlModelXslt) {
+      _suppressNextSave = true;
+      xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+    }
+    if (eds.xslt) {
+      _suppressNextSave = true;
+      eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+    }
+  } finally {
+    _suppressNextSave = _prevSuppress;
+  }
+
+  _resetOutputPane('xml', 'output.xml');
+
+  kvData.headers    = [];
+  kvData.properties = [];
+  kvIdSeq = 0;
+  renderKV('headers');
+  renderKV('properties');
+  renderOutputKV({}, {});
+
+  if (eds.xml && eds.xslt) clearAllMarkers();
+  if (typeof clearXPathResults === 'function') clearXPathResults();
+  if (typeof renderXPathHints === 'function') renderXPathHints(null);
+  window._lastExampleKey = null;
+
+  // XPath bar is hidden in XSLT mode — only sync if we're actually in XPath
+  if (modeManager.isXpath) {
+    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
+    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
+    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+  }
+
+  setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
+  setStatus('Ready', 'ok');
+  clog('XSLT session cleared — editors reset to defaults.', 'info');
+}
+
 function clearSavedState() {
   localStorage.removeItem(STORAGE_KEY);
-  // Clear XPath expression history — both persisted and in-memory
   localStorage.removeItem('xdebugx-xpath-history');
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
 
-  const _isXPath = modeManager.isXpath;
-
-  if (_isXPath) {
-    // ── XPath mode reset — stay in XPath, reset XML + expression only ──
-    // Reset the XPath model directly (no suppression needed — inactive model won't trigger editor listeners)
-    if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
-    if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
-    if (eds.xml) clearAllMarkers();
-    if (typeof clearXPathResults === 'function') clearXPathResults();
-    if (typeof renderXPathHints === 'function') renderXPathHints(null);
-    window._lastExampleKey = null;
-
-    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
-    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
-    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
-
-    setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
-    setStatus('Ready', 'ok');
-    clog('XPath session cleared — XML and expression reset to defaults.', 'info');
-
+  if (modeManager.isXpath) {
+    _resetXPathMode();
   } else {
-    // ── XSLT mode reset — full reset, stay in XSLT ──
-    // Reset the XSLT model directly (no suppression needed — inactive model won't trigger editor listeners)
-    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    if (eds.xslt) { _suppressNextSave = true; eds.xslt.setValue(EXAMPLES.identityTransform.xslt); }
-    _suppressNextSave = false;
-    if (eds.out)  { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
-    kvData.headers    = [];
-    kvData.properties = [];
-    kvIdSeq = 0;
-    renderKV('headers');
-    renderKV('properties');
-    renderOutputKV({}, {});
-
-    if (eds.xml && eds.xslt) clearAllMarkers();
-    if (typeof clearXPathResults === 'function') clearXPathResults();
-    if (typeof renderXPathHints === 'function') renderXPathHints(null);
-    window._lastExampleKey = null;
-
-    // Pre-load default XPath expression for when user switches to XPath mode
-    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
-    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
-    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
-
-    setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
-    setStatus('Ready', 'ok');
-    clog('XSLT session cleared — editors reset to defaults.', 'info');
+    _resetXsltMode();
   }
 
-  // Hide saved indicator in both modes
   const ind = document.getElementById('savedIndicator');
   if (ind) ind.style.opacity = '0';
 }

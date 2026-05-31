@@ -41,7 +41,7 @@ const CATEGORIES = {
 const EXAMPLES = {
   exampleKey: {                    // camelCase, unique, descriptive
     label: 'Display Name',         // Shows in card header
-    icon: '🔄',                     // Single emoji
+    icon: 'repeat-2',                // Lucide icon name (kebab-case)
     desc: 'One-line description',  // Max 60 chars, shows in card
     cat: 'categoryKey',            // Must exist in CATEGORIES
     xml: `<?xml version="1.0" encoding="UTF-8"?>
@@ -62,9 +62,9 @@ const EXAMPLES = {
 - ❌ `date-format`, `Date_Format`, `example1`
 
 ### Icon
-- Use single emoji that represents the transformation visually
-- Common: 🔁 (identity), ✏️ (rename), 🔍 (filter), 📅 (date), 💰 (currency), ✂️ (split), 🔗 (merge)
-- XPath examples: Use `ƒx` (not emoji)
+- Use a Lucide icon name (kebab-case) that represents the transformation visually
+- Common: `repeat-2` (identity), `pencil` (rename), `filter` (filter), `calendar` (date), `coins` (currency), `scissors` (split), `merge` (merge)
+- Browse available icons at https://lucide.dev/icons
 
 ### Description
 - Max 60 characters
@@ -136,7 +136,7 @@ idocOrders05: { ... },
 ```javascript
 identityTransform: {
   label: 'Identity Transform',
-  icon: '🔁',
+  icon: 'repeat-2',
   desc: 'Copy XML as-is — foundation for CPI mappings',
   cat: 'transform',
   xml: `<Root><Item>Test</Item></Root>`,
@@ -152,7 +152,7 @@ identityTransform: {
 ```javascript
 cpiExample: {
   label: 'Headers & Properties',
-  icon: '🏷️',
+  icon: 'tag',
   desc: 'Set/get CPI headers dynamically',
   cat: 'cpi',
   xml: `<Order><Id>123</Id></Order>`,
@@ -165,7 +165,7 @@ cpiExample: {
 ```javascript
 xpathExample: {
   label: 'Navigation & Predicates',
-  icon: 'ƒx',
+  icon: 'compass',
   desc: 'Axis navigation with positional predicates',
   cat: 'xpath',
 
@@ -175,7 +175,7 @@ Before committing new or modified examples, verify all checks pass:
 
 ### Metadata (M1–M3)
 - [ ] **M1**: Example key is camelCase, descriptive, unique
-- [ ] **M2**: Label is concise (max 40 chars), icon is single emoji or `ƒx` for XPath
+- [ ] **M2**: Label is concise (max 40 chars), icon is a valid Lucide icon name (kebab-case)
 - [ ] **M3**: Description is max 60 chars, explains transformation purpose
 
 ### Structure (M4–M6)

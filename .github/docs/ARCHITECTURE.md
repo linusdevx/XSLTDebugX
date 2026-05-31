@@ -24,17 +24,18 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        index.html                             │
-│  (loads CSS + 12 JS modules + Monaco Editor + Saxon-JS)      │
+│  (loads CSS + 12 JS modules + Monaco Editor + Saxon-JS + Lucide Icons)      │
 └──────────────────────────────────────────────────────────────┘
                               ↓
               ┌─────────────────────────────────┐
               │   Vanilla ES6+ JavaScript       │
-              │   (8,520 lines across 12 modules)
+              │   (12 modules)
               └─────────────────────────────────┘
                               ↓
         ┌─────────────────────────────────────────────┐
         │  Monaco Editor (XML, XSLT, Output panes)   │
         │  Saxon-JS 2.7 (XSLT 3.0 + XPath 3.1)       │
+        │  Lucide Icons (SVG icon library)             │
         │  CSS (Light & Dark themes)                  │
         └─────────────────────────────────────────────┘
                               ↓
@@ -88,22 +89,20 @@ dist/
 
 ## Module Overview
 
-| Module | Responsibility | Lines | Key Functions |
-|--------|-----------------|-------|----------------|
-| **state.js** | Global state, localStorage persistence, console | 195 | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()` |
-| **mode-manager.js** | Centralized mode management (XSLT vs XPath) | 384 | `setMode()`, `isXpath`, `isXslt`, `getMode()` |
-| **validate.js** | XML/XSLT validation, Monaco error markers, Saxon error parsing | 170 | `validateXML()`, `markErrorLine()`, `preflight()`, `parseSaxonErrorLine()` |
-| **panes.js** | Word wrap, copy/clear/format, context menu debouncing | 203 | `toggleWordWrap()`, `copyPane()`, `fmtEditor()`, `prettyXML()` |
-| **transform.js** | XSLT execution, CPI simulation, output rendering | 518 | `runTransform()`, `rewriteCPICalls()`, `buildParamsXPath()`, `renderOutputKV()` |
-| **examples-data.js** | 61 built-in XSLT/XPath examples across 6 categories | 4,557 | `CATEGORIES`, `EXAMPLES` (data objects) |
-| **modal.js** | Examples library UI, filtering, loading | 236 | `openExModal()`, `loadExample()`, `renderExGrid()`, `filterExamples()` |
-| **files.js** | File upload/download, drag-and-drop | 93 | `triggerUpload()`, `handleUpload()`, `downloadPane()`, `setupDragDrop()` |
-| **ui.js** | Console state, theme toggle, help modal, column collapse | 191 | `setConsoleState()`, `toggleTheme()`, `applyConsoleSearch()`, `setConsoleFilter()` |
-| **share.js** | URL encoding/decoding of session state | 151 | `buildSharePayload()`, `generateShareUrl()`, `loadFromShareHash()` |
-| **xpath.js** | XPath mode UI, expression evaluation, node highlighting, syntax coloring | 810 | `runXPath()`, `toggleXPath()`, `_highlightXPath()`, `_highlightMatchedNodes()` |
-| **editor.js** | Monaco initialization, themes, keyboard shortcuts, context menus | 1,012 | `hideLoader()`, `setupAutoClose()`, `toggleTheme()`, `_toggleXmlComment()` |
-
-**Total: 8,520 lines of code**
+| Module | Responsibility | Key Functions |
+|--------|-----------------|----------------|
+| **state.js** | Global state, shared utilities, localStorage persistence, console | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()`, `logError()`, `guardReady()` |
+| **mode-manager.js** | Centralized mode management (XSLT vs XPath) | `setMode()`, `isXpath`, `isXslt`, `getMode()` |
+| **validate.js** | XML/XSLT validation, Monaco error markers, Saxon error parsing | `validateXML()`, `markErrorLine()`, `preflight()`, `parseSaxonErrorLine()` |
+| **panes.js** | Word wrap, copy/clear/format, XML tokenizer | `toggleWordWrap()`, `copyPane()`, `fmtEditor()`, `prettyXML()`, `_tokenizeXML()`, `_indentTokens()` |
+| **transform.js** | XSLT execution, CPI simulation, output rendering | `runTransform()`, `rewriteCPICalls()`, `buildParamsXPath()`, `renderOutputKV()` |
+| **examples-data.js** | 61 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
+| **modal.js** | Examples library UI, filtering, loading | `openExModal()`, `loadExample()`, `renderExGrid()`, `filterExamples()` |
+| **files.js** | File upload/download, drag-and-drop | `triggerUpload()`, `handleUpload()`, `downloadPane()`, `setupDragDrop()` |
+| **ui.js** | Console state, theme toggle, help modal, column collapse | `setConsoleState()`, `toggleTheme()`, `applyConsoleSearch()`, `setConsoleFilter()` |
+| **share.js** | URL encoding/decoding of session state | `buildSharePayload()`, `generateShareUrl()`, `loadFromShareHash()` |
+| **xpath.js** | XPath mode UI, expression evaluation, node highlighting, syntax coloring | `runXPath()`, `toggleXPath()`, `_highlightXPath()`, `_highlightMatchedNodes()` |
+| **editor.js** | Monaco initialization, themes, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `toggleTheme()`, `_toggleXmlComment()` |
 
 ---
 

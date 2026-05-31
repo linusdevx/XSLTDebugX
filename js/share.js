@@ -25,7 +25,6 @@ function encodeShareData(data) {
   }
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-
 function generateShareUrl() {
   const url = location.href.split('#')[0] + '#share/' + encodeShareData(buildSharePayload());
   if (url.length > 2000) {
@@ -39,7 +38,9 @@ function generateShareUrl() {
 function loadFromShareHash() {
   if (!location.hash.startsWith('#share/')) return false;
   try {
-    const raw    = decodeURIComponent(location.hash.slice(7)).replace(/-/g, '+').replace(/_/g, '/');
+    // encodeShareData only emits base64url chars [A-Za-z0-9_-]; none need URL escaping,
+    // so decodeURIComponent would be a no-op here and would throw on hand-edited '%'.
+    const raw    = location.hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
     const b64    = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
     const binary = atob(b64);
     const bytes  = new Uint8Array(binary.length);
@@ -59,7 +60,7 @@ function loadFromShareHash() {
 function applyShareData(data) {
   if (!data) return;
 
-  // Share is XSLT-only — always switch to XSLT mode on the receiver side
+  // Share is always XSLT context — switch the receiver if needed
   if (modeManager.isXpath) {
     modeManager.setMode('XSLT');
     clog('Switched to XSLT mode — share link loaded', 'info');
@@ -68,18 +69,33 @@ function applyShareData(data) {
   clearTimeout(xsltDebounce);
   clearTimeout(xmlDebounce);
   clearAllMarkers();
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Ensure XML editor is connected to XSLT model before updating
   if (eds.xml && xmlModelXslt) {
     eds.xml.setModel(xmlModelXslt);
   }
 
-  // Write directly to XSLT model (share is always XSLT context)
-  if (data.xml  !== undefined) xmlModelXslt?.setValue(data.xml);
+  // Suppress per-setValue listener-driven scheduleSave; call once at the end.
+  if (data.xml  !== undefined) {
+    const _prevSS = _suppressNextSave;
+    _suppressNextSave = true;
+    try {
+      xmlModelXslt?.setValue(data.xml);
+    } finally {
+      _suppressNextSave = _prevSS;
+    }
+  }
   if (data.xslt !== undefined) {
+    const _prevSV = _suppressNextValidation;
+    const _prevSS = _suppressNextSave;
     _suppressNextValidation = true;
-    eds.xslt?.setValue(data.xslt);
-    _suppressNextValidation = false;
+    _suppressNextSave       = true;
+    try {
+      eds.xslt?.setValue(data.xslt);
+    } finally {
+      _suppressNextSave       = _prevSS;
+      _suppressNextValidation = _prevSV;
+    }
   }
 
   kvData  = { headers: [], properties: [] };
@@ -96,6 +112,7 @@ function applyShareData(data) {
   if (_shdr)  _parts.push(`${_shdr} header${_shdr  > 1 ? 's' : ''}`);
   if (_sprop) _parts.push(`${_sprop} propert${_sprop > 1 ? 'ies' : 'y'}`);
   clog(`Shared session loaded — ${_parts.join(' · ')} ✓`, 'success');
+
   scheduleSave();
 }
 
@@ -117,9 +134,8 @@ function closeShareModal() {
   document.getElementById('shareModalBackdrop').classList.remove('open');
 }
 
-function handleShareBackdropClick(e) {
-  if (e.target === document.getElementById('shareModalBackdrop')) closeShareModal();
-}
+// See modal.js for `var` rationale (kept on window for inline onclick=).
+var handleShareBackdropClick = _makeBackdropClose('shareModalBackdrop', closeShareModal);
 
 function _copyShareUrl(url, silent) {
   if (!url) return;
@@ -135,18 +151,12 @@ function _copyShareUrl(url, silent) {
     clog('Share URL copied to clipboard', 'success');
   };
 
+  // Custom fallback: select the URL input so the user can press Ctrl+C manually.
   const onFail = () => {
-    // execCommand fallback for file:// or non-HTTPS
     const input = document.getElementById('shareUrlInput');
     if (input) input.select();
-    let ok = false;
-    try { ok = document.execCommand('copy'); } catch(_) {}
-    ok ? onSuccess() : clog('Auto-copy unavailable — URL selected, press Ctrl+C to copy', 'warn');
+    clog('Auto-copy unavailable — URL selected, press Ctrl+C to copy', 'warn');
   };
 
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(url).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  _clipboardWrite(url, onSuccess, onFail);
 }

@@ -4,7 +4,7 @@
 
 XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the complete user workflows without mocking any backend systems.
 
-**Status**: ✅ 88 tests passing (8 test suites + smoke tests)
+**Status**: ✅ 75 tests passing (7 test suites + smoke tests)
 
 ---
 
@@ -25,7 +25,6 @@ tests/
 │       ├── xslt-transform.spec.js       # 8 tests: XSLT transformations
 │       ├── cpi-simulation.spec.js       # 12 tests: CPI headers/properties, interceptors
 │       ├── examples-library.spec.js     # 14 tests: Examples modal, search, categories
-│       ├── examples-comprehensive.spec.js # 13 tests: All 61 examples load & execute
 │       └── share-url.spec.js            # 9 tests: URL encoding, session sharing
 ├── playwright.config.js                 # Playwright configuration
 └── package.json                         # Test dependencies
@@ -158,19 +157,7 @@ Tests example modal, search, filtering, and loading - 14 tests:
 
 **Run**: `npm run test:e2e -- tests/e2e/workflows/examples-library.spec.js`
 
-### 8. Examples Comprehensive (`workflows/examples-comprehensive.spec.js`)
-Tests all 61 built-in examples for correctness - 13 tests:
-- ✅ All XSLT examples load and execute without errors
-- ✅ All XPath examples load and evaluate without errors
-- ✅ Switch from XSLT to XPath example seamlessly
-- ✅ Switch from XPath to XSLT example seamlessly
-- ✅ Preserve mode when loading same-type examples
-- ✅ Handle rapid example switching
-- ✅ Comprehensive coverage reporting
-
-**Run**: `npm run test:e2e -- tests/e2e/workflows/examples-comprehensive.spec.js`
-
-### 9. Share URL (`workflows/share-url.spec.js`)
+### 8. Share URL (`workflows/share-url.spec.js`)
 Tests session sharing via encoded URLs - 9 tests:
 - ✅ Generate share URL from current editor state
 - ✅ Include headers in share URL and decode correctly
@@ -393,7 +380,7 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 
 ## Current Status
 
-✅ **88 tests passing**
+✅ **75 tests passing**
 - Smoke tests: 4/4
 - Mode switching: 13/13
 - Session management: 8/8
@@ -401,7 +388,6 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 - XSLT transforms: 8/8
 - CPI simulation: 12/12
 - Examples library: 14/14
-- Examples comprehensive: 13/13
 - Share URL: 9/9
 
 Last updated: May 3, 2026

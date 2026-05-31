@@ -1,4 +1,29 @@
 // ════════════════════════════════════════════
+//  ICONS (Lucide)
+// ════════════════════════════════════════════
+function reinitIcons(container) {
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons(container ? { root: container } : undefined);
+  }
+}
+
+// ════════════════════════════════════════════
+//  RIPPLE EFFECT
+// ════════════════════════════════════════════
+function createRipple(e) {
+  const btn = e.currentTarget;
+  const circle = document.createElement('span');
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  circle.style.width = circle.style.height = size + 'px';
+  circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  circle.className = 'ripple-circle';
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), 600);
+}
+
+// ════════════════════════════════════════════
 //  TOAST NOTIFICATIONS
 // ════════════════════════════════════════════
 function showCopyToast(message, duration = 1500) {
@@ -25,12 +50,12 @@ function toggleSideCol(side) {
   col.classList.toggle('collapsed');
   scheduleSave();
 
-  // Relayout all Monaco editors after transition
+  // Relayout all Monaco editors after spring transition (0.35s)
   setTimeout(() => {
     eds.xml?.layout();
     eds.xslt?.layout();
     eds.out?.layout();
-  }, 250);
+  }, 400);
 }
 
 // ════════════════════════════════════════════
@@ -44,9 +69,9 @@ function setConsoleState(state) {
   panel.classList.toggle('minimized', state === 'minimized');
   consoleState = state;
 
-  // Relay Monaco continuously during the CSS transition (220ms) to prevent blank editor
+  // Relay Monaco continuously during the CSS transition (350ms spring) to prevent blank editor
   const start = performance.now();
-  const duration = 240;
+  const duration = 400;
   function pump(now) {
     eds.xml?.layout();
     eds.xslt?.layout();
@@ -83,28 +108,10 @@ function copyConsole() {
     }).join('\n');
   if (!text.trim()) return clog('Console is empty — nothing to copy', 'warn');
 
-  const onSuccess = () => {
+  _clipboardWrite(text, () => {
     clog('Console copied to clipboard ✓', 'success');
     showCopyToast('✓ Copied console output');
-  };
-  const onFail    = () => {
-    // execCommand fallback for file:// or non-HTTPS contexts
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(text).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  });
 }
 
 // ════════════════════════════════════════════
@@ -144,29 +151,24 @@ function applyConsoleSearch(query) {
 // ════════════════════════════════════════════
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
-  document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
   localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark');
   clog(`Theme: ${isLight ? 'light' : 'dark'} mode`, 'info');
 
-  // Switch Monaco editor themes
   const monacoTheme = isLight ? 'xdebugx-light' : 'xdebugx';
   if (typeof monaco !== 'undefined') {
     monaco.editor.setTheme(monacoTheme);
-    // Re-colorize any visible XPath results — monaco.editor.colorize() bakes
-    // palette indices that remap when the theme changes, causing wrong colours.
-    // Delay 50ms to let Monaco finish updating the mtk* CSS before re-rendering.
     setTimeout(() => { if (typeof refreshXPathColors === 'function') refreshXPathColors(); }, 50);
   }
 }
 
-// Restore saved theme preference
+// Symmetric theme restore — handle both 'light' and 'dark'. Surviving a
+// future flip of the default theme in index.html requires touching the class
+// in both directions, not just removing 'light' on saved=='dark'.
 (function() {
   const saved = localStorage.getItem('xdebugx-theme');
-  if (saved === 'dark') {
-    document.body.classList.remove('light');
-    const btn = document.getElementById('themeToggle');
-    if (btn) btn.textContent = '🌙';
-  }
+  if (saved === 'light')      document.body.classList.add('light');
+  else if (saved === 'dark')  document.body.classList.remove('light');
+  // saved === null (first visit) → leave whatever index.html shipped
 })();
 // ════════════════════════════════════════════
 //  HELP MODAL
@@ -179,9 +181,8 @@ function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
 }
 
-function handleHelpBackdropClick(e) {
-  if (e.target === document.getElementById('helpModalBackdrop')) closeHelpModal();
-}
+// Factory in state.js. `var` keeps it on window for inline onclick=.
+var handleHelpBackdropClick = _makeBackdropClose('helpModalBackdrop', closeHelpModal);
 
 function switchHelpTab(tab) {
   document.querySelectorAll('.help-tab').forEach(btn => {

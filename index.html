@@ -1,12 +1,12 @@
-<!-- XSLTDebugX v1.0 — SAP Cloud Integration XSLT IDE -->
+<!-- XSLTDebugX v1.0 — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XSLTDebugX — SAP Cloud Integration XSLT IDE</title>
-  <meta name="description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE for SAP Cloud Integration. Test transformations locally with CPI headers and properties — no deploy needed.">
-  <meta name="keywords" content="XSLT editor, XPath evaluator, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, XSLT debugger, XSLT online, Saxon-JS, XML transformation, XSLT IDE, XML editor online, SAP Integration Suite, iFlow XSLT, CPI mapping">
+  <title>XSLTDebugX — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</title>
+  <meta name="description" content="Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.">
+  <meta name="keywords" content="XSLT editor, XPath evaluator, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, XSLT debugger, XSLT online, Saxon-JS, XML transformation, XSLT IDE, XML editor online, SAP Integration Suite, iFlow XSLT, CPI mapping, XSLT debugger online, XSLT tester, XPath tester online, XSLT playground, online XSLT editor, XSLT testing tool, SAP CPI XSLT debug">
   <meta name="author" content="XSLTDebugX">
   <meta name="google-site-verification" content="2FIJQa0iXMS64h8tWPm5lUdskRuBHUzKXt8RxuyUlis">
   <meta name="robots" content="index, follow">
@@ -19,8 +19,8 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="XSLTDebugX — XSLT 3.0 IDE for SAP Cloud Integration">
-  <meta property="og:description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE. Test SAP CPI transformations locally with headers, properties, and extension functions — no deployment needed.">
+  <meta property="og:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
+  <meta property="og:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally with headers, properties, and extension functions — no deployment needed.">
   <meta property="og:url" content="https://xsltdebugx.pages.dev/">
   <meta property="og:site_name" content="XSLTDebugX">
   <meta property="og:locale" content="en_US">
@@ -31,8 +31,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="XSLTDebugX — XSLT 3.0 IDE for SAP Cloud Integration">
-  <meta name="twitter:description" content="Free browser-based XSLT 3.0 and XPath 3.1 IDE. Test SAP CPI transformations locally — no deployment needed.">
+  <meta name="twitter:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
+  <meta name="twitter:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally — no deployment needed.">
   <meta name="twitter:domain" content="xsltdebugx.pages.dev">
   <meta name="twitter:image" content="https://xsltdebugx.pages.dev/og-image.png">
 
@@ -47,18 +47,20 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@1.14.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
   <script src="./lib/SaxonJS2.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', function() { if (typeof lucide !== 'undefined') lucide.createIcons(); });</script>
 
   <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "XSLTDebugX",
-    "alternateName": "XSLT Debug X",
+    "name": "XSLTDebugX — Online XSLT Debugger",
+    "alternateName": ["XSLT Debug X", "XSLTDebugX"],
     "url": "https://xsltdebugx.pages.dev/",
-    "description": "Free browser-based XSLT 3.0 and XPath 3.1 IDE for SAP Cloud Integration. Test transformations locally with CPI simulation — no deployment needed.",
+    "description": "Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.",
     "applicationCategory": "DeveloperApplication",
     "applicationSubCategory": "XML/XSLT Development Tool",
     "operatingSystem": "Any (browser-based)",
@@ -74,22 +76,24 @@
     },
     "featureList": [
       "XSLT 3.0 transformation engine (Saxon-JS 2)",
-      "XPath 3.1 expression evaluator",
+      "XPath 3.1 expression evaluator and tester",
+      "Online XSLT debugger — no installation needed",
       "SAP CPI header and property simulation",
       "SAP CPI extension function support",
       "61 built-in examples across 6 categories",
       "Monaco Editor with XML/XSLT syntax highlighting",
-      "Real-time XML validation",
+      "Real-time XML validation and error detection",
       "Dark and light theme",
       "Share transformations via URL",
+      "XSLT testing without deploying to SAP Integration Suite",
       "No server — runs entirely in-browser"
     ],
     "screenshot": "https://xsltdebugx.pages.dev/og-image.png",
-    "keywords": "XSLT, XPath, SAP CPI, SAP Cloud Integration, XML editor, XSLT IDE, Saxon-JS",
+    "keywords": "XSLT debugger, XSLT IDE online, XPath tester, SAP CPI XSLT, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT editor, XSLT testing tool, XML editor, Saxon-JS, XSLT playground",
     "inLanguage": "en",
     "isAccessibleForFree": true,
     "license": "https://opensource.org/licenses/MIT",
-    "sameAs": "https://github.com/SunilPharswan/XSLTDebugX"
+    "sameAs": "https://github.com/linusdevx/XSLTDebugX"
   }
   </script>
 </head>
@@ -98,34 +102,38 @@
 <!-- SEO: visible text for crawlers that don't execute JS -->
 <noscript>
   <div style="padding:2rem;max-width:800px;margin:0 auto;font-family:system-ui,sans-serif">
-    <h1>XSLTDebugX — Free XSLT 3.0 IDE for SAP Cloud Integration</h1>
-    <p>XSLTDebugX is a free, browser-based XSLT 3.0 and XPath 3.1 integrated development environment designed for SAP Cloud Integration (CPI) developers.</p>
-    <h2>Features</h2>
+    <h1>XSLTDebugX — Free Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</h1>
+    <p>XSLTDebugX is a free online XSLT debugger and XPath 3.1 tester designed for SAP Cloud Integration (CPI) developers. Debug, test, and validate XSLT transformations directly in your browser without deploying to SAP Integration Suite.</p>
+    <h2>XSLT Debugger Features</h2>
     <ul>
-      <li>XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
-      <li>XPath 3.1 expression evaluator with syntax highlighting</li>
-      <li>SAP CPI simulation — test with headers, properties, and extension functions</li>
+      <li>Online XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
+      <li>XPath 3.1 expression tester with syntax highlighting and history</li>
+      <li>SAP CPI runtime simulation — debug with headers, properties, and extension functions</li>
       <li>61 built-in examples covering basic to advanced XSLT patterns</li>
-      <li>Monaco Editor with XML/XSLT syntax highlighting and error detection</li>
-      <li>Share transformations via URL — no server needed</li>
+      <li>Monaco Editor with XML/XSLT syntax highlighting and real-time error detection</li>
+      <li>Share XSLT transformations via URL — no server or account needed</li>
       <li>Dark and light theme support</li>
-      <li>Works entirely in your browser — no installation, no data sent to servers</li>
+      <li>Runs entirely in your browser — no installation, no data sent to servers</li>
     </ul>
     <h2>Use Cases</h2>
     <ul>
-      <li>Develop and debug XSLT mappings for SAP Integration Suite iFlows</li>
-      <li>Test XPath expressions against sample XML documents</li>
-      <li>Learn XSLT 3.0 with interactive examples</li>
-      <li>Validate XML structure and transformation output</li>
+      <li>Debug and test XSLT mappings for SAP Integration Suite iFlows offline</li>
+      <li>Test XPath expressions against sample XML documents online</li>
+      <li>Learn XSLT 3.0 with interactive examples and instant feedback</li>
+      <li>Validate XML structure and XSLT transformation output before deployment</li>
     </ul>
-    <p>Please enable JavaScript to use the XSLTDebugX editor.</p>
+    <h2>Why Use an Online XSLT Debugger?</h2>
+    <p>Testing XSLT in SAP CPI requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and CPI extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
+    <p>Please enable JavaScript to use the XSLTDebugX online XSLT debugger.</p>
   </div>
 </noscript>
 
 <!-- Loading -->
 <div id="loadingOverlay">
+  <div class="load-bg-grid"></div>
   <div class="load-logo">XSLTDebug<span>X</span></div>
-  <div class="load-bar"><div class="load-bar-fill"></div></div>
+  <div class="load-logo-shimmer"></div>
+  <div class="load-dots"><span></span><span></span><span></span></div>
   <div class="load-text" id="loadTxt">Initializing…</div>
 </div>
 
@@ -141,39 +149,43 @@
   <div class="h-spacer"></div>
 
   <nav aria-label="Main actions">
-  <button class="ex-btn share-btn" id="shareBtn" onclick="openShareModal()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><circle cx="12" cy="3" r="1.8"/><circle cx="12" cy="13" r="1.8"/><circle cx="3" cy="8" r="1.8"/><path d="M10.3 3.9L4.7 7.1M4.7 8.9l5.6 3.2"/></svg>
+  <button class="ex-btn xf-session-share" id="shareBtn" onclick="openShareModal()">
+    <i data-lucide="share-2" width="14" height="14"></i>
     Share
   </button>
 
   <button class="ex-btn" id="exBtn" onclick="openExModal()">
-    <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13"><path d="M1 3h14v1.5H1V3zm0 4h14v1.5H1V7zm0 4h14v1.5H1V11z"/></svg>
+    <i data-lucide="book-open" width="14" height="14"></i>
     Examples
   </button>
 
-  <div class="mode-switcher">
+  <div class="mode-switcher" id="modeSwitcher">
+    <div class="mode-pill"></div>
     <button class="mode-btn mode-btn-xslt active" id="modeBtnXslt" onclick="if(modeManager.isXpath)toggleXPath()" title="XSLT Transform mode">
-      <svg viewBox="0 0 16 16" fill="currentColor" width="11" height="11"><path d="M2 3h12v1.5H2V3zm2 3.5h8V8H4V6.5zm2 3.5h4v1.5H6V10z"/></svg>
+      <i data-lucide="file-code" width="12" height="12"></i>
       XSLT
     </button>
     <button class="mode-btn mode-btn-xpath" id="modeBtnXpath" onclick="if(!modeManager.isXpath)toggleXPath()" title="XPath evaluator mode">
-      ƒx XPath
+      <i data-lucide="braces" width="12" height="12"></i>
+      XPath
     </button>
   </div>
 
-  <button class="header-icon-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme">☀️</button>
+  <button class="header-icon-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme">
+    <i data-lucide="sun" width="15" height="15" class="theme-icon-sun"></i>
+    <i data-lucide="moon" width="15" height="15" class="theme-icon-moon"></i>
+  </button>
+
+  <button class="header-icon-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" title="Clear saved session">
+    <i data-lucide="trash-2" width="14" height="14"></i>
+  </button>
 
   <button class="header-icon-btn help-btn" id="helpBtn" onclick="openHelpModal()" title="Help — features & shortcuts">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><circle cx="8" cy="8" r="6.5"/><path d="M6 6.2c0-1.1.9-2 2-2s2 .9 2 2c0 .9-.6 1.6-1.4 1.9C8 8.4 8 9 8 9.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor" stroke="none"/></svg>
+    <i data-lucide="circle-help" width="15" height="15"></i>
   </button>
 
-  <button onclick="clearSavedState()" title="Clear saved session" id="clearSessionBtn" class="clear-session-btn">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="12" height="12"><path d="M2 4h12M6 4V2h4v2M13 4l-1 10H4L3 4"/></svg>
-    Clear session
-  </button>
-
-  <button class="run-btn" id="runBtn" onclick="runTransform()">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5l11 6.5-11 6.5V1.5z"/></svg>
+  <button class="run-btn" id="runBtn" onclick="createRipple(event); runTransform()">
+    <i data-lucide="play" width="14" height="14"></i>
     Run XSLT
     <span class="kbd">⌘↵</span>
   </button>
@@ -200,11 +212,11 @@
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
           <div class="pane-actions">
             <span class="lang-badge">XQuery</span>
-            <button class="pane-act-btn" onclick="copyXPathInput()">Copy</button>
-            <button class="pane-act-btn" onclick="clearXPathInput()">Clear</button>
+            <button class="pane-icon-btn" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" title="Previous expression (↑)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 10l5-5 5 5"/></svg></button>
-            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" title="Next expression (↓)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 6l5 5 5-5"/></svg></button>
+            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" title="Next expression (↓)"><i data-lucide="chevron-down" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-input-row">
@@ -232,15 +244,15 @@
         </span>
         <div class="pane-actions">
           <span class="lang-badge">XML</span>
-          <button class="pane-act-btn" onclick="fmtEditor('xml')">Format</button>
-          <button class="pane-act-btn" onclick="copyPane('xml')">Copy</button>
-          <button class="pane-act-btn" onclick="clearPane('xml')">Clear</button>
+          <button class="pane-icon-btn" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Clear XML" onclick="clearPane('xml')"><i data-lucide="eraser" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
-          <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M2 4h12M2 8h8a2 2 0 0 1 0 4H8m2-2l-2 2 2 2"/></svg></button>
-          <button class="pane-icon-btn" title="Upload XML file" onclick="triggerUpload('xml')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V2M5 5l3-3 3 3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg></button>
-          <button class="pane-icon-btn" title="Download XML file" onclick="downloadPane('xml','input.xml')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg></button>
+          <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Upload XML file" onclick="triggerUpload('xml')"><i data-lucide="upload" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" title="Download XML file" onclick="downloadPane('xml','input.xml')"><i data-lucide="download" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
-          <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('left')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4L6 8l4 4"/></svg></button>
+          <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
         </div>
         <input type="file" class="file-input-hidden" id="uploadXml" accept=".xml,.xsl,.xslt,.txt" aria-label="Upload XML file" onchange="handleUpload(event,'xml')">
       </div>
@@ -252,11 +264,11 @@
       <!-- Headers Panel -->
       <div class="kv-panel" id="hdrPanel">
         <div class="kv-header" onclick="toggleKVPanel('hdrPanel')">
-          <span class="kv-icon">#</span>
+          <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
           <span class="kv-title">Headers</span>
           <span class="kv-count" id="hdrCount">0</span>
           <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('headers')">+</button>
-          <svg class="kv-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+          <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="hdrBody">
           <div class="kv-table-head"><span>Name</span><span>Value</span><span></span></div>
@@ -267,11 +279,11 @@
       <!-- Properties Panel -->
       <div class="kv-panel" id="propPanel">
         <div class="kv-header" onclick="toggleKVPanel('propPanel')">
-          <span class="kv-icon">⚙</span>
+          <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
           <span class="kv-title">Properties</span>
           <span class="kv-count" id="propCount">0</span>
           <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('properties')">+</button>
-          <svg class="kv-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+          <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="propBody">
           <div class="kv-table-head"><span>Name</span><span>Value</span><span></span></div>
@@ -288,13 +300,13 @@
       <span class="pane-title">XSLT Stylesheet</span>
       <div class="pane-actions">
         <span class="lang-badge">XSLT</span>
-        <button class="pane-act-btn" onclick="fmtEditor('xslt')">Format</button>
-        <button class="pane-act-btn" onclick="copyPane('xslt')">Copy</button>
-        <button class="pane-act-btn" onclick="clearPane('xslt')">Clear</button>
+        <button class="pane-icon-btn" title="Format XSLT" onclick="fmtEditor('xslt')"><i data-lucide="align-left" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Clear XSLT" onclick="clearPane('xslt')"><i data-lucide="eraser" width="14" height="14"></i></button>
         <div class="pane-divider"></div>
-        <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M2 4h12M2 8h8a2 2 0 0 1 0 4H8m2-2l-2 2 2 2"/></svg></button>
-        <button class="pane-icon-btn" title="Upload XSLT file" onclick="triggerUpload('xslt')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V2M5 5l3-3 3 3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg></button>
-        <button class="pane-icon-btn" title="Download XSLT file" onclick="downloadPane('xslt','stylesheet.xslt')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg></button>
+        <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Upload XSLT file" onclick="triggerUpload('xslt')"><i data-lucide="upload" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" title="Download XSLT file" onclick="downloadPane('xslt','stylesheet.xslt')"><i data-lucide="download" width="14" height="14"></i></button>
       </div>
       <input type="file" class="file-input-hidden" id="uploadXslt" accept=".xsl,.xslt,.xml,.txt" aria-label="Upload XSLT file" onchange="handleUpload(event,'xslt')">
     </div>
@@ -305,7 +317,7 @@
     <!-- Console — default position: below XSLT editor. Moved below workspace in XPath mode. -->
     <div class="console-panel" id="consolePanel">
       <div class="console-bar" onclick="handleConsoleBarClick(event)">
-        <span class="kv-icon">›_</span>
+        <span class="kv-icon"><i data-lucide="square-terminal" width="12" height="12"></i></span>
         <span class="console-title">Console</span>
         <span class="console-err-badge" id="consoleErrBadge">0</span>
         <div class="console-bar-actions" onclick="event.stopPropagation()">
@@ -318,10 +330,10 @@
           <div class="pane-divider"></div>
           <input class="console-search" id="consoleSearch" type="text" placeholder="search…" aria-label="Search console output" oninput="applyConsoleSearch(this.value)" title="Filter console by text"/>
           <div class="pane-divider"></div>
-          <button class="pane-act-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()">Copy</button>
-          <button class="pane-act-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()">Clear</button>
+          <button class="pane-icon-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()"><i data-lucide="eraser" width="14" height="14"></i></button>
         </div>
-        <svg class="kv-chevron console-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron"></i>
       </div>
       <div class="console-body" id="consoleBody"></div>
     </div>
@@ -340,12 +352,12 @@
       <!-- ── XPath Results Panel (hidden until first run) ── -->
       <div class="xpath-results-panel" id="xpathResultsPanel">
         <div class="xpath-results-bar">
-          <span class="kv-icon">ƒx</span>
+          <span class="kv-icon"><i data-lucide="braces" width="12" height="12"></i></span>
           <span class="xpath-results-title">XPath Results</span>
           <span class="xpath-match-count" id="xpathMatchCount">0 matches</span>
           <div class="xpath-results-actions">
-            <button class="pane-act-btn" onclick="copyXPathResults()" title="Copy all results">Copy</button>
-            <button class="pane-act-btn" onclick="clearXPathResults()" title="Close results panel">Clear</button>
+            <button class="pane-icon-btn" onclick="copyXPathResults()" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="clearXPathResults()" title="Close results panel"><i data-lucide="eraser" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-results-body" id="xpathResultsBody"></div>
@@ -357,14 +369,14 @@
           <div class="pane-indicator ind-out"></div>
           <span class="pane-title">Output</span>
           <div class="pane-actions">
-            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg></button>
+            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <span class="lang-badge" id="outLangBadge">XML</span>
-            <button class="pane-act-btn" onclick="copyPane('out')">Copy</button>
-            <button class="pane-act-btn" onclick="clearPane('out')">Clear</button>
+            <button class="pane-icon-btn" title="Copy output" onclick="copyPane('out')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" title="Clear output" onclick="clearPane('out')"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" title="Toggle word wrap" onclick="toggleWordWrap('out')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="13" height="13"><path d="M2 4h12M2 8h8a2 2 0 0 1 0 4H8m2-2l-2 2 2 2"/></svg></button>
-            <button class="pane-icon-btn" id="outDownloadBtn" title="Download output as XML" onclick="downloadPane('out','output.xml')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg></button>
+            <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" title="Toggle word wrap" onclick="toggleWordWrap('out')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" id="outDownloadBtn" title="Download output as XML" onclick="downloadPane('out','output.xml')"><i data-lucide="download" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="editor-wrap" id="outEdWrap">
@@ -374,10 +386,10 @@
         <!-- Output Headers Panel -->
         <div class="kv-panel" id="outHdrPanel">
           <div class="kv-header" onclick="toggleKVPanel('outHdrPanel')">
-            <span class="kv-icon">#</span>
+            <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
             <span class="kv-title">Headers</span>
             <span class="kv-count" id="outHdrCount">0</span>
-            <svg class="kv-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+            <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
           </div>
           <div class="kv-body" id="outHdrBody">
             <div class="kv-table-head"><span>Name</span><span>Value</span></div>
@@ -388,10 +400,10 @@
         <!-- Output Properties Panel -->
         <div class="kv-panel" id="outPropPanel">
           <div class="kv-header" onclick="toggleKVPanel('outPropPanel')">
-            <span class="kv-icon">⚙</span>
+            <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
             <span class="kv-title">Properties</span>
             <span class="kv-count" id="outPropCount">0</span>
-            <svg class="kv-chevron" viewBox="0 0 16 16" fill="currentColor"><path d="M4 6l4 4 4-4"/></svg>
+            <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
           </div>
           <div class="kv-body" id="outPropBody">
             <div class="kv-table-head"><span>Name</span><span>Value</span></div>
@@ -409,9 +421,9 @@
 <div class="ex-modal-backdrop" id="shareModalBackdrop" onclick="handleShareBackdropClick(event)">
   <div class="share-modal">
     <div class="share-modal-header">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="15" height="15"><circle cx="12" cy="3" r="1.8"/><circle cx="12" cy="13" r="1.8"/><circle cx="3" cy="8" r="1.8"/><path d="M10.3 3.9L4.7 7.1M4.7 8.9l5.6 3.2"/></svg>
+      <i data-lucide="share-2" width="16" height="16"></i>
       <span class="share-modal-title">Share Session</span>
-      <button class="ex-modal-close" onclick="closeShareModal()" title="Close">✕</button>
+      <button class="ex-modal-close" onclick="closeShareModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
 
     <div class="share-modal-body">
@@ -431,14 +443,14 @@
       <span class="ex-modal-title">Example Library</span>
       <span class="ex-modal-count" id="exModalCount"></span>
       <div class="ex-search-wrap">
-        <svg class="ex-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
+        <i data-lucide="search" width="14" height="14" class="ex-search-icon"></i>
         <input class="ex-modal-search" id="exModalSearch" placeholder="Search examples…" oninput="filterExamples()" autocomplete="off">
       </div>
       <label class="ex-auto-run-label" title="Automatically run examples after loading them">
         <input type="checkbox" id="exAutoRunCheckbox" aria-label="Auto-run loaded examples" onchange="exAutoRunChecked = this.checked; localStorage.setItem('xdebugx-auto-run-examples', this.checked)">
         Auto-run
       </label>
-      <button class="ex-modal-close" onclick="closeExModal()" title="Close">✕</button>
+      <button class="ex-modal-close" onclick="closeExModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
     <div class="ex-modal-body">
       <div class="ex-sidebar" id="exSidebar">
@@ -469,19 +481,17 @@
     color:#3fb950;opacity:0;transition:opacity 0.4s ease;
     display:flex;align-items:center;gap:4px;padding:0 4px;
   ">
-    <svg width="7" height="7" viewBox="0 0 8 8" fill="#3fb950"><circle cx="4" cy="4" r="3.5"/></svg>Saved
+    <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor" style="color:#3fb950"><circle cx="4" cy="4" r="3.5"/></svg>Saved
   </div>
   <div class="stat stat-author">
     <span>Built by</span>
     <a href="https://www.linkedin.com/in/sunilph/" target="_blank" rel="noopener" class="stat-link" title="Sunil Pharswan on LinkedIn">
-      <!-- LinkedIn icon -->
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
       Sunil Pharswan
     </a>
     <span class="stat-divider">·</span>
-    <a href="https://github.com/SunilPharswan/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" title="View source on GitHub">
-      <!-- GitHub icon -->
-      <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" title="View source on GitHub">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
     </a>
   </div>
@@ -492,13 +502,13 @@
 <div class="ex-modal-backdrop" id="helpModalBackdrop" onclick="handleHelpBackdropClick(event)">
   <div class="help-modal">
     <div class="help-modal-header">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><circle cx="8" cy="8" r="6.5"/><path d="M6 6.2c0-1.1.9-2 2-2s2 .9 2 2c0 .9-.6 1.6-1.4 1.9C8 8.4 8 9 8 9.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor" stroke="none"/></svg>
+      <i data-lucide="circle-help" width="16" height="16"></i>
       <span class="help-modal-title">Help</span>
       <div class="help-tabs">
         <button class="help-tab active" data-tab="features" onclick="switchHelpTab('features')">Features</button>
         <button class="help-tab" data-tab="shortcuts" onclick="switchHelpTab('shortcuts')">Shortcuts</button>
       </div>
-      <button class="ex-modal-close" onclick="closeHelpModal()" title="Close">✕</button>
+      <button class="ex-modal-close" onclick="closeHelpModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
 
     <!-- Features Tab -->

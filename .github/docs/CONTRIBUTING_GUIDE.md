@@ -165,7 +165,7 @@ Merge branch 'dev'     # meaningless
 
 ### Before Starting
 
-1. Search [Issues](https://github.com/SunilPharswan/XSLTDebugX/issues) — avoid duplicate work
+1. Search [Issues](https://github.com/linusdevx/XSLTDebugX/issues) — avoid duplicate work
 2. Check [reference/features.md](reference/features.md) — feature may exist
 3. Open an issue for significant features; small fixes can skip this
 
