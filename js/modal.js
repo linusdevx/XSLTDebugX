@@ -75,6 +75,8 @@ document.addEventListener('keydown', e => {
 
 function setExCat(cat) {
   exActiveCat = cat;
+  const search = document.getElementById('exModalSearch');
+  if (search) search.value = '';
   renderExSidebar();
   // Category change rebuilds the grid (cheap, one click). The expensive path is
   // search keystrokes — those go through filterExamples and just toggle visibility.
@@ -222,6 +224,7 @@ function loadExample(key) {
   clearTimeout(xsltDebounce);
   clearTimeout(xmlDebounce);
   clearAllMarkers();
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
   try {
     // Route XML content to the correct model based on current mode

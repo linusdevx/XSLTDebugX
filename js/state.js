@@ -218,6 +218,8 @@ function _resetXPathMode() {
   // Cancel pending validation timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
   // Arm _suppressNextSave BEFORE setValue. Monaco fires
   // onDidChangeModelContent synchronously inside setValue, and the editor.js
@@ -251,16 +253,19 @@ function _resetXsltMode() {
   // Cancel pending validation timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Arm _suppressNextSave BEFORE the FIRST setValue. Previously the XML
-  // setValue ran before the flag was set, so its synchronous scheduleSave()
-  // queued a save with mid-reset XSLT. try/finally restores the previous flag
-  // value rather than blindly clearing one set by an outer caller.
   const _prevSuppress = _suppressNextSave;
-  _suppressNextSave = true;
   try {
-    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+    if (xmlModelXslt) {
+      _suppressNextSave = true;
+      xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+    }
+    if (eds.xslt) {
+      _suppressNextSave = true;
+      eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+    }
   } finally {
     _suppressNextSave = _prevSuppress;
   }

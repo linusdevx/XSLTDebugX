@@ -71,7 +71,7 @@ function _extractInsensitiveRegions(xslt) {
     regions.push(match);
     return '' + idx + '' + '\n'.repeat(newlines);
   });
-  const restore = (s) => s.replace(/(\d+)\n*/g, (full, idxStr) => {
+    const restore = (s) => s.replace(/(\d+)/g, (full, idxStr) => {
     return regions[Number(idxStr)] ?? full;
   });
   return { stripped, restore };
@@ -80,33 +80,27 @@ function _extractInsensitiveRegions(xslt) {
 function rewriteCPICalls(xslt) {
   const JS_NS = 'http://saxonica.com/ns/globalJS';
 
-  // Step 0: hide comment/CDATA content so steps 1–3 don't mutate it.
-  // Steps 1–2 rewrite XML attributes (xmlns:cpi, exclude-result-prefixes) which
-  // by definition cannot live inside comments/CDATA, so the protection is
-  // strictly for step 3 (the cpi:* function-call rewrite).
   const { stripped, restore } = _extractInsensitiveRegions(xslt);
+  const hasCPI = /cpi:(?:set|get)(?:Header|Property)/.test(stripped);
+  if (!hasCPI) return { rewritten: xslt, hasCPI: false };
   xslt = stripped;
 
-  // 1. Replace xmlns:cpi="..." with xmlns:js="..." (if js not already present)
   const hasJsNs = /xmlns:js\s*=/.test(xslt);
   xslt = xslt.replace(/\s*xmlns:cpi\s*=\s*(?:"[^"]*"|'[^']*')/g,
     hasJsNs ? '' : ` xmlns:js="${JS_NS}"`);
 
-  // 2. Remove 'cpi' from exclude-result-prefixes (js exclusion handled by ensureJsExcluded)
   xslt = xslt.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
     const parts = val.split(/\s+/).filter(p => p !== 'cpi' && p !== '');
-    if (parts.length === 0) return ''; // remove empty attribute entirely
+    if (parts.length === 0) return '';
     return attr + q + parts.join(' ') + q;
   });
 
-  // 3. Rewrite all cpi: function calls → js: equivalents
   xslt = xslt.replace(/cpi:setHeader\s*\(/g,    'js:cpiSetHeader(');
   xslt = xslt.replace(/cpi:setProperty\s*\(/g,  'js:cpiSetProperty(');
   xslt = xslt.replace(/cpi:getHeader\s*\(/g,    'js:cpiGetHeader(');
   xslt = xslt.replace(/cpi:getProperty\s*\(/g,  'js:cpiGetProperty(');
 
-  // Restore comments/CDATA. Their content is unchanged.
-  return { rewritten: restore(xslt) };
+  return { rewritten: restore(xslt), hasCPI: true };
 }
 
 // Ensure the js: namespace is always in exclude-result-prefixes so it never
@@ -140,6 +134,10 @@ function isValidNCName(name) {
 // busts it. Mode swaps swap the *model*, not the content, so the cache is fine
 // across modes — each model's content is its own cache key.
 let _lastValidatedXmlSrc = null;
+
+function invalidateXmlValidationCache() {
+  _lastValidatedXmlSrc = null;
+}
 
 function updateXMLValidationBadge() {
   const badge = document.getElementById('xmlValidationBadge');
@@ -265,13 +263,18 @@ function deleteKVRow(type, id) {
 function updateKV(type, id, field, val) {
   const row = kvData[type].find(r => r.id === id);
   if (row) row[field] = val;
-  if (field === 'name' && val.length > 128) {
-    clog('Name too long (max 128 chars)', 'warn');
+  if (field === 'name') {
+    const tooLong = val.length > 128;
+    if (tooLong && !row?._warnedTooLong) {
+      clog('Name too long (max 128 chars)', 'warn');
+      if (row) row._warnedTooLong = true;
+    } else if (!tooLong && row?._warnedTooLong) {
+      row._warnedTooLong = false;
+    }
   }
   const countId = type === 'headers' ? 'hdrCount' : 'propCount';
   document.getElementById(countId).textContent =
     kvData[type].filter(r => r.name.trim()).length;
-  // Validate the name field if it was changed
   if (field === 'name') {
     _validateKVField(type, id);
   }
@@ -403,8 +406,7 @@ function runTransform() {
     // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
     // Saxon evaluates all arguments (including dynamic ones) and calls our
     // JS interceptor functions on window. Results collected into cpiCaptured.
-    const { stripped: _xsltStrippedForCpiTest } = _extractInsensitiveRegions(xsltSrc);
-    const hasCPI = /cpi:(?:set|get)(?:Header|Property)/.test(_xsltStrippedForCpiTest);
+    const { rewritten: _xsltRewritten, hasCPI } = rewriteCPICalls(xsltSrc);
     const cpiCaptured = { headers: {}, properties: {} };
     let _prevCpiSetHeader, _prevCpiSetProperty, _prevCpiGetHeader, _prevCpiGetProperty;
 
@@ -443,8 +445,7 @@ function runTransform() {
         return val;
       };
 
-      const { rewritten } = rewriteCPICalls(xsltSrc);
-      xsltSrc = rewritten;
+      xsltSrc = _xsltRewritten;
       clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
     }
 

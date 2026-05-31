@@ -229,6 +229,21 @@ require(['vs/editor/editor.main'], () => {
   // ── Auto-close XML tags for xml language mode ──
   // Combined auto-close handler: XML tags + bracket/quote pairs
   // Implemented manually because Monaco's built-in only works for 'html' mode.
+
+  function _isOffsetInsensitive(model, line, column1Based) {
+    try {
+      if (typeof model.forceTokenization === 'function') model.forceTokenization(line);
+      const tokens = model.getLineTokens(line);
+      if (!tokens) return false;
+      const offset0 = Math.max(0, column1Based - 1);
+      const idx = tokens.findTokenIndexAtOffset(offset0);
+      const type = tokens.getClassName(idx) || '';
+      return /comment|cdata|string/.test(type);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function setupAutoClose(editor) {
     let _inserting = false;
 
@@ -347,22 +362,7 @@ require(['vs/editor/editor.main'], () => {
         const before   = model.getLineContent(pos.lineNumber).substring(0, pos.column - 1);
         if (!before.endsWith('>') || before.endsWith('/>')) continue;
         if (/<\/[^>]+>$/.test(before)) continue;
-        // Skip if inside a comment or CDATA section
-        const fullBefore = model.getValueInRange({
-          startLineNumber: 1, startColumn: 1,
-          endLineNumber: pos.lineNumber, endColumn: pos.column
-        });
-        // Find last unclosed <!-- by checking that --> doesn't appear AFTER the <!--
-        const lastComment = fullBefore.lastIndexOf('<!--');
-        if (lastComment !== -1) {
-          const lastCommentEnd = fullBefore.indexOf('-->', lastComment + 4);
-          if (lastCommentEnd === -1) continue;
-        }
-        const lastCdata = fullBefore.lastIndexOf('<![CDATA[');
-        if (lastCdata !== -1) {
-          const lastCdataEnd = fullBefore.indexOf(']]>', lastCdata + 9);
-          if (lastCdataEnd === -1) continue;
-        }
+        if (_isOffsetInsensitive(model, pos.lineNumber, pos.column - 2)) continue;
         const m = before.match(/<([a-zA-Z_][a-zA-Z0-9_:.-]*)(?:\s[^>]*)?>$/);
         if (!m) continue;
         _inserting = true;

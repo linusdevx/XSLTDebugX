@@ -181,15 +181,23 @@ function _offsetToLineCol(src, offset, newlineIdx) {
 // Requires the character immediately after the tag name to be whitespace, >, or /
 // so that <Item does not match <ItemDetail.
 function _nthTagOpen(src, tag, n) {
+  const scan = _blankInsensitive(src);
   // Matches <tag> <tag/> <tag attr=...>
   const re = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
   let count = 0;
   let m;
-  while ((m = re.exec(src)) !== null) {
+  while ((m = re.exec(scan)) !== null) {
     count++;
     if (count === n) return m.index;
   }
   return -1;
+}
+
+function _blankInsensitive(src) {
+  return src.replace(
+    /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g,
+    m => ' '.repeat(m.length)
+  );
 }
 
 // ── Find the source range {startOffset, endOffset} for a matched element ──────
@@ -225,7 +233,7 @@ function _findNodeRangeForTag(xmlSrc, tag, occurrenceIndex) {
     return { startOffset: openOffset, endOffset: openTagEnd };
   }
 
-  // Find matching </tag> using precise regex, tracking nesting depth
+  const scan    = _blankInsensitive(xmlSrc);
   let depth = 1, j = openTagEnd;
   const escTag  = _escRe(tag);
   const openRe  = new RegExp(`<${escTag}(?=[\\s>/])`, 'g');
@@ -234,8 +242,8 @@ function _findNodeRangeForTag(xmlSrc, tag, occurrenceIndex) {
   while (depth > 0) {
     openRe.lastIndex  = j;
     closeRe.lastIndex = j;
-    const nextOpen  = openRe.exec(xmlSrc);
-    const nextClose = closeRe.exec(xmlSrc);
+    const nextOpen  = openRe.exec(scan);
+    const nextClose = closeRe.exec(scan);
 
     if (!nextClose) break;
 
@@ -561,17 +569,7 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   const doc    = parser.parseFromString(xmlSrc, 'application/xml');
   if (doc.querySelector('parsererror')) return null;
 
-  // Blank out comments and CDATA so tag-shaped strings inside them don't
-  // bump the regex occurrence counter past the DOM's actual count. Replacing
-  // each region with spaces of identical length preserves character positions,
-  // so the offset and the ranges from _findNodeRangeForTag (computed on the
-  // real source) still align. If `offset` itself falls inside a stripped
-  // region the tag regex won't match it and we return null — same as the
-  // existing behaviour for "click outside any element".
-  const scanSrc = xmlSrc.replace(
-    /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g,
-    m => ' '.repeat(m.length)
-  );
+  const scanSrc = _blankInsensitive(xmlSrc);
 
   const tagRe = /<([\w:.-]+)(?=[\s>/])/g;
   let m;

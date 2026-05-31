@@ -71,6 +71,7 @@ function applyShareData(data) {
   clearTimeout(xsltDebounce);
   clearTimeout(xmlDebounce);
   clearAllMarkers();
+  if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
   // Ensure XML editor is connected to XSLT model before updating
   if (eds.xml && xmlModelXslt) {
@@ -78,22 +79,28 @@ function applyShareData(data) {
   }
 
   // Write directly to XSLT model (share is always XSLT context).
-  // Suppress save per setValue: each setValue fires Monaco's onDidChangeModelContent
-  // listener (editor.js) which calls scheduleSave() synchronously. Setting the flag
-  // before each setValue lets that listener-driven scheduleSave() consume it, so the
-  // 800ms _saveTimer is never armed and the user's existing localStorage session is
-  // preserved until they explicitly edit. Mirrors the pattern in state.js:_resetXsltMode.
+  // Suppress the per-setValue listener-driven scheduleSave so it doesn't
+  // arm _saveTimer mid-write, then call scheduleSave() explicitly at the end.
   if (data.xml  !== undefined) {
+    const _prevSS = _suppressNextSave;
     _suppressNextSave = true;
-    xmlModelXslt?.setValue(data.xml);
-    _suppressNextSave = false;
+    try {
+      xmlModelXslt?.setValue(data.xml);
+    } finally {
+      _suppressNextSave = _prevSS;
+    }
   }
   if (data.xslt !== undefined) {
+    const _prevSV = _suppressNextValidation;
+    const _prevSS = _suppressNextSave;
     _suppressNextValidation = true;
     _suppressNextSave       = true;
-    eds.xslt?.setValue(data.xslt);
-    _suppressNextSave       = false;
-    _suppressNextValidation = false;
+    try {
+      eds.xslt?.setValue(data.xslt);
+    } finally {
+      _suppressNextSave       = _prevSS;
+      _suppressNextValidation = _prevSV;
+    }
   }
 
   kvData  = { headers: [], properties: [] };
@@ -110,6 +117,8 @@ function applyShareData(data) {
   if (_shdr)  _parts.push(`${_shdr} header${_shdr  > 1 ? 's' : ''}`);
   if (_sprop) _parts.push(`${_sprop} propert${_sprop > 1 ? 'ies' : 'y'}`);
   clog(`Shared session loaded — ${_parts.join(' · ')} ✓`, 'success');
+
+  scheduleSave();
 }
 
 // ── Modal ────────────────────────────────────

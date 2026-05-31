@@ -70,6 +70,8 @@ function setupDragDrop(editorWrapId, pane) {
   el.addEventListener('dragleave', e => {
     if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
   });
+  el.addEventListener('dragend', () => el.classList.remove('drag-over'));
+  document.addEventListener('dragend', () => el.classList.remove('drag-over'));
   el.addEventListener('drop', e => {
     e.preventDefault();
     el.classList.remove('drag-over');

@@ -117,7 +117,6 @@ class ModeManager {
    */
   cleanup() {
     if (this.isXpath) {
-      // Cleanup XPath mode
       if (typeof clearXPathHighlights === 'function') {
         clearXPathHighlights();
       }
@@ -125,14 +124,6 @@ class ModeManager {
         clearXPathResults();
       }
     }
-
-    // Use clearAllMarkers (validate.js) instead of clearing only
-    // xmlDecorations. clearAllMarkers handles BOTH decoration collections
-    // (xml + xslt) plus markers on both XML models — strict superset of the
-    // previous inline xmlDecorations.clear(). xsltDecorations was previously
-    // left intact when leaving XSLT mode, leaving stale glyphs visible the
-    // next time the user switched back.
-    if (typeof clearAllMarkers === 'function') clearAllMarkers();
   }
 
   /**
