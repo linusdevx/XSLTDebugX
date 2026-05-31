@@ -7,8 +7,7 @@ require.config({
 
 document.getElementById('loadTxt').textContent = 'Loading Monaco Editor…';
 
-// Parse share hash immediately — before editors exist — so _pendingShareData is
-// set before editors initialize below.
+// Parse share hash before editors initialize so _pendingShareData is set in time.
 loadFromShareHash();
 
 require(['vs/editor/editor.main'], () => {
@@ -18,34 +17,28 @@ require(['vs/editor/editor.main'], () => {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      // XML structure
-      { token: 'delimiter.xml',         foreground: '4a6080' },           // < > / =  — muted steel
-      { token: 'metatag.xml',           foreground: 'f472b6' },           // <?xml ?>  — pink
+      { token: 'delimiter.xml',         foreground: '4a6080' },
+      { token: 'metatag.xml',           foreground: 'f472b6' },
 
       // Tags & attribute names — base colors (inline decorations override these per-element)
       { token: 'tag',                   foreground: '56b6c2', fontStyle: 'bold' },
       { token: 'tag.id.pug',            foreground: '56b6c2' },
-      { token: 'attribute.name',        foreground: 'c084fc' },  // lavender — matches xml-attr-name
+      { token: 'attribute.name',        foreground: 'c084fc' },
       { token: 'attribute.name.html',   foreground: 'c084fc' },
 
-      // Attribute values / strings — soft lime green
       { token: 'attribute.value',       foreground: 'a8e06a' },
       { token: 'attribute.value.html',  foreground: 'a8e06a' },
       { token: 'string',                foreground: 'a8e06a' },
       { token: 'string.xml',            foreground: 'a8e06a' },
 
-      // XSL-specific: namespace prefixes in attribute values
-      { token: 'attribute.value.xpath', foreground: 'fbbf24' },           // XPath expressions — amber
+      { token: 'attribute.value.xpath', foreground: 'fbbf24' },
 
-      // Comments — dim and italic
       { token: 'comment',               foreground: '3d5470', fontStyle: 'italic' },
       { token: 'comment.xml',           foreground: '3d5470', fontStyle: 'italic' },
 
-      // Numbers
       { token: 'number',                foreground: 'e8c56d' },
 
-      // CDATA / entities
-      { token: 'entity.xml',            foreground: 'c084fc' },           // purple
+      { token: 'entity.xml',            foreground: 'c084fc' },
     ],
     colors: {
       'editor.background':                  '#070c14',
@@ -93,7 +86,7 @@ require(['vs/editor/editor.main'], () => {
       { token: 'attribute.name.html',   foreground: '116329' },
       { token: 'attribute.value',       foreground: '0a3069' },
       { token: 'attribute.value.html',  foreground: '0a3069' },
-      { token: 'attribute.value.xpath', foreground: 'b45309' },  // XPath expressions — amber (dark)
+      { token: 'attribute.value.xpath', foreground: 'b45309' },
       { token: 'string',                foreground: '0a3069' },
       { token: 'string.xml',            foreground: '0a3069' },
       { token: 'delimiter.xml',         foreground: '8090a0' },
@@ -101,7 +94,7 @@ require(['vs/editor/editor.main'], () => {
       { token: 'comment',               foreground: '6a737d', fontStyle: 'italic' },
       { token: 'comment.xml',           foreground: '6a737d', fontStyle: 'italic' },
       { token: 'number',                foreground: 'b5521a' },
-      { token: 'entity.xml',            foreground: '6f42c1' },  // purple
+      { token: 'entity.xml',            foreground: '6f42c1' },
     ],
     colors: {
       'editor.background':                  '#ffffff',
@@ -142,7 +135,6 @@ require(['vs/editor/editor.main'], () => {
   monaco.editor.defineTheme('xdebugx',       _darkThemeDef);
   monaco.editor.defineTheme('xdebugx-light', _lightThemeDef);
 
-  // Apply saved theme to Monaco if light was restored from localStorage
   if (document.body.classList.contains('light')) {
     monaco.editor.setTheme('xdebugx-light');
   }
@@ -177,25 +169,21 @@ require(['vs/editor/editor.main'], () => {
     'semanticHighlighting.enabled': true,
   };
 
-  // ── Restore saved session (if any) ──
   // Skip session restore when a share link is pending — applyShareData handles init.
   const _savedSession = window._pendingShareData ? null : loadSavedState();
 
-  // ── Create two XML models for mode isolation ──
-  // XSLT mode model — defaults to identity transform or saved xmlXslt
+  // ── Two XML models for mode isolation ──
   // Backwards compatibility: if only old 'xml' key exists, use it for XSLT model
   xmlModelXslt = monaco.editor.createModel(
     _savedSession?.xmlXslt ?? _savedSession?.xml ?? EXAMPLES.identityTransform.xml,
     'xml'
   );
 
-  // XPath mode model — defaults to xpath navigation example or saved xmlXpath
   xmlModelXpath = monaco.editor.createModel(
     _savedSession?.xmlXpath ?? EXAMPLES.xpathNavigation.xml,
     'xml'
   );
 
-  // ── Create XML editor with XSLT model initially active ──
   eds.xml = monaco.editor.create(
     document.getElementById('xmlEd'),
     { ...shared, language: 'xml', model: xmlModelXslt }
@@ -222,19 +210,31 @@ require(['vs/editor/editor.main'], () => {
     );
   });
 
-  // Set up drag & drop for XML and XSLT panes
   setupDragDrop('xmlEdWrap', 'xml');
   setupDragDrop('xsltEdWrap', 'xslt');
 
-  // ── Auto-close XML tags for xml language mode ──
-  // Combined auto-close handler: XML tags + bracket/quote pairs
+  // ── Auto-close XML tags ──
   // Implemented manually because Monaco's built-in only works for 'html' mode.
+
+  function _isOffsetInsensitive(model, line, column1Based) {
+    try {
+      if (typeof model.forceTokenization === 'function') model.forceTokenization(line);
+      const tokens = model.getLineTokens(line);
+      if (!tokens) return false;
+      const offset0 = Math.max(0, column1Based - 1);
+      const idx = tokens.findTokenIndexAtOffset(offset0);
+      const type = tokens.getClassName(idx) || '';
+      return /comment|cdata|string/.test(type);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function setupAutoClose(editor) {
     let _inserting = false;
 
     const PAIRS = { '(': ')', '[': ']', '"': '"' };
 
-    // Single onKeyDown handles: < intercept, bracket/quote pairs, skip-over
     editor.onKeyDown(e => {
       if (_inserting) return;
       const ch = e.browserEvent.key;
@@ -282,7 +282,6 @@ require(['vs/editor/editor.main'], () => {
           return;
         }
 
-        // Insert pair
         e.preventDefault();
         _inserting = true;
         editor.executeEdits('auto-pair', [{
@@ -308,16 +307,14 @@ require(['vs/editor/editor.main'], () => {
       }
 
       // ── Attribute = → ="" with cursor between quotes ──
-      // Only fires when '=' is typed right after a word character (attribute name)
       if (ch === '=') {
         const pos      = editor.getPosition();
         const model    = editor.getModel();
         const lineText = model.getLineContent(pos.lineNumber);
-        const charBefore = lineText[pos.column - 2]; // char just before cursor
-        const charAfter  = lineText[pos.column - 1]; // char just after cursor
+        const charBefore = lineText[pos.column - 2];
+        const charAfter  = lineText[pos.column - 1];
 
         // Only trigger inside a tag opener: prev char is word char, next is not already "
-        // and there must be an unclosed '<' before the cursor on this line
         const lineUpToCursor = lineText.substring(0, pos.column - 1);
         const inTag = (lineUpToCursor.lastIndexOf('<') > lineUpToCursor.lastIndexOf('>'));
         if (/\w/.test(charBefore) && charAfter !== '"' && inTag) {
@@ -330,7 +327,6 @@ require(['vs/editor/editor.main'], () => {
             },
             text: '=""',
           }]);
-          // Place cursor between the quotes
           editor.setPosition({ lineNumber: pos.lineNumber, column: pos.column + 2 });
           _inserting = false;
         }
@@ -347,22 +343,7 @@ require(['vs/editor/editor.main'], () => {
         const before   = model.getLineContent(pos.lineNumber).substring(0, pos.column - 1);
         if (!before.endsWith('>') || before.endsWith('/>')) continue;
         if (/<\/[^>]+>$/.test(before)) continue;
-        // Skip if inside a comment or CDATA section
-        const fullBefore = model.getValueInRange({
-          startLineNumber: 1, startColumn: 1,
-          endLineNumber: pos.lineNumber, endColumn: pos.column
-        });
-        // Find last unclosed <!-- by checking that --> doesn't appear AFTER the <!--
-        const lastComment = fullBefore.lastIndexOf('<!--');
-        if (lastComment !== -1) {
-          const lastCommentEnd = fullBefore.indexOf('-->', lastComment + 4);
-          if (lastCommentEnd === -1) continue;
-        }
-        const lastCdata = fullBefore.lastIndexOf('<![CDATA[');
-        if (lastCdata !== -1) {
-          const lastCdataEnd = fullBefore.indexOf(']]>', lastCdata + 9);
-          if (lastCdataEnd === -1) continue;
-        }
+        if (_isOffsetInsensitive(model, pos.lineNumber, pos.column - 2)) continue;
         const m = before.match(/<([a-zA-Z_][a-zA-Z0-9_:.-]*)(?:\s[^>]*)?>$/);
         if (!m) continue;
         _inserting = true;
@@ -385,32 +366,27 @@ require(['vs/editor/editor.main'], () => {
 
   // ── Custom context menu actions ───────────────────────────────────────────
 
-  // Helper: toggle XML comment on selected lines
   function _toggleXmlComment(editor) {
     const model = editor.getModel();
     const sel   = editor.getSelection();
     const startLine = sel.startLineNumber;
     const endLine   = sel.endLineNumber;
 
-    // Collect lines in selection
     const lines = [];
     for (let i = startLine; i <= endLine; i++) lines.push(model.getLineContent(i));
 
-    // Detect if ALL non-empty lines are already commented
     const nonEmpty   = lines.filter(l => l.trim());
     const allCommented = nonEmpty.length > 0 &&
       nonEmpty.every(l => l.trim().startsWith('<!--') && l.trim().endsWith('-->'));
 
     const edits = [];
     if (allCommented) {
-      // Uncomment: strip <!-- and -->
       for (let i = startLine; i <= endLine; i++) {
         const line = model.getLineContent(i);
         const stripped = line.replace(/^(\s*)<!--\s?/, '$1').replace(/\s?-->(\s*)$/, '$1');
         edits.push({ range: new monaco.Range(i, 1, i, line.length + 1), text: stripped });
       }
     } else {
-      // Comment: wrap each non-empty line
       for (let i = startLine; i <= endLine; i++) {
         const line = model.getLineContent(i);
         if (!line.trim()) continue;
@@ -420,7 +396,7 @@ require(['vs/editor/editor.main'], () => {
     if (edits.length) editor.executeEdits('toggle-comment', edits);
   }
 
-  // ── Minify helper: collapses whitespace outside quoted attributes ──
+  // Collapses whitespace outside quoted attributes
   function _minifyXml(src) {
     let result = src.replace(/>\s+</g, '><');
     const parts = [];
@@ -486,30 +462,18 @@ require(['vs/editor/editor.main'], () => {
 
   // ── Shared clipboard helper for XPath copy actions ──
   function _copyXPathToClipboard(xpath, label) {
-    const onSuccess = () => {
+    _clipboardWrite(xpath, () => {
       clog(`ƒx  ${label}: ${xpath}`, 'success');
       showCopyToast(`✓ ${label}`);
-    };
-    const onFail = () => {
-      const ta = document.createElement('textarea');
-      ta.value = xpath; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-      document.body.appendChild(ta); ta.focus(); ta.select();
-      const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-      document.body.removeChild(ta);
-      ok ? onSuccess() : clog('Clipboard access denied', 'error');
-    };
-    if (window.navigator?.clipboard?.writeText) navigator.clipboard.writeText(xpath).then(onSuccess, onFail);
-    else onFail();
+    });
   }
 
-  // ── Mode-aware handler: XSLT mode → log + copy only; XPath mode → set bar + run ──
+  // ── Mode-aware: XSLT mode logs + copies; XPath mode also sets bar + runs ──
   function _handleCopyXPath(xpath, label) {
     if (!modeManager.isXpath) {
-      // XSLT mode — just log and copy, don't switch mode or run
       clog(`ƒx  ${label}: ${xpath}`, 'info');
       _copyXPathToClipboard(xpath, label);
     } else {
-      // XPath mode — populate bar, run, and copy
       const input = document.getElementById('xpathInput');
       if (input) {
         input.value = xpath;
@@ -586,21 +550,18 @@ require(['vs/editor/editor.main'], () => {
   });
 
   // ── CPI namespace auto-injector ──────────────────────────────────────────────
-  // Called before inserting any cpi: snippet — ensures xmlns:cpi is declared
-  // on the xsl:stylesheet element and removes it from exclude-result-prefixes.
+  // Ensures xmlns:cpi is declared on xsl:stylesheet and removed from
+  // exclude-result-prefixes before inserting any cpi: snippet.
   function _ensureCpiNamespace(ed) {
     const src = ed.getValue();
-    if (src.includes('xmlns:cpi=')) return; // already declared
+    if (src.includes('xmlns:cpi=')) return;
 
-    // Inject xmlns:cpi onto xsl:stylesheet or xsl:transform opening tag
     const CPI_NS = ' xmlns:cpi="http://sap.com/it/"';
     let updated = src.replace(
       /(<xsl:(?:stylesheet|transform)\b)/,
       `$1${CPI_NS}`
     );
 
-    // Remove 'cpi' from exclude-result-prefixes if present (it's needed now)
-    // Also ensure it's NOT in exclude-result-prefixes
     updated = updated.replace(
       /(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g,
       (_, attr, q, val) => {
@@ -610,7 +571,6 @@ require(['vs/editor/editor.main'], () => {
     );
 
     if (updated === src) {
-      // No xsl:stylesheet found — warn but still insert snippet
       clog('⚠ Could not auto-add xmlns:cpi — add it manually to xsl:stylesheet', 'warn');
       return;
     }
@@ -630,7 +590,6 @@ require(['vs/editor/editor.main'], () => {
   function _insertSnippet(ed, snippet) {
     const pos  = ed.getPosition();
     const line = ed.getModel().getLineContent(pos.lineNumber);
-    // Detect indentation of current line and apply to snippet
     const indent = line.match(/^(\s*)/)[1];
     const indented = snippet
       .split('\n')
@@ -837,7 +796,6 @@ require(['vs/editor/editor.main'], () => {
       contextMenuGroupId: '9_snippets',
       contextMenuOrder: order,
       run(ed) {
-        // CPI snippets need xmlns:cpi — auto-inject if missing
         if (id.startsWith('snip-cpi-')) _ensureCpiNamespace(ed);
         _insertSnippet(ed, snippet);
       }
@@ -849,13 +807,12 @@ require(['vs/editor/editor.main'], () => {
   function runXsltValidation() {
     const src = eds.xslt.getValue().trim();
     if (!src) { clearAllMarkers(); return; }
-    // Only validate the XSLT itself for well-formedness here
     const result = validateXML(src);
     if (!result.ok) {
       xsltDecorations = markErrorLine(eds.xslt, result.line, result.message, xsltDecorations);
       setStatus(`XSLT error at line ${result.line}`, 'err');
     } else {
-      // Only reset status if we're not mid-transform
+      // Don't clobber a transform-failure status
       const current = document.getElementById('statTxt').textContent;
       if (current.startsWith('XSLT error')) setStatus('Ready', 'ok');
     }
@@ -891,23 +848,20 @@ require(['vs/editor/editor.main'], () => {
   });
 
   eds.xml.onDidChangeModelContent(() => {
-    // Guard against synthetic content-change event during model swap in toggleXPath
+    // Synthetic content-change fires during model swap in toggleXPath
     if (_suppressNextXmlChange) { _suppressNextXmlChange = false; return; }
     scheduleSave();
     if (_suppressNextValidation) { _suppressNextValidation = false; return; }
     monaco.editor.setModelMarkers(eds.xml.getModel(), 'xsltdebugx', []);
     if (xmlDecorations) { xmlDecorations.clear(); xmlDecorations = null; }
-    // Clear stale XPath highlights and hide results panel whenever source XML is edited
     if (typeof clearXPathHighlights === 'function') clearXPathHighlights();
     document.getElementById('xpathResultsPanel')?.classList.remove('visible');
-    // Update XML validation badge in real-time
     if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
     clearTimeout(xmlDebounce);
     xmlDebounce = setTimeout(runXmlValidation, 800);
   });
 
   // ── Cursor position + character count in status bar ──────────────────────────
-  // XML label changes dynamically based on mode: 'XML Input' (XSLT) vs 'XML Source' (XPath)
   function _getXmlLabel() {
     return modeManager.isXpath ? 'XML Source' : 'XML Input';
   }
@@ -923,11 +877,11 @@ require(['vs/editor/editor.main'], () => {
       `${label}  Ln ${pos.lineNumber}/${lines} · Col ${pos.column} · ${chars.toLocaleString()} chars`;
   }
 
-  // Expose _updateCursorStat globally so toggleXPath can update cursor stat after mode switch
+  // Expose so toggleXPath can update cursor stat after mode switch
   window._updateCursorStat = _updateCursorStat;
 
   [
-    { ed: eds.xml,  getLabel: _getXmlLabel },  // Dynamic label based on mode
+    { ed: eds.xml,  getLabel: _getXmlLabel },
     { ed: eds.xslt, getLabel: () => 'XSLT' },
     { ed: eds.out,  getLabel: () => 'Output' },
   ].forEach(({ ed, getLabel }) => {
@@ -935,17 +889,16 @@ require(['vs/editor/editor.main'], () => {
     ed.onDidFocusEditorText(()      => _updateCursorStat(ed, getLabel()));
     ed.onDidChangeModelContent(()   => _updateCursorStat(ed, getLabel()));
   });
-  // Initialise with XML pane on load
   _updateCursorStat(eds.xml, _getXmlLabel());
 
   document.getElementById('loadTxt').textContent = 'Loading Saxon-JS…';
 
-  // Wait for Saxon-JS
   const checkSaxon = setInterval(() => {
     if (typeof SaxonJS !== 'undefined') {
       clearInterval(checkSaxon);
-      clearTimeout(saxonTimeout); // cancel failure path — prevents double hideLoader() if Saxon
-                                  // loads in the same event-loop turn as the 12s timeout fires
+      // Cancel failure path — prevents double hideLoader() if Saxon
+      // loads in the same event-loop turn as the 12s timeout fires
+      clearTimeout(saxonTimeout);
       saxonReady = true;
       reinitIcons();
       hideLoader();
@@ -956,7 +909,6 @@ require(['vs/editor/editor.main'], () => {
       if (window._pendingShareData) {
         applyShareData(window._pendingShareData);
       } else if (_savedSession) {
-        // Restore KV rows
         if (Array.isArray(_savedSession.headers)) {
           _savedSession.headers.forEach(r => {
             kvIdSeq++;
@@ -969,32 +921,26 @@ require(['vs/editor/editor.main'], () => {
             kvData.properties.push({ id: kvIdSeq, name: r.name, value: r.value });
           });
         }
-        // Restore column collapse states
         if (_savedSession.leftCollapsed)  document.getElementById('colLeft')?.classList.add('collapsed');
         if (!_savedSession.rightCollapsed) document.getElementById('colRight')?.classList.remove('collapsed');
 
-        // Restore XPath expression
         {
           const _expr = _savedSession.xpathExpr || (EXAMPLES.xpathNavigation?.xpathExpr ?? '');
           if (typeof _syncXPathInput === 'function') _syncXPathInput(_expr);
           else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _expr; }
         }
 
-        // Restore mode using ModeManager
         modeManager.restoreFromSession(_savedSession);
 
-        // Update cursor stat label to match restored mode
         if (eds.xml && typeof _updateCursorStat === 'function') {
           _updateCursorStat(eds.xml, modeManager.isXpath ? 'XML Source' : 'XML Input');
         }
 
-        // Recalculate textarea height for XPath bar
         if (modeManager.isXpath) {
           const _ta = document.getElementById('xpathInput');
           if (_ta) { _ta.style.height = 'auto'; _ta.style.height = _ta.scrollHeight + 'px'; }
         }
 
-        // Relay Monaco after potential column changes
         setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 260);
 
         const ago = _savedSession.savedAt
@@ -1007,7 +953,6 @@ require(['vs/editor/editor.main'], () => {
           : '';
         clog(`Session restored${ago ? ' · saved ' + ago : ''} · ${modeManager.isXpath ? 'XPath' : 'XSLT'} mode ✓`, 'success');
 
-        // Restore hints strip if session was on an XPath example
         if (modeManager.isXpath && _savedSession.lastExampleKey) {
           window._lastExampleKey = _savedSession.lastExampleKey;
           const _ex = EXAMPLES[_savedSession.lastExampleKey];
@@ -1015,15 +960,13 @@ require(['vs/editor/editor.main'], () => {
             renderXPathHints(_ex.xpathHints);
           }
         }
-        // Auto-run XPath on restore — expression already in bar, lightweight to re-evaluate
         if (modeManager.isXpath) {
           setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 400);
         }
       } else {
         clog('Identity Transform loaded. Use Examples menu to load CPI scenarios.', 'info');
-        // Apply default XPath state (off) on fresh load
         if (typeof _applyXPathToggleState === 'function') _applyXPathToggleState();
-        // Pre-load default XPath expression so bar is ready when user switches to XPath mode
+        // Pre-load default XPath so the bar is ready when user switches to XPath mode
         const _defaultExpr = EXAMPLES.xpathNavigation?.xpathExpr ?? '';
         if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
         else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
@@ -1032,7 +975,6 @@ require(['vs/editor/editor.main'], () => {
       renderKV('headers');
       renderKV('properties');
       renderOutputKV({}, {});
-      // Initialize XML validation badge on load
       if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
       setStatus('Ready', 'ok');
     }

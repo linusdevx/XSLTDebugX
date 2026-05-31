@@ -8,36 +8,34 @@ function triggerUpload(pane) {
   document.getElementById(id).click();
 }
 
+// `verb` lets the caller distinguish "Uploaded" from "Dropped" while keeping routing identical.
+function _applyFileContent(text, file, pane, verb) {
+  const sizeKB = formatFileSize(file.size);
+  if (pane === 'xml') {
+    const targetModel = modeManager.currentModel;
+    if (!targetModel) { clog('Editor not ready — cannot upload file', 'error'); return; }
+    targetModel.setValue(text);
+  } else if (eds.xslt) {
+    eds.xslt.setValue(text);
+  } else {
+    clog('Editor not ready — cannot upload file', 'error');
+    return;
+  }
+  scheduleSave();
+  clog(`${verb}: ${file.name} (${sizeKB} KB) → ${pane.toUpperCase()} pane`, 'success');
+}
+
 function handleUpload(event, pane) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    const text = e.target.result;
-    if (pane === 'xml') {
-      // Route to the currently active XML model based on mode
-      const targetModel = modeManager.currentModel;
-      if (targetModel) {
-        targetModel.setValue(text);
-        scheduleSave();
-        clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-      } else {
-        clog('Editor not ready — cannot upload file', 'error');
-      }
-    } else if (eds.xslt) {
-      eds.xslt.setValue(text);
-      scheduleSave();
-      clog(`Uploaded: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-    } else {
-      clog('Editor not ready — cannot upload file', 'error');
-    }
-  };
+  reader.onload  = e => _applyFileContent(e.target.result, file, pane, 'Uploaded');
   reader.onerror = e => clog(`Failed to read file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
   reader.readAsText(file);
 }
 
 function downloadPane(pane, defaultName) {
-  const ed = pane === 'xml' ? eds.xml : pane === 'xslt' ? eds.xslt : eds.out;
+  const ed = _getPaneEd(pane);
   const text = ed?.getValue()?.trim();
   if (!text) { clog(`${pane.toUpperCase()} pane is empty — nothing to download`, 'warn'); return; }
   const ext = defaultName.split('.').pop() || 'xml';
@@ -63,7 +61,14 @@ function setupDragDrop(editorWrapId, pane) {
     e.preventDefault();
     el.classList.add('drag-over');
   });
-  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  // Monaco's wrapper has many nested children; dragleave fires on every internal
+  // boundary, so a naive remove() flickers continuously. Only clear when the
+  // pointer actually leaves the wrapper (relatedTarget null when leaving the window).
+  el.addEventListener('dragleave', e => {
+    if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
+  });
+  el.addEventListener('dragend', () => el.classList.remove('drag-over'));
+  document.addEventListener('dragend', () => el.classList.remove('drag-over'));
   el.addEventListener('drop', e => {
     e.preventDefault();
     el.classList.remove('drag-over');
@@ -71,26 +76,8 @@ function setupDragDrop(editorWrapId, pane) {
     if (!file) return;
     if (pane === 'out') { clog('Cannot drop onto Output pane', 'warn'); return; }
     const reader = new FileReader();
-    reader.onload = ev => {
-      if (pane === 'xml') {
-        // Route to the currently active XML model based on mode
-        const targetModel = modeManager.currentModel;
-        if (targetModel) {
-          targetModel.setValue(ev.target.result);
-          scheduleSave();
-          clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-        } else {
-          clog('Editor not ready — cannot upload file', 'error');
-        }
-      } else if (eds.xslt) {
-        eds.xslt.setValue(ev.target.result);
-        scheduleSave();
-        clog(`Dropped: ${file.name} (${formatFileSize(file.size)} KB) → ${pane.toUpperCase()} pane`, 'success');
-      } else {
-        clog('Editor not ready — cannot upload file', 'error');
-      }
-    };
-    reader.onerror = e => clog(`Failed to read dropped file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
+    reader.onload  = ev => _applyFileContent(ev.target.result, file, pane, 'Dropped');
+    reader.onerror = e  => clog(`Failed to read dropped file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
     reader.readAsText(file);
   });
 }

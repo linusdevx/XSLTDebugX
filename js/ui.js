@@ -108,28 +108,10 @@ function copyConsole() {
     }).join('\n');
   if (!text.trim()) return clog('Console is empty — nothing to copy', 'warn');
 
-  const onSuccess = () => {
+  _clipboardWrite(text, () => {
     clog('Console copied to clipboard ✓', 'success');
     showCopyToast('✓ Copied console output');
-  };
-  const onFail    = () => {
-    // execCommand fallback for file:// or non-HTTPS contexts
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(text).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  });
 }
 
 // ════════════════════════════════════════════
@@ -179,12 +161,14 @@ function toggleTheme() {
   }
 }
 
-// Restore saved theme preference
+// Symmetric theme restore — handle both 'light' and 'dark'. Surviving a
+// future flip of the default theme in index.html requires touching the class
+// in both directions, not just removing 'light' on saved=='dark'.
 (function() {
   const saved = localStorage.getItem('xdebugx-theme');
-  if (saved === 'dark') {
-    document.body.classList.remove('light');
-  }
+  if (saved === 'light')      document.body.classList.add('light');
+  else if (saved === 'dark')  document.body.classList.remove('light');
+  // saved === null (first visit) → leave whatever index.html shipped
 })();
 // ════════════════════════════════════════════
 //  HELP MODAL
@@ -197,9 +181,8 @@ function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
 }
 
-function handleHelpBackdropClick(e) {
-  if (e.target === document.getElementById('helpModalBackdrop')) closeHelpModal();
-}
+// Factory in state.js. `var` keeps it on window for inline onclick=.
+var handleHelpBackdropClick = _makeBackdropClose('helpModalBackdrop', closeHelpModal);
 
 function switchHelpTab(tab) {
   document.querySelectorAll('.help-tab').forEach(btn => {

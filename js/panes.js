@@ -5,8 +5,15 @@
 // Track word wrap state per editor — off by default
 const _wrapState = { xml: false, xslt: false, out: false };
 
+// Map a pane name ('xml' | 'xslt' | 'out') to its Monaco editor instance.
+function _getPaneEd(which) {
+  return which === 'xml'  ? eds.xml
+       : which === 'xslt' ? eds.xslt
+       : eds.out;
+}
+
 function toggleWordWrap(which) {
-  const ed = which === 'xml' ? eds.xml : which === 'xslt' ? eds.xslt : eds.out;
+  const ed = _getPaneEd(which);
   if (!ed) return;
   _wrapState[which] = !_wrapState[which];
   ed.updateOptions({ wordWrap: _wrapState[which] ? 'on' : 'off' });
@@ -49,34 +56,16 @@ function clearPane(which) {
 }
 
 function copyPane(which) {
-  const ed = which === 'xml' ? eds.xml : which === 'xslt' ? eds.xslt : eds.out;
+  const ed = _getPaneEd(which);
   const v  = ed?.getValue() ?? '';
   const label = which.toUpperCase();
   if (!v.trim()) return clog(`${label} pane is empty — nothing to copy`, 'warn');
 
   const sizeKB = (v.length / 1024).toFixed(1);
-  const onSuccess = () => {
+  _clipboardWrite(v, () => {
     clog(`${label} copied to clipboard ✓`, 'success');
     showCopyToast(`✓ Copied ${label} (${sizeKB}KB)`);
-  };
-  const onFail    = () => {
-    const ta = document.createElement('textarea');
-    ta.value = v;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    const ok = (() => { try { return document.execCommand('copy'); } catch(_) { return false; } })();
-    if (ok) console.info('[clipboard] used execCommand fallback');
-    document.body.removeChild(ta);
-    ok ? onSuccess() : clog('Clipboard access denied', 'error');
-  };
-
-  if (window.navigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-    navigator.clipboard.writeText(v).then(onSuccess, onFail);
-  } else {
-    onFail();
-  }
+  });
 }
 
 // ── XML Token regex — cached at module scope for performance ──
@@ -149,9 +138,7 @@ function prettyXML(xml) {
 }
 
 function fmtEditor(which) {
-  const ed = which === 'xml'  ? eds.xml
-           : which === 'xslt' ? eds.xslt
-           : eds.out;
+  const ed = _getPaneEd(which);
   if (!ed) return;
   const wasReadOnly = ed.getRawOptions().readOnly;
   if (wasReadOnly) ed.updateOptions({ readOnly: false });

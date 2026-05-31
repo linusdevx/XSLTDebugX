@@ -37,8 +37,11 @@ jobs:
           echo "=== Confirming built app (no js/ tags in index.html) ==="
           grep 'src="js/' dist/index.html && echo "❌ FAIL: raw js/ tags found — not built" || echo "✅ PASS: serving built bundle"
 
+      - name: Install Playwright system dependencies
+        run: npx playwright install-deps chromium
+
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Create artifact directories
         run: mkdir -p playwright-report test-results
