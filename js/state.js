@@ -195,8 +195,21 @@ function _resetXPathMode() {
   // Cancel pending validation timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
-  if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
-  if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
+
+  // C-2: arm _suppressNextSave BEFORE setValue. Monaco fires
+  // onDidChangeModelContent synchronously inside setValue, and the editor.js
+  // listener calls scheduleSave() — without arming the flag, the reset would
+  // queue a save against mid-transition state. try/finally restores the
+  // previous flag value rather than blindly clearing one set by an outer caller.
+  const _prevSuppress = _suppressNextSave;
+  _suppressNextSave = true;
+  try {
+    if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
+  } finally {
+    _suppressNextSave = _prevSuppress;
+  }
+
+  _resetOutputPane('xml', 'output.xml');
   if (eds.xml) clearAllMarkers();
   if (typeof clearXPathResults === 'function') clearXPathResults();
   if (typeof renderXPathHints === 'function') renderXPathHints(null);
@@ -215,10 +228,22 @@ function _resetXsltMode() {
   // Cancel pending validation timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
-  if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-  if (eds.xslt) { _suppressNextSave = true; eds.xslt.setValue(EXAMPLES.identityTransform.xslt); }
-  _suppressNextSave = false;
-  if (eds.out) { monaco.editor.setModelLanguage(eds.out.getModel(), 'xml'); const _b=document.getElementById('outLangBadge'); const _d=document.getElementById('outDownloadBtn'); if(_b)_b.textContent='XML'; if(_d){_d.title='Download output as XML';_d.onclick=()=>downloadPane('out','output.xml');} eds.out.updateOptions({ readOnly: false }); eds.out.setValue(''); eds.out.updateOptions({ readOnly: true }); }
+
+  // C-2: arm _suppressNextSave BEFORE the FIRST setValue. Previously the XML
+  // setValue ran before the flag was set, so its synchronous scheduleSave()
+  // queued a save with mid-reset XSLT. try/finally restores the previous flag
+  // value rather than blindly clearing one set by an outer caller.
+  const _prevSuppress = _suppressNextSave;
+  _suppressNextSave = true;
+  try {
+    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+    if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+  } finally {
+    _suppressNextSave = _prevSuppress;
+  }
+
+  _resetOutputPane('xml', 'output.xml');
+
   kvData.headers    = [];
   kvData.properties = [];
   kvIdSeq = 0;
@@ -231,9 +256,12 @@ function _resetXsltMode() {
   if (typeof renderXPathHints === 'function') renderXPathHints(null);
   window._lastExampleKey = null;
 
-  const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
-  if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
-  else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+  // M-3: XPath bar is hidden in XSLT mode — only sync if we're actually in XPath
+  if (modeManager.isXpath) {
+    const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
+    if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
+    else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+  }
 
   setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 50);
   setStatus('Ready', 'ok');
