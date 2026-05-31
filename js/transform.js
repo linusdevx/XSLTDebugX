@@ -5,8 +5,7 @@
 // Shared spinner HTML for the Run button running state
 const _RUN_BTN_SPINNER = `<svg class="spinner" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="8" cy="8" r="6" stroke-opacity="0.3"/><path d="M8 2a6 6 0 0 1 6 6" stroke-linecap="round"/></svg>`;
 
-// Single source of truth for the Run button label markup — keeps icon size,
-// label text, and shortcut chip in sync between mode-manager and transform.
+// Single source of truth for Run button markup — keeps icon, label, and shortcut in sync.
 function _runBtnHtml(mode) {
   const label = mode === 'XPATH' ? 'Run XPath' : 'Run XSLT';
   return `<i data-lucide="play" width="14" height="14"></i> ${label} <span class="kbd">⌘↵</span>`;
@@ -41,27 +40,22 @@ function _flashPaneResult(success) {
   setTimeout(() => pane.classList.remove(cls), success ? 600 : 400);
 }
 
-// Rewrite cpi:setHeader / cpi:setProperty calls to use the js: namespace
+// Rewrite cpi:setHeader / cpi:setProperty to the js: namespace
 // (http://saxonica.com/ns/globalJS) which Saxon-JS maps to window.xxx().
-// This means Saxon evaluates ALL arguments — including dynamic ones like
-// concat('REF-', Id) or $someParam — and calls our JS interceptor with
-// the real computed values. No more regex extraction, no more — none —.
+// Saxon evaluates ALL arguments (including dynamic ones) and calls our
+// JS interceptor with the real computed values.
 //
-// Rewrites performed:
+// Rewrites:
 //   xmlns:cpi="..."  →  xmlns:js="http://saxonica.com/ns/globalJS"
-//                        (only if js: not already declared)
 //   cpi:setHeader(   →  js:cpiSetHeader(
 //   cpi:setProperty( →  js:cpiSetProperty(
 //   'cpi' removed from exclude-result-prefixes
 //   'js'  added  to  exclude-result-prefixes (avoids leaking to output)
 
-// Replace XML comments and CDATA sections with placeholder tokens so the CPI
-// rewrite does not match `cpi:setHeader` etc. inside them. Placeholders keep
-// the original newline count so Saxon-reported line numbers remain accurate.
-//
-// Returns { stripped, restore } where restore(s) swaps placeholders back.
-// Placeholder token:  + index +  — U+0001 is forbidden in
-// well-formed XML 1.0 so it cannot collide with real source.
+// Replace XML comments and CDATA with U+0001-bracketed index tokens so the
+// rewrite ignores `cpi:setHeader` etc. inside them. Placeholders preserve
+// newline count so Saxon-reported line numbers stay accurate. U+0001 is
+// forbidden in well-formed XML 1.0 so the token can't collide.
 function _extractInsensitiveRegions(xslt) {
   const regions = [];
   const re = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g;
@@ -103,21 +97,18 @@ function rewriteCPICalls(xslt) {
   return { rewritten: restore(xslt), hasCPI: true };
 }
 
-// Ensure the js: namespace is always in exclude-result-prefixes so it never
-// leaks into output — mirrors CPI runtime behaviour where extension namespaces
-// are never serialized regardless of what the developer declared.
+// Ensure js: namespace is always in exclude-result-prefixes so it never leaks
+// into output — mirrors CPI runtime behaviour.
 function ensureJsExcluded(xslt) {
-  if (!/xmlns:js\s*=/.test(xslt)) return xslt; // no js: namespace — nothing to do
+  if (!/xmlns:js\s*=/.test(xslt)) return xslt;
 
   if (/(exclude-result-prefixes\s*=)/.test(xslt)) {
-    // Already has the attribute — make sure 'js' is in it
     return xslt.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
       const parts = val.split(/\s+/).filter(p => p !== 'js');
       parts.push('js');
       return attr + q + parts.filter(Boolean).join(' ') + q;
     });
   } else {
-    // No attribute at all — inject it on the stylesheet element (handles both xsl:stylesheet and xsl:transform)
     return xslt.replace(/(<xsl:(?:stylesheet|transform)\b[^>]*?)(\s*>)/, '$1 exclude-result-prefixes="js"$2');
   }
 }
@@ -129,10 +120,8 @@ function isValidNCName(name) {
 
 // ── XML Validation Badge ──
 // Cache the last validated source so we don't re-parse on every keystroke.
-// Wired to onDidChangeModelContent which fires per character; DOMParser cost is
-// O(N) on the source. Cache key is the trimmed source itself, so any real edit
-// busts it. Mode swaps swap the *model*, not the content, so the cache is fine
-// across modes — each model's content is its own cache key.
+// Wired to onDidChangeModelContent which fires per character; DOMParser is O(N).
+// Mode swaps swap the *model*, not the content, so the cache holds across modes.
 let _lastValidatedXmlSrc = null;
 
 function invalidateXmlValidationCache() {
@@ -145,7 +134,6 @@ function updateXMLValidationBadge() {
 
   const xmlSrc = eds.xml?.getValue?.()?.trim();
   if (!xmlSrc) {
-    // Empty XML — hide badge
     badge.style.display = 'none';
     _lastValidatedXmlSrc = '';
     return;
@@ -154,14 +142,12 @@ function updateXMLValidationBadge() {
   if (xmlSrc === _lastValidatedXmlSrc) return;
   _lastValidatedXmlSrc = xmlSrc;
 
-  // Try to parse XML
   try {
     const parser = new DOMParser();
     const doc = parser.parseFromString(xmlSrc, 'text/xml');
     const hasError = doc.getElementsByTagName('parsererror').length > 0;
 
     if (hasError) {
-      // Parse error — show red badge
       const errorEl = doc.getElementsByTagName('parsererror')[0];
       const errorMsg = errorEl?.textContent || 'XML parse error';
       badge.className = 'xml-validation-badge error';
@@ -169,14 +155,12 @@ function updateXMLValidationBadge() {
       badge.title = errorMsg;
       badge.style.display = 'inline-flex';
     } else {
-      // Valid XML — show green badge
       badge.className = 'xml-validation-badge valid';
       badge.innerHTML = '<span class="badge-icon">✓</span><span class="badge-text">Valid</span>';
       badge.title = 'XML is valid';
       badge.style.display = 'inline-flex';
     }
   } catch (e) {
-    // Catch any parsing exceptions
     badge.className = 'xml-validation-badge error';
     badge.innerHTML = '<span class="badge-icon">✗</span><span class="badge-text">Error</span>';
     badge.title = e.message || 'XML parse error';
@@ -188,23 +172,23 @@ function buildParamsXPath() {
   const entries = [];
   const skipped = [];
   const dupes   = [];
-  // Inject a dummy $exchange so stylesheets that declare it don't get an error
+  // Inject a dummy $exchange so stylesheets that declare it don't error
   entries.push(`QName('','exchange'): 'exchange'`);
   // Merge headers then properties; properties win on name collision (last-write-wins).
   // Saxon map literals require unique keys — duplicates cause a runtime error.
-  const seen = new Map(); // name → index in entries[]
+  const seen = new Map();
   [...kvData.headers, ...kvData.properties].forEach(row => {
     const k = row.name.trim();
     const v = row.value.trim().replace(/'/g, "''");
     if (!k) return;
     if (!isValidNCName(k)) {
       skipped.push(k);
-      return; // skip invalid names silently here, warn after
+      return;
     }
     const entry = `QName('','${k}'): '${v}'`;
     if (seen.has(k)) {
       dupes.push(k);
-      entries[seen.get(k)] = entry; // overwrite previous entry
+      entries[seen.get(k)] = entry;
     } else {
       seen.set(k, entries.length);
       entries.push(entry);
@@ -223,7 +207,7 @@ function buildParamsXPath() {
   return `, 'stylesheet-params': map { ${entries.join(', ')} }`;
 }
 
-// 4. Render the read-only output panels
+// Render the read-only output panels
 function renderOutputKV(headers, properties) {
   const render = (rowsId, countId, data) => {
     const keys = Object.keys(data);
@@ -281,7 +265,7 @@ function updateKV(type, id, field, val) {
   scheduleSave();
 }
 
-// Validate and style a KV field (add/remove red highlight + error message for invalid NCName)
+// Add/remove red highlight + error message for invalid NCName
 function _validateKVField(type, id) {
   const isHdr = type === 'headers';
   const rowsEl = document.getElementById(isHdr ? 'hdrRows' : 'propRows');
@@ -310,13 +294,13 @@ function _validateKVField(type, id) {
 
   if (isValid) {
     rowEl.classList.remove('kv-invalid');
-    nameInput.title = '';  // Remove tooltip
+    nameInput.title = '';
     if (errorEl) errorEl.style.display = 'none';
   } else {
     rowEl.classList.add('kv-invalid');
     nameInput.title = 'Must start with letter or underscore, then use letters, digits, hyphen, dot, or underscore';
     if (errorEl) {
-      errorEl.style.display = '';  // Show error message
+      errorEl.style.display = '';
       errorEl.innerHTML = '⚠️ Invalid NCName — must start with letter or underscore';
     }
   }
@@ -342,7 +326,6 @@ function renderKV(type) {
           <div class="kv-error-msg" style="display: none;"></div>
         </div>`).join('');
 
-  // Validate all fields after rendering
   rows.forEach(row => {
     _validateKVField(type, row.id);
   });
@@ -354,7 +337,6 @@ function renderKV(type) {
 function runTransform() {
   if (!guardReady()) return;
 
-  // Reset error badge for fresh run
   consoleErrCount = 0;
   updateConsoleErrBadge();
 
@@ -402,10 +384,9 @@ function runTransform() {
     clog(`Starting XSLT transform — XML ${xmlSrc.length} chars · XSLT ${xsltSrc.length} chars`, 'info');
   window.goatcounter?.count({ path: 'run-xslt', title: 'Run XSLT' });
 
-    // ── CPI extension call handling ───────────────────────────────────────────
-    // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
-    // Saxon evaluates all arguments (including dynamic ones) and calls our
-    // JS interceptor functions on window. Results collected into cpiCaptured.
+    // ── CPI extension call handling ──
+    // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so Saxon
+    // evaluates all arguments (including dynamic ones) and calls our JS interceptors.
     const { rewritten: _xsltRewritten, hasCPI } = rewriteCPICalls(xsltSrc);
     const cpiCaptured = { headers: {}, properties: {} };
     let _prevCpiSetHeader, _prevCpiSetProperty, _prevCpiGetHeader, _prevCpiGetProperty;
@@ -429,7 +410,7 @@ function runTransform() {
       window.cpiSetHeader   = (_exchange, name, value) => { cpiCaptured.headers[_cpiStrVal(name)]    = _cpiStrVal(value); return ''; };
       window.cpiSetProperty = (_exchange, name, value) => { cpiCaptured.properties[_cpiStrVal(name)] = _cpiStrVal(value); return ''; };
 
-      // getHeader / getProperty — read from the input Headers/Properties panels (kvData)
+      // getHeader / getProperty — read from input Headers/Properties panels
       window.cpiGetHeader   = (_exchange, name) => {
         const key = _cpiStrVal(name).trim();
         const row = kvData.headers.find(r => r.name === key);
@@ -449,10 +430,9 @@ function runTransform() {
       clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
     }
 
-    // Always ensure js: namespace is excluded from output — mirrors CPI runtime behaviour
+    // Always exclude js: from output — mirrors CPI runtime behaviour
     xsltSrc = ensureJsExcluded(xsltSrc);
 
-    // Log which params are being passed
     const namedParams = [...kvData.headers, ...kvData.properties].filter(r => r.name.trim());
     if (namedParams.length) {
       clog(`Passing xsl:params: ${namedParams.map(r => r.name).join(', ')}`, 'info');
@@ -460,9 +440,9 @@ function runTransform() {
 
     const paramsXPath = buildParamsXPath();
 
-    // ── Intercept xsl:message output ──────────────────────────────────────────
+    // ── Intercept xsl:message ──
     // Saxon-JS routes xsl:message to console.log("xsl:message: <text>").
-    // Temporarily patch console.log to capture those and route them to clog.
+    // Patch console.log to capture and route to clog.
     const _xslMessages    = [];
     const _origConsoleLog = console.log;
     console.log = function(...args) {
@@ -488,13 +468,12 @@ function runTransform() {
 
       const elapsed = (performance.now() - t0).toFixed(1);
 
-      // Restore output section if it was minimised by XPath panel
       if (typeof restoreOutputSection === 'function') restoreOutputSection();
 
-      // Flush xsl:message lines before completion log — fires in natural execution order
+      // Flush xsl:message lines before completion log — natural execution order
       _xslMessages.forEach(m => clog(`xsl:message → ${m}`, 'warn'));
 
-      // Detect output language from actual content (CPI-relevant: XML, JSON, plain text/CSV/fixed)
+      // Detect output language from content (CPI-relevant: XML, JSON, plain text/CSV/fixed)
       const _trimmed = output.trimStart();
       let _outLang = 'plaintext';
       let _outValue = output;
@@ -504,10 +483,8 @@ function runTransform() {
       } else if (_trimmed.startsWith('{') || _trimmed.startsWith('[')) {
         try { _outValue = JSON.stringify(JSON.parse(_trimmed), null, 2); _outLang = 'json'; } catch (_) { /* not valid JSON, treat as plaintext */ }
       }
-      // everything else (CSV, fixed-length, EDI, etc.) stays as plaintext
       monaco.editor.setModelLanguage(eds.out.getModel(), _outLang);
 
-      // Update lang badge + download filename to match actual output type
       const _extMap = { xml: 'xml', json: 'json', plaintext: 'txt' };
       const _labelMap = { xml: 'XML', json: 'JSON', plaintext: 'TEXT' };
       const _ext = _extMap[_outLang] ?? 'txt';
@@ -523,8 +500,7 @@ function runTransform() {
       eds.out.setValue(_outValue);
       eds.out.updateOptions({ readOnly: true });
 
-      // Show output panels: CPI-captured values (dynamic + static) take priority,
-      // then pass-through input headers + properties
+      // CPI-captured values (dynamic + static) take priority, then pass-through inputs
       const outHdrs  = { ...cpiCaptured.headers };
       const outProps = { ...cpiCaptured.properties };
       kvData.headers.filter(r => r.name.trim() && !(r.name in outHdrs))
@@ -532,7 +508,6 @@ function runTransform() {
       kvData.properties.filter(r => r.name.trim() && !(r.name in outProps))
                        .forEach(r => { outProps[r.name] = r.value; });
 
-      // Log captured CPI values
       if (hasCPI) {
         const _hc = Object.keys(cpiCaptured.headers).length;
         const _pc = Object.keys(cpiCaptured.properties).length;
@@ -560,14 +535,14 @@ function runTransform() {
       }
 
     } catch (err) {
-      // Flush xsl:message lines before error — trace should precede the failure it caused
+      // Flush xsl:message before error — trace should precede the failure
       _xslMessages.forEach(m => clog(`xsl:message → ${m}`, 'warn'));
 
       const fullMsg = err.message || String(err);
       const msg = fullMsg.split('\n')[0];
 
-      // Detect terminate="yes" — Saxon throws "Terminated with <message text>"
-      // Log it as a warn (not error) since it's an intentional halt, not a bug.
+      // Detect terminate="yes" — Saxon throws "Terminated with <message text>".
+      // Log as warn (intentional halt, not a bug).
       const terminateMatch = msg.match(/^Terminated with (.+)$/i);
       if (terminateMatch) {
         clog(`xsl:message terminate="yes" — ${terminateMatch[1]}`, 'warn');
@@ -587,9 +562,8 @@ function runTransform() {
       setStatus('Transform failed', 'err');
       _flashPaneResult(false);
     } finally {
-      // Always restore console.log — even if Saxon throws
       console.log = _origConsoleLog;
-      // Restore window CPI interceptors to their previous state
+      // Restore CPI interceptors
       if (hasCPI) {
         _prevCpiSetHeader   !== undefined ? (window.cpiSetHeader   = _prevCpiSetHeader)   : delete window.cpiSetHeader;
         _prevCpiSetProperty !== undefined ? (window.cpiSetProperty = _prevCpiSetProperty) : delete window.cpiSetProperty;
@@ -599,7 +573,7 @@ function runTransform() {
     }
 
   } finally {
-    // Always re-enable the Run button — even if preflight, param building, or anything else throws
+    // Always re-enable Run button — even if preflight or param building throws
     resetBtn();
   }
 }

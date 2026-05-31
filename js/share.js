@@ -25,7 +25,6 @@ function encodeShareData(data) {
   }
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-
 function generateShareUrl() {
   const url = location.href.split('#')[0] + '#share/' + encodeShareData(buildSharePayload());
   if (url.length > 2000) {
@@ -39,9 +38,8 @@ function generateShareUrl() {
 function loadFromShareHash() {
   if (!location.hash.startsWith('#share/')) return false;
   try {
-    // encodeShareData only emits base64url chars [A-Za-z0-9_-] (no '+' / '/' / '=').
-    // None require URL escaping, so decodeURIComponent is a no-op on valid links and
-    // throws on hand-edited links containing a stray '%'. Read the hash raw.
+    // encodeShareData only emits base64url chars [A-Za-z0-9_-]; none need URL escaping,
+    // so decodeURIComponent would be a no-op here and would throw on hand-edited '%'.
     const raw    = location.hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
     const b64    = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
     const binary = atob(b64);
@@ -62,7 +60,7 @@ function loadFromShareHash() {
 function applyShareData(data) {
   if (!data) return;
 
-  // Share is XSLT-only — always switch to XSLT mode on the receiver side
+  // Share is always XSLT context — switch the receiver if needed
   if (modeManager.isXpath) {
     modeManager.setMode('XSLT');
     clog('Switched to XSLT mode — share link loaded', 'info');
@@ -73,14 +71,11 @@ function applyShareData(data) {
   clearAllMarkers();
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Ensure XML editor is connected to XSLT model before updating
   if (eds.xml && xmlModelXslt) {
     eds.xml.setModel(xmlModelXslt);
   }
 
-  // Write directly to XSLT model (share is always XSLT context).
-  // Suppress the per-setValue listener-driven scheduleSave so it doesn't
-  // arm _saveTimer mid-write, then call scheduleSave() explicitly at the end.
+  // Suppress per-setValue listener-driven scheduleSave; call once at the end.
   if (data.xml  !== undefined) {
     const _prevSS = _suppressNextSave;
     _suppressNextSave = true;
@@ -156,9 +151,7 @@ function _copyShareUrl(url, silent) {
     clog('Share URL copied to clipboard', 'success');
   };
 
-  // Custom onFail: select the URL input so the user can press Ctrl+C manually,
-  // then log a "press Ctrl+C" affordance instead of the generic clipboard-denied
-  // error from _clipboardWrite's default fallback.
+  // Custom fallback: select the URL input so the user can press Ctrl+C manually.
   const onFail = () => {
     const input = document.getElementById('shareUrlInput');
     if (input) input.select();

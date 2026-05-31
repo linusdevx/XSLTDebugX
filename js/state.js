@@ -16,10 +16,8 @@ function guardReady() {
 }
 
 // ── Clipboard helper — single source of truth for navigator + execCommand fallback.
-// onSuccess: () => void  — called when text is on the clipboard.
-// onFail:    () => void  — optional; called when both APIs fail. If omitted, logs a generic
-//                          "Clipboard access denied" error. Pass a custom onFail when the
-//                          UI needs a different affordance (e.g. share.js selecting the URL).
+// onFail is optional; when omitted, logs a generic "Clipboard access denied" error.
+// Pass a custom onFail when the UI needs a different affordance (e.g. share.js).
 function _clipboardWrite(text, onSuccess, onFail) {
   const fallback = () => {
     const ta = document.createElement('textarea');
@@ -41,8 +39,7 @@ function _clipboardWrite(text, onSuccess, onFail) {
   }
 }
 
-// ── Reset the output editor pane to empty + given language. Used by both reset functions
-// and reusable from transform.js if/when output type changes. Idempotent on null editor.
+// Reset the output editor pane to empty + given language. Idempotent on null editor.
 function _resetOutputPane(lang, defaultName) {
   if (!eds.out) return;
   monaco.editor.setModelLanguage(eds.out.getModel(), lang);
@@ -58,9 +55,8 @@ function _resetOutputPane(lang, defaultName) {
   eds.out.updateOptions({ readOnly: true });
 }
 
-// ── Backdrop click-to-close factory. The three modals share an identical
-// `e.target.id === backdropId && close()` pattern. Returns a handler suitable
-// for the inline onclick="..." attributes in index.html.
+// Backdrop click-to-close factory — three modals share an
+// `e.target.id === backdropId && close()` pattern.
 function _makeBackdropClose(backdropId, closeFn) {
   return function(e) {
     if (e.target.id === backdropId) closeFn();
@@ -71,24 +67,20 @@ let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 
 // Two separate XML models for XSLT/XPath mode isolation
-let xmlModelXslt  = null;  // XML model for XSLT mode
-let xmlModelXpath = null;  // XML model for XPath mode
+let xmlModelXslt  = null;
+let xmlModelXpath = null;
 
-// KV stores: { id, name, value }
 let kvData = { headers: [], properties: [] };
 let kvIdSeq = 0;
 
-// Validation debounce timers — declared at top level so loadExample can cancel them
+// Top-level so loadExample can cancel them
 let xsltDebounce = null;
 let xmlDebounce  = null;
 
 // ════════════════════════════════════════════
 //  CONSOLE
 // ════════════════════════════════════════════
-// Lazy-cache the console DOM elements. They don't exist when state.js
-// loads, but once they appear (loader hides → consoleBody mounts) they live
-// for the rest of the session. Falls back gracefully — if a lookup misses we
-// just retry next call.
+// Console DOM elements don't exist when state.js loads — lazy-cache on first use.
 let _consoleBodyEl   = null;
 let _consoleSearchEl = null;
 function _getConsoleEls() {
@@ -99,7 +91,7 @@ function _getConsoleEls() {
 
 function clog(msg, type = 'info') {
   const { body, search } = _getConsoleEls();
-  if (!body) return; // DOM not ready yet — caller's message is dropped, matches old behaviour
+  if (!body) return; // DOM not ready — drop message
   const line = document.createElement('div');
   line.className = `log-line ${type}`;
   line.dataset.type = type;
@@ -113,9 +105,7 @@ function clog(msg, type = 'info') {
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
   // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
-  // evicted line was an error/warn so the badge stays in sync with what the
-  // user can actually see and copy.
-  // Track count before/after so we only repaint the badge when it changes.
+  // evicted line was an error/warn so the badge stays in sync.
   const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
@@ -124,10 +114,9 @@ function clog(msg, type = 'info') {
     body.removeChild(evicted);
   }
   body.scrollTop = body.scrollHeight;
-  // Track errors/warnings for the minimised-console badge
   if (type === 'error' || type === 'warn') {
     consoleErrCount++;
-    // Auto-restore console if minimised so errors aren't silently hidden
+    // Auto-restore minimised console so errors aren't silently hidden
     if (consoleState === 'minimized') setConsoleState('normal');
   }
   if (consoleErrCount !== errCountBefore) updateConsoleErrBadge();
@@ -143,7 +132,6 @@ function clearConsole() {
   body.innerHTML = '';
   consoleErrCount = 0;
   updateConsoleErrBadge();
-  // Reset filter buttons to ALL and clear search
   if (typeof setConsoleFilter === 'function') setConsoleFilter('all');
   const search = document.getElementById('consoleSearch');
   if (search) search.value = '';
@@ -166,8 +154,7 @@ function setStatus(txt, state = 'ok') {
 const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
-// Debounced save — coalesces rapid keystrokes into one write
-// Set _suppressNextSave = true before a programmatic setValue to skip that one save.
+// Set _suppressNextSave = true before a programmatic setValue to skip that save.
 let _suppressNextSave = false;
 
 // Guard against synthetic content-change event when swapping models in toggleXPath
@@ -182,7 +169,6 @@ function scheduleSave() {
 function saveState() {
   try {
     const state = {
-      // Save both XML models independently
       xmlXslt:    xmlModelXslt?.getValue()  ?? '',
       xmlXpath:   xmlModelXpath?.getValue() ?? '',
       xslt:       eds.xslt?.getValue() ?? '',
@@ -197,7 +183,6 @@ function saveState() {
       savedAt: Date.now(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    // Flash a subtle "saved" indicator
     showSavedIndicator();
   } catch (e) {
     // localStorage full or unavailable — fail silently
@@ -215,17 +200,15 @@ function loadSavedState() {
 }
 
 function _resetXPathMode() {
-  // Cancel pending validation timers so they don't fire against the freshly-reset content
+  // Cancel pending validation/save timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Arm _suppressNextSave BEFORE setValue. Monaco fires
-  // onDidChangeModelContent synchronously inside setValue, and the editor.js
-  // listener calls scheduleSave() — without arming the flag, the reset would
-  // queue a save against mid-transition state. try/finally restores the
-  // previous flag value rather than blindly clearing one set by an outer caller.
+  // Arm _suppressNextSave BEFORE setValue — Monaco fires onDidChangeModelContent
+  // synchronously and editor.js's listener calls scheduleSave(). try/finally
+  // restores any flag set by an outer caller.
   const _prevSuppress = _suppressNextSave;
   _suppressNextSave = true;
   try {
@@ -250,7 +233,6 @@ function _resetXPathMode() {
 }
 
 function _resetXsltMode() {
-  // Cancel pending validation timers so they don't fire against the freshly-reset content
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }

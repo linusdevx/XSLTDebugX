@@ -8,8 +8,7 @@ function triggerUpload(pane) {
   document.getElementById(id).click();
 }
 
-// Route file text into the correct editor + log a success message. `verb` lets the
-// caller distinguish "Uploaded" from "Dropped" while keeping the routing identical.
+// `verb` lets the caller distinguish "Uploaded" from "Dropped" while keeping routing identical.
 function _applyFileContent(text, file, pane, verb) {
   const sizeKB = formatFileSize(file.size);
   if (pane === 'xml') {
@@ -62,11 +61,9 @@ function setupDragDrop(editorWrapId, pane) {
     e.preventDefault();
     el.classList.add('drag-over');
   });
-  // Monaco's wrapper has many nested children; dragleave fires on every
-  // internal boundary, so a naive remove() flickers continuously while dragging.
-  // Only clear when the pointer actually leaves the wrapper. relatedTarget is
-  // null when the drag leaves the window — el.contains(null) is false, so the
-  // class is correctly removed in that case too.
+  // Monaco's wrapper has many nested children; dragleave fires on every internal
+  // boundary, so a naive remove() flickers continuously. Only clear when the
+  // pointer actually leaves the wrapper (relatedTarget null when leaving the window).
   el.addEventListener('dragleave', e => {
     if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
   });
