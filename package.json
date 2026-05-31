@@ -15,7 +15,7 @@
     "test:e2e:headed": "playwright test --headed --project=chromium"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.2",
+    "@playwright/test": "1.48.2",
     "http-server": "^14.1.1",
     "vite": "^6.0.0"
   }
