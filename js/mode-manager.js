@@ -126,15 +126,13 @@ class ModeManager {
       }
     }
 
-    // Clear any editor decorations
-    if (typeof xmlDecorations !== 'undefined' && xmlDecorations) {
-      try {
-        xmlDecorations.clear();
-        xmlDecorations = null;
-      } catch (e) {
-        console.warn('[modeManager] cleanup:', e);
-      }
-    }
+    // I-1 / I-2: use clearAllMarkers (validate.js) instead of clearing only
+    // xmlDecorations. clearAllMarkers handles BOTH decoration collections
+    // (xml + xslt) plus markers on both XML models — strict superset of the
+    // previous inline xmlDecorations.clear(). xsltDecorations was previously
+    // left intact when leaving XSLT mode, leaving stale glyphs visible the
+    // next time the user switched back.
+    if (typeof clearAllMarkers === 'function') clearAllMarkers();
   }
 
   /**

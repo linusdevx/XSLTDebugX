@@ -575,12 +575,24 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   const doc    = parser.parseFromString(xmlSrc, 'application/xml');
   if (doc.querySelector('parsererror')) return null;
 
+  // I-3: blank out comments and CDATA so tag-shaped strings inside them don't
+  // bump the regex occurrence counter past the DOM's actual count. Replacing
+  // each region with spaces of identical length preserves character positions,
+  // so the offset and the ranges from _findNodeRangeForTag (computed on the
+  // real source) still align. If `offset` itself falls inside a stripped
+  // region the tag regex won't match it and we return null — same as the
+  // existing behaviour for "click outside any element".
+  const scanSrc = xmlSrc.replace(
+    /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g,
+    m => ' '.repeat(m.length)
+  );
+
   const tagRe = /<([\w:.-]+)(?=[\s>/])/g;
   let m;
   const tagOccurrences = {};
   let bestTag = null, bestOcc = 0, bestStart = -1;
 
-  while ((m = tagRe.exec(xmlSrc)) !== null) {
+  while ((m = tagRe.exec(scanSrc)) !== null) {
     const tag = m[1];
     if (tag.startsWith('/') || tag.startsWith('?') || tag.startsWith('!')) continue;
     tagOccurrences[tag] = (tagOccurrences[tag] || 0) + 1;
@@ -606,6 +618,12 @@ let _showXPathGen = 0;
 let _lastXPathRenderArgs = null; // saved for re-colorize on theme switch
 async function _showXPathResults(items, errorMsg, isError) {
   const gen = ++_showXPathGen; // capture generation for this call
+  // I-11: pin the XML model that was active when this run started. eds.xml
+  // points at whichever model the user is currently viewing — if they switch
+  // mode while we await monaco.editor.colorize() (potentially hundreds of ms),
+  // eds.xml will swap to the other XML model and any decoration application
+  // would attach XPath highlights to the wrong document.
+  const xmlModelAtStart = eds.xml?.getModel?.() ?? null;
   _lastXPathRenderArgs = { items, errorMsg, isError }; // save for refreshXPathColors()
   const panel   = document.getElementById('xpathResultsPanel');
   const body    = document.getElementById('xpathResultsBody');
@@ -665,6 +683,12 @@ async function _showXPathResults(items, errorMsg, isError) {
 
   // Bail if a newer run has started while we were awaiting colorize
   if (gen !== _showXPathGen) return;
+  // I-11: also bail if the user switched modes mid-await — the highlights and
+  // results panel belong to the previous mode's XML model.
+  if (eds.xml?.getModel?.() !== xmlModelAtStart) {
+    clearXPathHighlights();
+    return;
+  }
 
   body.innerHTML = serialized.map(({ type }, i) => {
     const typeLabel = type === 'node' ? 'Node' : type === 'text' ? 'Text' : 'Value';
