@@ -147,8 +147,17 @@ class ModeManager {
         ? this.models.xpath
         : this.models.xslt;
 
-      eds.xml.setModel(targetModel);
-      eds.xml.layout();
+      // C-1: arm the synthetic-change guard BEFORE setModel. Monaco fires
+      // onDidChangeModelContent synchronously inside setModel, and the listener
+      // in editor.js:893 is exactly designed to consume this flag — without it
+      // every mode switch fires a spurious scheduleSave + marker clear +
+      // xmlDecorations.clear + clearXPathHighlights + updateXMLValidationBadge
+      // and queues an 800ms re-validation against unchanged XML.
+      if (eds.xml.getModel() !== targetModel) {
+        _suppressNextXmlChange = true;
+        eds.xml.setModel(targetModel);
+        eds.xml.layout();
+      }
     }
 
     // 2. Restore column collapse state for this mode
