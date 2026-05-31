@@ -42,6 +42,9 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install chromium
+        env:
+          DEBUG: pw:install
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '60000'
 
       - name: Create artifact directories
         run: mkdir -p playwright-report test-results
