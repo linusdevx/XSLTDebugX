@@ -222,6 +222,9 @@ function renderOutputKV(headers, properties) {
   };
   render('outHdrRows',  'outHdrCount',  headers);
   render('outPropRows', 'outPropCount', properties);
+  // Re-apply any active filter so newly rendered output rows respect the query
+  _applyKVFilter('outHdrPanel');
+  _applyKVFilter('outPropPanel');
 }
 
 // ════════════════════════════════════════════
@@ -229,6 +232,92 @@ function renderOutputKV(headers, properties) {
 // ════════════════════════════════════════════
 function toggleKVPanel(panelId) {
   document.getElementById(panelId).classList.toggle('collapsed');
+}
+
+// ════════════════════════════════════════════
+//  KV PANEL SEARCH (view-only filter, not persisted)
+// ════════════════════════════════════════════
+
+// panelId → { rowsId, childSelector }
+const _KV_PANEL_MAP = {
+  hdrPanel:     { rowsId: 'hdrRows',     childSelector: '.kv-row-wrapper' },
+  propPanel:    { rowsId: 'propRows',    childSelector: '.kv-row-wrapper' },
+  outHdrPanel:  { rowsId: 'outHdrRows',  childSelector: '.kv-row-out' },
+  outPropPanel: { rowsId: 'outPropRows', childSelector: '.kv-row-out' },
+};
+
+function toggleKVSearch(panelId) {
+  const bar = document.getElementById(panelId + 'SearchBar');
+  if (!bar) return;
+  const opening = bar.style.display === 'none';
+  bar.style.display = opening ? 'flex' : 'none';
+  const input = bar.querySelector('input');
+  if (opening) {
+    input.focus();
+    input.select();
+  } else {
+    // Closing clears any active filter so rows aren't left hidden
+    input.value = '';
+    _applyKVFilter(panelId);
+  }
+}
+
+function clearKVSearch(panelId) {
+  const bar = document.getElementById(panelId + 'SearchBar');
+  if (!bar) return;
+  const input = bar.querySelector('input');
+  input.value = '';
+  _applyKVFilter(panelId);
+  input.focus();
+}
+
+// Toggle .kv-hidden on each row child based on substring match against name + value.
+// Reads the live query from the panel's search input every call — no module state.
+function _applyKVFilter(panelId) {
+  const cfg = _KV_PANEL_MAP[panelId];
+  if (!cfg) return;
+  const rowsEl = document.getElementById(cfg.rowsId);
+  if (!rowsEl) return;
+  const bar = document.getElementById(panelId + 'SearchBar');
+  // If the search bar is closed or the input is empty, treat as "no filter"
+  const input = bar?.querySelector('input');
+  const q = (bar && bar.style.display !== 'none' && input ? input.value : '').trim().toLowerCase();
+  const children = rowsEl.querySelectorAll(cfg.childSelector);
+
+  let visibleCount = 0;
+  children.forEach(child => {
+    let name = '';
+    let value = '';
+    if (cfg.childSelector === '.kv-row-wrapper') {
+      const inputs = child.querySelectorAll('.kv-row input');
+      name  = (inputs[0]?.value || '').toLowerCase();
+      value = (inputs[1]?.value || '').toLowerCase();
+    } else {
+      name  = (child.querySelector('.kv-k')?.textContent || '').toLowerCase();
+      value = (child.querySelector('.kv-v')?.textContent || '').toLowerCase();
+    }
+    const match = !q || name.includes(q) || value.includes(q);
+    child.classList.toggle('kv-hidden', !match);
+    if (match) visibleCount++;
+  });
+
+  // Toggle a "No matches" line — distinct from the existing .kv-empty "Click + to add" / "— none —"
+  let noMatch = rowsEl.querySelector('.kv-no-matches');
+  if (q && children.length > 0 && visibleCount === 0) {
+    if (!noMatch) {
+      noMatch = document.createElement('div');
+      noMatch.className = 'kv-no-matches';
+      noMatch.textContent = 'No matches';
+      rowsEl.appendChild(noMatch);
+    }
+  } else if (noMatch) {
+    noMatch.remove();
+  }
+
+  // Reflect active state on the toggle button so it's visible even when the panel is collapsed
+  const panelHeader = document.querySelector('#' + panelId + ' .kv-header');
+  const btn = panelHeader?.querySelector('.kv-search-btn');
+  if (btn) btn.classList.toggle('kv-search-active', q.length > 0);
 }
 
 function addKVRow(type) {
@@ -329,6 +418,9 @@ function renderKV(type) {
   rows.forEach(row => {
     _validateKVField(type, row.id);
   });
+
+  // Re-apply any active search filter so newly rendered rows respect the query
+  _applyKVFilter(type === 'headers' ? 'hdrPanel' : 'propPanel');
 }
 
 // ════════════════════════════════════════════
