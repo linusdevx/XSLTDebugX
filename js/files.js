@@ -8,6 +8,24 @@ function triggerUpload(pane) {
   document.getElementById(id).click();
 }
 
+// Route file text into the correct editor + log a success message. `verb` lets the
+// caller distinguish "Uploaded" from "Dropped" while keeping the routing identical.
+function _applyFileContent(text, file, pane, verb) {
+  const sizeKB = formatFileSize(file.size);
+  if (pane === 'xml') {
+    const targetModel = modeManager.currentModel;
+    if (!targetModel) { clog('Editor not ready — cannot upload file', 'error'); return; }
+    targetModel.setValue(text);
+  } else if (eds.xslt) {
+    eds.xslt.setValue(text);
+  } else {
+    clog('Editor not ready — cannot upload file', 'error');
+    return;
+  }
+  scheduleSave();
+  clog(`${verb}: ${file.name} (${sizeKB} KB) → ${pane.toUpperCase()} pane`, 'success');
+}
+
 function handleUpload(event, pane) {
   const file = event.target.files[0];
   if (!file) return;

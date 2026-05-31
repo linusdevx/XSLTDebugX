@@ -5,6 +5,13 @@
 // Shared spinner HTML for the Run button running state
 const _RUN_BTN_SPINNER = `<svg class="spinner" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="8" cy="8" r="6" stroke-opacity="0.3"/><path d="M8 2a6 6 0 0 1 6 6" stroke-linecap="round"/></svg>`;
 
+// Single source of truth for the Run button label markup — keeps icon size,
+// label text, and shortcut chip in sync between mode-manager and transform.
+function _runBtnHtml(mode) {
+  const label = mode === 'XPATH' ? 'Run XPath' : 'Run XSLT';
+  return `<i data-lucide="play" width="14" height="14"></i> ${label} <span class="kbd">⌘↵</span>`;
+}
+
 // ── Transform Animation Helpers ──
 
 function _triggerRunParticles() {

@@ -15,6 +15,49 @@ function guardReady() {
   return true;
 }
 
+// ── Clipboard helper — single source of truth for navigator + execCommand fallback.
+// onSuccess: () => void  — called when text is on the clipboard.
+// onFail:    () => void  — optional; called when both APIs fail. If omitted, logs a generic
+//                          "Clipboard access denied" error. Pass a custom onFail when the
+//                          UI needs a different affordance (e.g. share.js selecting the URL).
+function _clipboardWrite(text, onSuccess, onFail) {
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch(_) {}
+    document.body.removeChild(ta);
+    if (ok) { onSuccess(); return; }
+    if (onFail) onFail();
+    else clog('Clipboard access denied', 'error');
+  };
+  if (window.navigator?.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess, fallback);
+  } else {
+    fallback();
+  }
+}
+
+// ── Reset the output editor pane to empty + given language. Used by both reset functions
+// and reusable from transform.js if/when output type changes. Idempotent on null editor.
+function _resetOutputPane(lang, defaultName) {
+  if (!eds.out) return;
+  monaco.editor.setModelLanguage(eds.out.getModel(), lang);
+  const badge = document.getElementById('outLangBadge');
+  if (badge) badge.textContent = lang.toUpperCase();
+  const dl = document.getElementById('outDownloadBtn');
+  if (dl) {
+    dl.title   = `Download output as ${lang.toUpperCase()}`;
+    dl.onclick = () => downloadPane('out', defaultName);
+  }
+  eds.out.updateOptions({ readOnly: false });
+  eds.out.setValue('');
+  eds.out.updateOptions({ readOnly: true });
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 

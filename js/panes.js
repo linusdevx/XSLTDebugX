@@ -5,6 +5,13 @@
 // Track word wrap state per editor — off by default
 const _wrapState = { xml: false, xslt: false, out: false };
 
+// Map a pane name ('xml' | 'xslt' | 'out') to its Monaco editor instance.
+function _getPaneEd(which) {
+  return which === 'xml'  ? eds.xml
+       : which === 'xslt' ? eds.xslt
+       : eds.out;
+}
+
 function toggleWordWrap(which) {
   const ed = which === 'xml' ? eds.xml : which === 'xslt' ? eds.xslt : eds.out;
   if (!ed) return;

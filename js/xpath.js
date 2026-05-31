@@ -193,7 +193,14 @@ function _nthTagOpen(src, tag, n) {
 
 // ── Find the source range {startOffset, endOffset} for a matched element ──────
 function _findNodeRange(xmlSrc, el, occurrenceIndex) {
-  const tag        = el.nodeName;
+  return _findNodeRangeForTag(xmlSrc, el.nodeName, occurrenceIndex);
+}
+
+// Tag-keyed range finder — single implementation shared by _findNodeRange (which
+// passes el.nodeName) and direct callers like _getXPathDomNodeAtOffset that already
+// have a tag string. Walks the Nth open tag, skips attribute quotes, then tracks
+// nest depth via two regexes to find the matching close tag.
+function _findNodeRangeForTag(xmlSrc, tag, occurrenceIndex) {
   const openOffset = _nthTagOpen(xmlSrc, tag, occurrenceIndex);
   if (openOffset === -1) return null;
 
@@ -219,8 +226,9 @@ function _findNodeRange(xmlSrc, el, occurrenceIndex) {
 
   // Find matching </tag> using precise regex, tracking nesting depth
   let depth = 1, j = openTagEnd;
-  const openRe  = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
-  const closeRe = new RegExp(`<\\/${_escRe(tag)}(?=[\\s>])`, 'g');
+  const escTag  = _escRe(tag);
+  const openRe  = new RegExp(`<${escTag}(?=[\\s>/])`, 'g');
+  const closeRe = new RegExp(`<\\/${escTag}(?=[\\s>])`, 'g');
 
   while (depth > 0) {
     openRe.lastIndex  = j;
@@ -248,6 +256,17 @@ function _findNodeRange(xmlSrc, el, occurrenceIndex) {
 
   // Fallback: just the opening tag
   return { startOffset: openOffset, endOffset: openTagEnd };
+}
+
+// Build a sorted array of newline character offsets for `src`. Used with
+// _offsetToLineCol's binary-search path so multiple offset→{line,col}
+// translations within a single highlight pass don't each do an O(N) substring.
+function _buildNewlineIndex(src) {
+  const idx = [];
+  for (let i = 0; i < src.length; i++) {
+    if (src.charCodeAt(i) === 10) idx.push(i);
+  }
+  return idx;
 }
 
 // ── Apply Monaco highlight decorations for all matched nodes ──────────────────
