@@ -24,8 +24,8 @@ Before submitting:
 - [ ] `console.log` restored, Monaco models disposed (no memory leaks)
 - [ ] Debounce timing unchanged (800ms validation)
 - [ ] Manual browser test — no DevTools console errors
-- [ ] `npm run test:e2e` passes
-- [ ] Tested in Chrome + Firefox (latest)
+- [ ] `npm run test:e2e` passes (Chromium — the only project enabled in `playwright.config.js` / CI)
+- [ ] Firefox manual smoke (optional) — Firefox/WebKit projects are commented out
 - [ ] localStorage persistence works after refresh
 
 ---
@@ -65,7 +65,11 @@ xsltDebounce = setTimeout(() => validateXslt(), 800);
 ```javascript
 // ✅ Good
 try {
-  const result = await SaxonJS.XPath.evaluate(xslt);
+  const result = SaxonJS.transform({
+    stylesheetText: xslt,
+    sourceText: xml,
+    destination: 'serialized',
+  }, 'sync');
 } catch (err) {
   clog(`Transform failed: ${err.message}`, 'error');
   return null;
@@ -171,11 +175,16 @@ Merge branch 'dev'     # meaningless
 
 ### Branch & Submit
 
+Feature branches are cut from `dev` and PR back into `dev`. The `dev` → `main` PR is opened separately by maintainers when releasing.
+
 ```bash
-git checkout -b feat/your-feature   # or fix/description
+git checkout dev
+git pull origin dev
+git checkout -b feat/your-feature   # or fix/description — branched from dev
 # ... make changes ...
 npm run test:e2e                    # must pass
 git push origin feat/your-feature
+# Open PR with base = dev (NOT main)
 ```
 
 ### PR Description Template

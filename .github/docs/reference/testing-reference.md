@@ -31,33 +31,35 @@ applyTo: tests/**/*.spec.js, tests/utils/test-helpers.js, tests/fixtures/sample-
 
 ### Coverage
 
-- **8 test files** across 2 directories (smoke + 7 workflow suites)
-- **75 tests** total
+- **9 test files** across 2 directories (smoke + 8 workflow suites)
+- **87 tests** total (per `grep -c "test(" tests/e2e/smoke.spec.js tests/e2e/workflows/*.spec.js`)
 
 ### Test Structure
 
 ```
 tests/
 ├── e2e/
-│   ├── smoke.spec.js                    # 3 basic sanity tests
+│   ├── smoke.spec.js                    # 4 basic sanity tests (3 real + 1 SUMMARY)
 │   └── workflows/
 │       ├── xslt-transform.spec.js       # 8 core XSLT tests
-│       ├── xpath-evaluation.spec.js     # 4 XPath evaluation tests
-│       ├── cpi-simulation.spec.js       # 10 CPI header/property tests
-│       ├── mode-switching.spec.js       # 7 mode transition tests
+│       ├── xpath-evaluation.spec.js     # 7 XPath evaluation tests
+│       ├── cpi-simulation.spec.js       # 12 CPI header/property tests
+│       ├── mode-switching.spec.js       # 13 mode transition tests
 │       ├── session-management.spec.js   # 8 localStorage tests
-│       ├── examples-library.spec.js     # 12 examples modal tests
-│       └── share-url.spec.js            # 9 share URL tests
+│       ├── examples-library.spec.js     # 14 examples modal tests
+│       ├── share-url.spec.js            # 9 share URL tests
+│       └── kv-search.spec.js            # 12 KV-panel search/filter tests
 ├── fixtures/sample-data.js              # Reusable test data
-├── utils/test-helpers.js                # EditorPage POM + utilities
-└── README.md                            # Quick reference guide
+└── utils/test-helpers.js                # EditorPage POM + utilities
 ```
+
+> Note: There is no `tests/README.md` in the repository. Quick-reference guidance lives in [docs/TESTING.md](../docs/TESTING.md).
 
 ### Running Tests
 
 ```bash
-# Run all tests
-npm test
+# Run all tests (the project does not define `npm test`)
+npm run test:e2e
 
 # Run specific file
 npx playwright test tests/e2e/smoke.spec.js
@@ -158,9 +160,8 @@ export class EditorPage {
 #### Group 1: Navigation & Initialization (2 methods)
 
 **`navigate(): Promise<void>`**
-- Navigates to `http://localhost:8000`
-- Waits for `networkidle` load state
-- Waits for `.monaco-editor` selector (5s timeout)
+- Navigates to `http://localhost:8000` with `waitUntil: 'domcontentloaded'` (45s timeout)
+- Waits for `.monaco-editor` selector (20s timeout)
 - **Extra 2s wait** for JS initialization (Monaco async rendering, Saxon check)
 - **Use in:** Every `beforeEach`, or after `loadFromShareUrl()`
 - **Timing:** ~3-4 seconds total
@@ -262,14 +263,14 @@ All methods use `window.monaco.editor.getEditors()` array indexing:
 ```javascript
 // ❌ FAILS - timing race condition
 await editor.switchToXpath();
-const value = await editor.getXPathInput();         // May read empty string!
-const results = await editor.evaluateXPath(value);  // XPath evaluator not visible yet
+const xml = await editor.getXmlContent();    // May read empty string!
+// ...XPath UI not yet attached, decorations stale
 ```
 
 **Why:**
 - `switchToXpath()` waits 1.5s for animation + DOM
-- But XPath input field visibility, event handlers, and keyboard focus complete **after** that wait
-- Attempting `getXPathInput()` immediately after mode switch may return empty string or stale value
+- But the active XML model swap, XPath input field visibility, event handlers, and keyboard focus complete **after** that wait
+- Attempting to read editor content immediately after mode switch may return empty string or stale value
 
 **Correct Pattern:**
 ```javascript
@@ -280,15 +281,17 @@ await page.waitForFunction(() => {
   const input = document.getElementById('xpathInput');
   return input && input.offsetHeight > 0;           // Confirm rendered
 });
-const value = await editor.getXPathInput();         // Safe to read
+// Now safe to interact with XPath UI / read editor content
 ```
 
-**Best Practice - Use EditorPage helpers:**
+**Best Practice — Drive XPath input directly via the DOM:**
 ```javascript
-// ✅ SAFEST - EditorPage encapsulates timing logic
+// EditorPage does NOT currently expose XPath helpers; use the page directly.
 await editor.switchToXpath();
-await editor.setXPathInput('//Item[@id="X"]');     // Internal waits + visibility check
-const results = await editor.evaluateXPath();
+await page.waitForSelector('#xpathInput:visible');
+await page.fill('#xpathInput', '//Item[@id="X"]');
+// Press Enter or trigger evaluation per the app UI; read window.clog messages for results
+const messages = await editor.getConsoleMessages();
 ```
 
 **What's Safe Immediately After `switchToXpath()` / `switchToXslt()`:**
@@ -298,9 +301,7 @@ const results = await editor.evaluateXPath();
 - `getStoredSession()` ✅ — Reads localStorage (not affected by mode)
 
 **What Requires Extra Wait:**
-- `getXPathInput()` ❌ — Field only rendered in XSLT mode
-- `setXPathInput(value)` ❌ — Event handlers not attached yet
-- `evaluateXPath()` ❌ — XPath evaluator button not visible yet
+- `#xpathInput` interactions ❌ — Field only rendered/attached in XPath mode
 - Editor content reads/writes ❌ — Model switching completes before UI sync
 
 **Rule of Thumb:**
@@ -352,7 +353,7 @@ await page.waitForSelector('#modeIndicator');      // Stable wait point
 
 ---
 
-#### Group 6: CPI Simulation — Headers (6 methods)
+#### Group 6: CPI Simulation — Headers (5 methods)
 
 **`addHeader(name: string, value: string): Promise<void>`**
 - Clicks `#hdrPanel button.kv-add-btn`
@@ -385,7 +386,7 @@ await page.waitForSelector('#modeIndicator');      // Stable wait point
 
 ---
 
-#### Group 7: CPI Simulation — Properties (6 methods)
+#### Group 7: CPI Simulation — Properties (5 methods)
 
 **`addProperty(name, value), updateProperty(index, name, value), deleteProperty(index)`**
 
@@ -405,7 +406,7 @@ Identical interface to header methods:
 
 ---
 
-#### Group 8: Theme & Session Management (7 methods)
+#### Group 8: Theme & Session Management (3 methods)
 
 **`toggleTheme(): Promise<void>`**
 - Clicks `#themeToggle` button
@@ -495,8 +496,8 @@ Identical interface to header methods:
 
 **`loadFromShareUrl(shareUrl: string): Promise<void>`**
 - Full navigation to `shareUrl`
-- Waits for `networkidle`
-- Waits for `.monaco-editor` (5s timeout)
+- Waits for `domcontentloaded` load state
+- Waits for `.monaco-editor` (15s timeout)
 - **Extra 3s wait** for Saxon processing async
 - **Critical:** Share data applied via `applyShareData()` after Saxon init
 - **Total timeout:** ~5+ seconds
@@ -726,14 +727,14 @@ xsltWithSort: `<?xml version="1.0"?>
 |---------|-------|---------|
 | `testDir` | `./tests/e2e` | Test discovery root |
 | `fullyParallel` | true | Run tests concurrently (faster CI) |
-| `retries` | 2 (CI) / 1 (local) | Retry flaky tests |
-| `workers` | 4 | Parallel processes |
-| `timeout` | 30s | Per-test timeout (abort if exceeded) |
-| `navigationTimeout` | 30s | Page.goto() timeout |
+| `retries` | 0 (explicitly disabled — see comment in `playwright.config.js`) | No retries; failures are real |
+| `workers` | `process.env.CI ? 4 : 2` | 4 parallel workers on CI, 2 locally |
+| `timeout` | `process.env.CI ? 120000 : 30000` | 120s per-test on CI, 30s locally |
 | `expect.timeout` | 10s | Assertion timeout (expect() calls) |
-| `trace` | 'on-first-retry' | Record trace on first failure (for debugging) |
+| `trace` | 'on-first-retry' | Record trace on first failure (legacy — retries are disabled, so this rarely fires) |
 | `screenshot` | 'only-on-failure' | Capture screenshot on test failure |
-| `webServer.reuseExistingServer` | !CI | Reuse dev server locally (faster iterations) |
+| `webServer.reuseExistingServer` | `!process.env.CI` | Reuse dev server locally (faster iterations); always cold-start on CI |
+| `webServer.command` | `TEST_SERVER=dist` ? `npx http-server dist/ -p 8000 -c-1` : `npm run serve` | Tests source by default; production bundle on opt-in |
 
 ### Timing Strategy Rationale
 
@@ -743,9 +744,8 @@ All timing built into EditorPage methods. Patterns:
 
 ```javascript
 async navigate() {
-  await this.page.goto('http://localhost:8000');
-  await this.page.waitForLoadState('networkidle');  // Network quiet
-  await this.page.waitForSelector('.monaco-editor'); // DOM ready
+  await this.page.goto('http://localhost:8000', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await this.page.waitForSelector('.monaco-editor', { timeout: 20000 }); // DOM ready
   await this.page.waitForTimeout(2000);             // JS initialization
 }
 ```
@@ -755,6 +755,7 @@ async navigate() {
 - Saxon-JS loads from global namespace (async)
 - sessionStorage hydration
 - Event listeners attached
+- `domcontentloaded` is used (not `networkidle`) so we don't block on long-poll/analytics requests
 
 **Observation:** Without extra 2s, occasional "editors not found" errors
 
@@ -848,12 +849,12 @@ async loadExample(exampleKey) {
 - Content fetching: If lazy-loaded from API (not applicable here, but defensive)
 - DOM updates: 100–200ms
 
-#### 7. Share URL Load (3s + networkidle)
+#### 7. Share URL Load (3s after domcontentloaded)
 
 ```javascript
 async loadFromShareUrl(shareUrl) {
   await this.page.goto(shareUrl);
-  await this.page.waitForLoadState('networkidle');
+  await this.page.waitForLoadState('domcontentloaded');
   await this.page.waitForSelector('.monaco-editor', { timeout: 15000 });
   await this.page.waitForTimeout(3000);  // Saxon async processing
 }
@@ -875,7 +876,7 @@ async loadFromShareUrl(shareUrl) {
 1. **HTML Report** (`playwright-report/index.html`) — Visual test results, screenshots, traces
 2. **JSON Report** (`test-results/results.json`) — Machine-readable, CI integration
 3. **JUnit Report** (`test-results/junit.xml`) — Standard XML for CI/CD pipelines
-4. **List Reporter** (local only) — Simple terminal output
+4. **List Reporter** — Simple terminal output (configured unconditionally; runs on both CI and local)
 
 **Opening Reports:**
 ```bash
@@ -1415,22 +1416,16 @@ await editor.page.waitForTimeout(5000);  // Custom 5s wait
 **Solution:**
 - EditorPage methods include proper 500–1500ms waits
 - Don't manually shorten waits
-- Playwright retry logic (configured 2 retries on CI) handles most flakiness
+- Retries are disabled (`retries: 0`), so any flake here surfaces immediately — fix the timing in `EditorPage` rather than relying on retries to mask it
 
 ---
 
 ### Playwright Retry Configuration
 
-**CI:** 2 retries → 3 total attempts per test
-**Local:** 1 retry → 2 total attempts
+**Retries are disabled** (set to `retries: 0` in `playwright.config.js`).
+Each test runs exactly once on both CI and locally; a failure is a real failure, not a flake to be papered over. If a test is genuinely flaky, fix the timing in `EditorPage` rather than turning retries back on.
 
-Tests fail permanently only after all retries exhausted. Observe retry count in HTML report:
-```
-Test Name
-├── Attempt 1 ❌ FAILED
-├── Attempt 2 ❌ FAILED
-└── Attempt 3 ✓ PASSED (retry)
-```
+The `trace: 'on-first-retry'` setting in the same config is a legacy default — because retries are disabled, traces will rarely be produced through that path. If you need a trace for a stubborn failure, run with `--trace on` or use `npx playwright test --ui`.
 
 ---
 
@@ -1589,13 +1584,14 @@ test('monitor network', async () => {
 
 **Purpose:** Basic sanity checks — does app load? Can we run a transform?
 
-**Tests (3 total):**
+**Tests (4 total — 3 real + 1 SUMMARY console-print):**
 
 | Test | Verifies |
 |------|----------|
-| `should load app with all UI elements visible` | Page navigation, Monroe rendering, buttons visible |
-| `should perform basic XSLT transform` | END-to-end workflow: fill + run + output |
-| `should toggle mode button` | Mode switching XSLT ↔ XPath |
+| `should load app with all UI elements visible` | Page navigation, Monaco rendering, buttons visible |
+| `should perform basic XSLT transform` | End-to-end workflow: fill + run + output |
+| `should switch between XSLT and XPath modes` | Mode switching XSLT ↔ XPath |
+| `SUMMARY: Smoke Tests` | Prints a banner; not a real assertion (counted by Playwright) |
 
 **Why separate from workflows:** Quick test to verify nothing broke; ~5s run time.
 
@@ -1623,13 +1619,16 @@ test('monitor network', async () => {
 
 **Purpose:** XPath mode and expression evaluation
 
-**Tests (4 total):**
+**Tests (7 total):**
 - XPath mode switch
 - Expression evaluation
 - Result display in console
 - Error handling for invalid expressions
+- History / repeat-evaluation behaviour
+- Mode-specific XML model handling
+- XPath input keyboard interaction
 
-**Note:** XPath input method varies by app UI; tests mock via `page.evaluate()`.
+**Note:** XPath input method varies by app UI; tests drive `#xpathInput` via the page directly (no dedicated `EditorPage` helper exists for XPath input).
 
 ---
 
@@ -1637,7 +1636,7 @@ test('monitor network', async () => {
 
 **Purpose:** CPI Header/Property simulation and namespace rewriting
 
-**Tests (10 total):**
+**Tests (12 total):**
 - Add header
 - Update header
 - Delete header
@@ -1648,6 +1647,8 @@ test('monitor network', async () => {
 - Output panel displays headers/properties
 - Multiple headers/properties
 - Header/property with special characters
+- Empty / cleared header & property panels
+- Round-trip after reload
 
 **Coverage:** CRUD operations, UI sync, localStorage, output verification.
 
@@ -1657,7 +1658,7 @@ test('monitor network', async () => {
 
 **Purpose:** XSLT ↔ XPath mode transitions and state preservation
 
-**Tests (7 total):**
+**Tests (13 total):**
 - Switch to XSLT mode
 - Switch to XPath mode
 - XML content preserved when switching
@@ -1665,6 +1666,12 @@ test('monitor network', async () => {
 - localStorage records mode
 - Rapid mode switching (stress test)
 - Mode persists after reload
+- Idempotent switches (re-clicking the active mode is a no-op)
+- XSLT pane visibility per mode
+- XPath input field visibility per mode
+- Decorations / markers reset on switch
+- Error state behaviour across switch
+- Console state across switch
 
 **Coverage:** Mode isolation, model switching, persistence.
 
@@ -1692,7 +1699,7 @@ test('monitor network', async () => {
 
 **Purpose:** Examples modal, example loading, search/filter
 
-**Tests (12 total):**
+**Tests (14 total):**
 - Open/close examples modal
 - Load example by key
 - Example auto-switches mode (XSLT example → XSLT mode)
@@ -1705,6 +1712,8 @@ test('monitor network', async () => {
 - Example persistence
 - Search with multiple keywords
 - Load invalid example (error handling)
+- Empty-search restoration
+- Search clears between modal opens
 
 **Coverage:** Modal lifecycle, example loading, search, mode switching.
 
@@ -1726,6 +1735,28 @@ test('monitor network', async () => {
 - Share URL with corrupted data (error handling)
 
 **Coverage:** URL generation, encoding/decoding, round-trip consistency, error handling.
+
+---
+
+### 9. kv-search.spec.js
+
+**Purpose:** Search/filter behaviour of the KV (Headers / Properties / output) panels added via the search-toggle button
+
+**Tests (12 total):**
+- Toggles the search bar open and closed
+- Filters rows by substring match against the name column
+- Filters rows by substring match against the value column
+- Clear button restores all rows
+- Shows a "No matches" line when query matches nothing
+- Keeps filter active across adding a new row
+- Keeps filter active across deleting a matching row
+- Closing the search bar clears the query and restores rows
+- Does not mutate `kvData` (persistence unchanged)
+- Search-toggle button shows active state when query is non-empty
+- Properties panel filter works the same way
+- Filters output Headers panel after a transform sets multiple headers
+
+**Coverage:** Search UI lifecycle, filter correctness, persistence non-interference, parity across Headers / Properties / output panels.
 
 ---
 
@@ -1773,9 +1804,10 @@ test('monitor network', async () => {
 | Session persistence | session-management.spec.js |
 | Examples library | examples-library.spec.js |
 | Share URLs | share-url.spec.js |
+| KV-panel search/filter | kv-search.spec.js |
 
 ---
 
-**Document Version:** 1.1 (May 2026)
-**Test Suite Status:** 75 tests, 100% passing, production-ready
-**Last Reviewed:** March 30, 2026
+**Document Version:** 1.2 (June 2026)
+**Test Suite Status:** 87 tests across 9 spec files (smoke + 8 workflow suites), production-ready
+**Last Reviewed:** June 1, 2026

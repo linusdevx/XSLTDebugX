@@ -21,7 +21,7 @@ Quick-start guide for local development, debugging, and testing XSLTDebugX.
 - **Git** — for cloning the repo
 - **A static HTTP server** — see [Running the App Locally](#running-the-app-locally)
 - **A modern browser** — Chrome, Firefox, Safari, or Edge
-- **Node.js (optional)** — only if you want `npm install -g serve`
+- **Node.js** — required if you want to run tests or build for production; optional for local dev
 
 ### Clone the Repository
 
@@ -30,7 +30,7 @@ git clone https://github.com/linusdevx/XSLTDebugX.git
 cd XSLTDebugX
 ```
 
-No `npm install` or build step needed — it's a zero-build static site.
+No build step needed for local dev (use `npm run serve` from `package.json`); `npm install` required if you want to run tests or build for production.
 
 ---
 
@@ -38,7 +38,17 @@ No `npm install` or build step needed — it's a zero-build static site.
 
 Choose any of these static HTTP server options:
 
-### Option 1: Node.js + serve (recommended)
+### Option 1: npm run serve (recommended)
+
+After running `npm install` once, use the script defined in `package.json`:
+
+```bash
+npm run serve
+# Runs `http-server -p 8000 -c-1`
+# Accepting connections at http://localhost:8000
+```
+
+### Option 2: Node.js + serve (global)
 
 ```bash
 npm install -g serve  # One-time setup
@@ -46,28 +56,28 @@ serve .
 # Output: Accepting connections at http://localhost:3000
 ```
 
-### Option 2: Python 3
+### Option 3: Python 3
 
 ```bash
 python -m http.server 8000
 # Serving HTTP on 0.0.0.0 port 8000 (http://localhost:8000/)
 ```
 
-### Option 3: Python 2 (legacy)
+### Option 4: Python 2 (legacy)
 
 ```bash
 python -m SimpleHTTPServer 8000
 # Serving HTTP on 0.0.0.0 port 8000 (http://localhost:8000/)
 ```
 
-### Option 4: PHP
+### Option 5: PHP
 
 ```bash
 php -S localhost:8000
 # Development Server started at http://localhost:8000
 ```
 
-### Option 5: VS Code Live Server Extension
+### Option 6: VS Code Live Server Extension
 
 1. Install extension: `ritwickdey.LiveServer`
 2. Right-click `index.html` → **Open with Live Server**
@@ -75,7 +85,7 @@ php -S localhost:8000
 
 ### Verify It Works
 
-1. Open the served URL in your browser (e.g., `http://localhost:3000`)
+1. Open the served URL in your browser (e.g., `http://localhost:8000`)
 2. Press `F12` to open DevTools → **Console** tab
 3. You should see no red errors, and the app should be fully interactive
 4. Click **Examples** → select a transform example → press **Ctrl+Enter**
@@ -152,7 +162,7 @@ true
 
 // Check persisted session
 > JSON.parse(localStorage.getItem('xdebugx-session-v1'))
-{ xmlXslt: "<?xml...?>" , xslt: "...", out: "", headers: [...], ... }
+{ xmlXslt: "<?xml...?>", xmlXpath: "<?xml...?>", xslt: "...", headers: [...], properties: [...], ... }
 
 // Check XPath history
 > _xpathHistory
@@ -169,6 +179,9 @@ Check that vendor libraries load correctly:
 | `index.html` | Local file | No cache |
 | `css/style.css` | Local file | No cache |
 | `js/*.js` | Local files | No cache |
+| `pako.min.js` | `cdnjs.cloudflare.com` (gzip for share-URL payloads) | CDN cache |
+| Monaco loader (`vs/loader.js`) + worker chunks | `cdn.jsdelivr.net/npm/monaco-editor@…` | CDN cache |
+| Lucide icons | `cdn.jsdelivr.net/npm/lucide@…` | CDN cache |
 
 **Under Cloudflare Pages** (production deployment):
 - App code (`/js/*`, `/css/*`) — `Cache-Control: no-store`
@@ -183,21 +196,25 @@ View persisted session data:
 3. Look for key: `xdebugx-session-v1`
 4. Click to view the JSON object
 
-Session contents:
+Session contents (keys saved by `saveState()` in `js/state.js`):
 ```json
 {
-  "xmlXslt": "<?xml version='1.0'?>...",  // XML in XSLT mode
-  "xslt": "<?xml version='1.0'?>...",     // XSLT stylesheet
-  "out": "...",                            // Last output
-  "headers": [{"id": 1, "name": "X-Auth", "value": "token"}],
+  "xmlXslt": "<?xml version='1.0'?>...",        // XML in XSLT mode
+  "xmlXpath": "<?xml version='1.0'?>...",       // XML in XPath mode
+  "xslt": "<?xml version='1.0'?>...",           // XSLT stylesheet
+  "headers": [{"name": "X-Auth", "value": "token"}],
   "properties": [],
-  "xpathEnabled": false,
+  "leftCollapsed": false,
+  "rightCollapsed": true,
+  "centerCollapsed": false,
   "xpathExpr": "",
-  "colCenterCollapsed": false,
-  "colRightCollapsed": false,
-  "colLeftCollapsed": false
+  "xpathEnabled": false,
+  "lastExampleKey": null,
+  "savedAt": 1717200000000
 }
 ```
+
+Note: the last transform output is **not** stored — it's recomputed on demand.
 
 Clear session for a fresh start:
 
@@ -313,7 +330,7 @@ Before committing or submitting a PR, verify:
 
 ### ✅ Examples Library
 
-- [ ] All 61 examples load without errors
+- [ ] All ~60+ examples load without errors (current count is in `js/examples-data.js`)
 - [ ] Example icons, labels, descriptions are correct
 - [ ] Categories filter correctly in modal
 - [ ] XPath hints display when loading XPath examples
@@ -403,14 +420,7 @@ Before committing or submitting a PR, verify:
 
 ### Validation Debounce
 
-Validation is debounced to 800ms to avoid freezing on rapid keystrokes:
-
-```javascript
-const VALIDATION_DEBOUNCE_MS = 800;
-
-// Increase if you have slow validation (rare)
-// Decrease if you want faster feedback (not recommended)
-```
+Validation is debounced to 800ms to avoid freezing on rapid keystrokes. The value is the literal `800` in `editor.js` (and matched by `xsltDebounce` / `xmlDebounce` / the save debounce in `state.js`) — there is no named constant. Adjust the literal directly if you want faster or slower feedback (faster is rarely worth it).
 
 ### Large Transform Optimization
 
@@ -514,7 +524,7 @@ console.log(JSON.stringify({
 
 - **Pause on exception:** Console → ⚙️ → "Pause on exceptions"
 - **Local Overrides:** Sources → Overrides — edit files without reloading
-- **Useful breakpoints:** `runTransform()` in `transform.js`, `rewriteCPICalls()` in `transform.js`, `switchToXpath()` in `mode-manager.js`
+- **Useful breakpoints:** `runTransform()` in `transform.js`, `rewriteCPICalls()` in `transform.js`, `setMode()` in `mode-manager.js`
 
 ---
 
