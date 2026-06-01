@@ -1,6 +1,6 @@
 # XSLTDebugX — SAP Cloud Integration XSLT IDE
 
-[![Build](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml) [![License](https://img.shields.io/github/license/linusdevx/XSLTDebugX)](LICENSE) ![XSLT 3.0](https://img.shields.io/badge/XSLT-3.0-blue?logo=w3c) ![XPath 3.1](https://img.shields.io/badge/XPath-3.1-blue) ![Saxon-JS](https://img.shields.io/badge/Saxon--JS-2.x-green) ![No runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
+[![Build](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml) [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE) ![XSLT 3.0](https://img.shields.io/badge/XSLT-3.0-blue?logo=w3c) ![XPath 3.1](https://img.shields.io/badge/XPath-3.1-blue) ![Saxon-JS](https://img.shields.io/badge/Saxon--JS-2.x-green) ![No runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
 
 > A browser-based XSLT 3.0 IDE and XPath evaluator built specifically for SAP Cloud Integration (CPI) developers. Test and debug XSLT mappings and XPath expressions locally — with full CPI runtime simulation — before ever deploying to your tenant.
 
