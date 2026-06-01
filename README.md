@@ -124,6 +124,21 @@ The "CPI Headers & Properties (Complete)" example exercises all four extension f
 
 ---
 
+## CPI Helper Integration
+
+The community-maintained **[CPI Helper Chrome extension](https://github.com/dbeck121/CPI-Helper-Chrome-Extension)** by **[@dbeck121](https://github.com/dbeck121)** has built-in support for sending CPI runtime traces straight into XSLTDebugX — no copy-paste between tabs.
+
+When you run an iFlow in trace mode, CPI Helper highlights every XSLT Mapping step that captured trace data. Click a highlighted step, choose **Debug Externally**, and pick what to forward (message body, XSLT, headers, properties). The extension compresses the payload into XSLTDebugX's share-URL format and opens it here — fully populated, ready to re-run with the exact runtime context that produced the original output.
+
+Useful when:
+- A transform works in your local tests but fails in CPI — pull the real trace and diff against your test fixtures.
+- You need to reproduce a production issue without redeploying.
+- You want to share a failing case with a teammate via a single share URL.
+
+Tested working with the current XSLTDebugX share-URL format. The plugin is third-party and maintained separately; install it from the [CPI Helper repository](https://github.com/dbeck121/CPI-Helper-Chrome-Extension) and report plugin issues there.
+
+---
+
 ## FAQ
 
 ### Can I use this for production CPI flows?
