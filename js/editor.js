@@ -792,6 +792,9 @@ require(['vs/editor/editor.main'], () => {
         }
         if (_savedSession.leftCollapsed)  document.getElementById('colLeft')?.classList.add('collapsed');
         if (!_savedSession.rightCollapsed) document.getElementById('colRight')?.classList.remove('collapsed');
+        if (typeof _savedSession.consoleHeight === 'number') {
+          setConsoleHeight(_savedSession.consoleHeight);
+        }
 
         {
           const _expr = _savedSession.xpathExpr || (EXAMPLES.xpathNavigation?.xpathExpr ?? '');
