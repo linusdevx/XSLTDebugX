@@ -292,6 +292,8 @@ function clearSavedState() {
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
 
+  if (typeof setConsoleHeight === 'function') setConsoleHeight(160);
+
   if (modeManager.isXpath) {
     _resetXPathMode();
   } else {
