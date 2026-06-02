@@ -351,7 +351,7 @@
           <button class="pane-icon-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()"><i data-lucide="clipboard" width="14" height="14"></i></button>
           <button class="pane-icon-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()"><i data-lucide="eraser" width="14" height="14"></i></button>
         </div>
-        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron"></i>
+        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" onclick="event.stopPropagation(); handleConsoleBarClick(event)" title="Minimize / restore console"></i>
       </div>
       <div class="console-body" id="consoleBody"></div>
     </div>
