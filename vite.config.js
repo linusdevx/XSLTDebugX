@@ -114,6 +114,7 @@ export default defineConfig({
         if (existsSync('site.webmanifest')) copyFileSync('site.webmanifest', 'dist/site.webmanifest');
         if (existsSync('robots.txt')) copyFileSync('robots.txt', 'dist/robots.txt');
         if (existsSync('og-image.png')) copyFileSync('og-image.png', 'dist/og-image.png');
+        if (existsSync('screenshot.png')) copyFileSync('screenshot.png', 'dist/screenshot.png');
 
         // ── Resolve a single SEO date for this build, then inject it everywhere ──
         const lastModified = resolveLastModified();

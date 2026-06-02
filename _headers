@@ -32,3 +32,6 @@
 
 /og-image.png
   Cache-Control: public, max-age=604800
+
+/screenshot.png
+  Cache-Control: public, max-age=604800
