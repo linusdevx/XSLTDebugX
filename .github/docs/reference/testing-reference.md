@@ -1034,7 +1034,7 @@ test.beforeEach(async ({ page: testPage }) => {
 4. Verify headers/properties in output panel
 5. Verify localStorage persistence
 
-**Critical:** CPI XSLT needs `xmlns:cpi="http://sap.com/cpi"` namespace. Rewriting logic intercepts `cpi:getHeader`, etc. Tests use `sampleData.cpiXslt`.
+**Critical:** CPI XSLT needs `xmlns:cpi="http://sap.com/cpi"` namespace. Rewriting logic intercepts `cpi:setHeader`/`cpi:setProperty`. Tests use `sampleData.cpiXslt`.
 
 ---
 
@@ -1642,7 +1642,7 @@ test('monitor network', async () => {
 - Delete header
 - Header count badge
 - Properties (identical to headers)
-- CPI XSLT rewriting (`cpi:getHeader` etc.)
+- CPI XSLT rewriting (`cpi:setHeader`/`cpi:setProperty`)
 - Header/property persistence to localStorage
 - Output panel displays headers/properties
 - Multiple headers/properties

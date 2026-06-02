@@ -300,7 +300,7 @@ Before committing or submitting a PR, verify:
 - [ ] **Theme Toggle** — Switch dark/light, colors update correctly in all panes
 - [ ] **localStorage Persistence** — Refresh browser, state is restored
 - [ ] **Headers/Properties** — Add rows, run transform, values inject as `xsl:param`
-- [ ] **CPI Simulation** — Test `cpi:setHeader`, `cpi:getHeader`, `cpi:setProperty`, `cpi:getProperty`
+- [ ] **CPI Simulation** — Test `cpi:setHeader`, `cpi:setProperty`; verify Headers/Properties bind as `<xsl:param>`
 - [ ] **File Operations** — Upload files, download output, drag-and-drop works
 - [ ] **Examples** — Load examples from all 6 categories, no errors
 - [ ] **Console** — Search, type filters, minimize, auto-expand on error all work

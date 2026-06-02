@@ -172,12 +172,7 @@ applyTo:
 - **cpiCaptured** → local object during transform: `{ headers: {}, properties: {} }`
 - **Full XPath evaluation**: Supports `concat()`, `if-then-else`, `//element/path`, variables
 - **Output panels** → captured values shown in Output Headers/Properties
-
-### cpi:getHeader / cpi:getProperty
-- **JavaScript interceptors**: `window.cpiGetHeader`, `window.cpiGetProperty`
-- **kvData lookup** → reads from Headers/Properties panels
-- **Empty string fallback** → returns `''` if key not found
-- **Console warnings** → logs when key not found
+- **Reads:** declare `<xsl:param name="X"/>` — values come from Headers/Properties panels via `buildParamsXPath()` (mirrors CPI runtime; no `cpi:get*` exists).
 
 ### $exchange Parameter
 - **buildParamsXPath()** → injects $exchange + headers/properties (`transform.js`)
