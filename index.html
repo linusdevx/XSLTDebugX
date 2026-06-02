@@ -333,6 +333,7 @@
 
     <!-- Console — default position: below XSLT editor. Moved below workspace in XPath mode. -->
     <div class="console-panel" id="consolePanel">
+      <div class="console-resize-handle" onpointerdown="startConsoleResize(event)" title="Drag to resize console"></div>
       <div class="console-bar" onclick="handleConsoleBarClick(event)">
         <span class="kv-icon"><i data-lucide="square-terminal" width="12" height="12"></i></span>
         <span class="console-title">Console</span>
