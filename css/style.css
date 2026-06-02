@@ -205,6 +205,20 @@
       flex-shrink: 0;
     }
     .header nav { display: contents; }
+    /* Visually hidden but kept in the DOM and a11y tree.
+       Used by the SEO content block: crawlers (Google, Bing) and screen readers see it;
+       sighted users don't. Standard "sr-only" pattern — not display:none, which would
+       hide from assistive tech and JS-rendering crawlers alike. */
+    .seo-content {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .logo {
       display: flex; align-items: center; gap: 9px; text-decoration: none;
       margin: 0; font-size: inherit; font-weight: inherit;

@@ -961,7 +961,7 @@ const EXAMPLES = {
     <!-- CPI binds header "source" to <xsl:param name="source"/> automatically.
          Same applies to "channel". Mirrors real CPI runtime. -->
     <xsl:message>
-      <xsl:text>🔵 [DEBUG] Incoming Headers: </xsl:text>
+      <xsl:text>[DEBUG] Incoming Headers: </xsl:text>
       <xsl:text>source=</xsl:text><xsl:value-of select="$source"/>
       <xsl:text>, channel=</xsl:text><xsl:value-of select="$channel"/>
     </xsl:message>
@@ -970,7 +970,7 @@ const EXAMPLES = {
     <!-- ─── STEP 2: Read incoming property values from xsl:param ─── -->
     <!-- Properties bind exactly the same way as headers. -->
     <xsl:message>
-      <xsl:text>🟢 [DEBUG] Incoming Properties: </xsl:text>
+      <xsl:text>[DEBUG] Incoming Properties: </xsl:text>
       <xsl:text>environment=</xsl:text><xsl:value-of select="$environment"/>
       <xsl:text>, maxRetries=</xsl:text><xsl:value-of select="$maxRetries"/>
     </xsl:message>
@@ -983,7 +983,7 @@ const EXAMPLES = {
 
     <!-- ─── Console Debug: Show extracted payload values ─── -->
     <xsl:message>
-      <xsl:text>📦 [DEBUG] Payload Values: </xsl:text>
+      <xsl:text>[DEBUG] Payload Values: </xsl:text>
       <xsl:text>OrderId=</xsl:text><xsl:value-of select="$orderId"/>
       <xsl:text>, Tier=</xsl:text><xsl:value-of select="$tier"/>
       <xsl:text>, Amount=</xsl:text><xsl:value-of select="$amount"/>
@@ -1012,7 +1012,7 @@ const EXAMPLES = {
 
     <!-- ─── Console Debug: Show calculated routing ─── -->
     <xsl:message>
-      <xsl:text>🧮 [DEBUG] Calculated Routing: </xsl:text>
+      <xsl:text>[DEBUG] Calculated Routing: </xsl:text>
       <xsl:text>Priority=</xsl:text><xsl:value-of select="$priority"/>
       <xsl:text>, Route=</xsl:text><xsl:value-of select="$route"/>
     </xsl:message>
@@ -1027,7 +1027,7 @@ const EXAMPLES = {
 
     <!-- ─── Console Debug: Confirm headers set ─── -->
     <xsl:message>
-      <xsl:text>✅ [DEBUG] Headers SET: </xsl:text>
+      <xsl:text>[DEBUG] Headers SET: </xsl:text>
       <xsl:text>X-Order-Id=</xsl:text><xsl:value-of select="$orderId"/>
       <xsl:text>, X-Priority=</xsl:text><xsl:value-of select="$priority"/>
       <xsl:text>, X-Route=</xsl:text><xsl:value-of select="$route"/>
@@ -1042,7 +1042,7 @@ const EXAMPLES = {
 
     <!-- ─── Console Debug: Confirm properties set ─── -->
     <xsl:message>
-      <xsl:text>✅ [DEBUG] Properties SET: </xsl:text>
+      <xsl:text>[DEBUG] Properties SET: </xsl:text>
       <xsl:text>processedBy=XSLTDebugX-Demo, tier=</xsl:text><xsl:value-of select="$tier"/>
       <xsl:text>, orderAmount=</xsl:text><xsl:value-of select="$amount"/>
     </xsl:message>
@@ -1076,7 +1076,7 @@ const EXAMPLES = {
 
     <!-- ─── Final Console Debug: Transformation complete ─── -->
     <xsl:message>
-      <xsl:text>✅ [DEBUG] Transformation COMPLETE. Order </xsl:text>
+      <xsl:text>[DEBUG] Transformation COMPLETE. Order </xsl:text>
       <xsl:value-of select="$orderId"/>
       <xsl:text> routed to: </xsl:text>
       <xsl:value-of select="$route"/>
