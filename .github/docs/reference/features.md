@@ -56,7 +56,7 @@ applyTo:
 ### Auto-Close & Utilities
 - **setupAutoClose(editor)** → manual XML tag auto-close (`editor.js`)
 - **_updateCursorStat(ed, label)** → updates status bar with line/col/char count (`editor.js`)
-- **_getXmlLabel()** → dynamic label: "XML Input" (XSLT mode) vs "XML Source" (XPath mode)
+- **_getXmlLabel()** → dynamic label: "XML Input" (XSLT mode) vs "XML Source" (XPath mode) (`editor.js`)
 
 ---
 
@@ -112,8 +112,7 @@ applyTo:
 - **ModeManager class** → Centralized mode switching, all UI sync happens inside `modeManager.setMode()` (`mode-manager.js`)
 - **modeManager.isXpath** → getter property (use instead of checking `xpathEnabled` directly)
 - **modeManager.setMode()** → primary API for mode changes; updates models, UI, column states automatically
-- ⚠️ **DEPRECATED**: `xpathEnabled` is ONLY for localStorage persistence; reading the mode should use `modeManager.isXpath`
-- ⚠️ **DEPRECATED**: Do not manually call `_applyXPathToggleState()` or swap models; use `modeManager.setMode()` instead
+- ⚠️ **DEPRECATED**: `xpathEnabled` is ONLY a JSON key in saved-state — there is no live global. Read the mode via `modeManager.isXpath`; never swap XML models manually — call `modeManager.setMode()`.
 
 ### XPath Mode UI Elements
 - **copyXPathInput()** → copies expression to clipboard (`xpath.js`)
@@ -182,7 +181,7 @@ applyTo:
 
 ### xsl:message Support
 - **console.log intercept** → captures Saxon's stdout during transform
-- **_xslMessages[]** → temporary array, flushed before completion log
+- **_xslMessages[]** → temporary array local to `runTransform()`, flushed before completion log (`transform.js`)
 - **Console display** → logged as amber 'warn' type messages
 - **Execution order** → fired in natural XSLT execution order
 
@@ -501,7 +500,7 @@ examples-data.js → modal.js → files.js → ui.js → share.js → xpath.js �
 - **xmlModelXslt** → XML model for XSLT mode
 - **xmlModelXpath** → XML model for XPath mode
 - **saxonReady** → boolean flag for Saxon-JS readiness
-- **xpathEnabled** → boolean flag for current mode
+- **modeManager** → `ModeManager` instance; mode is read via `modeManager.isXpath` (the `xpathEnabled` flag is a JSON-key only, not a live global)
 - **kvData** → `{ headers: [], properties: [] }`
 - **kvIdSeq** → auto-increment ID for KV rows
 - **EXAMPLES** → object with ~61 examples

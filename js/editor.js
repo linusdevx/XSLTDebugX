@@ -955,7 +955,6 @@ require(['vs/editor/editor.main'], () => {
         }
       } else {
         clog('Identity Transform loaded. Use Examples menu to load CPI scenarios.', 'info');
-        if (typeof _applyXPathToggleState === 'function') _applyXPathToggleState();
         // Pre-load default XPath so the bar is ready when user switches to XPath mode
         const _defaultExpr = EXAMPLES.xpathNavigation?.xpathExpr ?? '';
         if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
