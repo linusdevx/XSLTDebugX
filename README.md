@@ -200,7 +200,7 @@ Vanilla JavaScript, 12 modules, no module system, **no npm runtime dependencies*
 | Component | Type | Purpose |
 |---|---|---|
 | **Monaco Editor** | CDN (`cdn.jsdelivr.net`) | Code editing & syntax highlighting |
-| **Lucide Icons** | CDN (`unpkg.com`) | UI icons |
+| **Lucide Icons** | CDN (`cdn.jsdelivr.net`) | UI icons |
 | **pako** | CDN (`cdnjs.cloudflare.com`) | Share-URL compression |
 | **Saxon-JS 2.x** | Bundled (`lib/SaxonJS2.js`, MPL-2.0) | XSLT 3.0 + XPath 3.1 engine |
 | **`@playwright/test`, `http-server`, `vite`** | Dev only | Tests, local server, production build |
