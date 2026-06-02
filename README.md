@@ -185,7 +185,7 @@ For more recipes (XPath empty results, lost session, console filtering), see **[
 
 | Limitation | Detail | Workaround |
 |---|---|---|
-| `$exchange` not a real object | Injected as a dummy string — only works as the first argument to `cpi:set*/get*` | Always pass `$exchange` as first param |
+| `$exchange` not a real object | Injected as a dummy string — only works as the first argument to `cpi:setHeader`/`cpi:setProperty` | Always pass `$exchange` as first param |
 | Share URL length | Browser URL limit ~2,000 chars; large XSLT + XML may exceed this | Use **Download** for large payloads |
 | Share is XSLT only | XPath expressions and XPath mode aren't included in share URLs | Screenshot results or copy the expression manually |
 | Large file performance | Files >500 KB may slow Monaco | Split large IDocs or pre-clean in an external editor |
