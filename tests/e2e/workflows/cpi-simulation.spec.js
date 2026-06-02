@@ -4,7 +4,7 @@ import { sampleData } from '../../fixtures/sample-data.js';
 
 /**
  * CPI Simulation: Headers & Properties Workflow Tests
- * Tests SAP CPI-specific features: Headers panel, Properties panel, cpi:setHeader/getHeader interceptors
+ * Tests SAP CPI-specific features: Headers panel, Properties panel, cpi:setHeader/setProperty interceptors
  */
 
 test.describe('CPI Simulation Workflow', () => {

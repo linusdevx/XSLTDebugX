@@ -86,7 +86,7 @@ test.describe('Examples Library Workflow', () => {
     await page.openExamplesModal();
 
     // Load a CPI example
-    await page.loadExample('cpiGetSet');
+    await page.loadExample('cpiHeadersProps');
 
     // Verify we're in XSLT mode (CPI is XSLT-only)
     const mode = await page.getMode();

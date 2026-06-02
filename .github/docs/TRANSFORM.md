@@ -11,7 +11,6 @@ Orchestrates XSLT transformation execution with SAP CPI runtime simulation:
 - Rewrites `cpi:` extension calls → `js:` namespace interceptors
 - Injects headers/properties as `xsl:param` values
 - Captures `cpi:setHeader` / `cpi:setProperty` output
-- Handles `cpi:getHeader` / `cpi:getProperty` reads
 - Intercepts `xsl:message` traces
 - Manages Output Headers/Properties panels
 
@@ -28,7 +27,9 @@ Rewrites XSLT to use Saxon-JS JavaScript extension functions.
 1. Replace `xmlns:cpi="..."` → `xmlns:js="http://saxonica.com/ns/globalJS"` (or strip `xmlns:cpi` entirely if `xmlns:js` is already declared)
 2. Strip `cpi` from `exclude-result-prefixes` (if the resulting list is empty, the entire attribute is removed). NOTE: `js` is **not** added here — that's `ensureJsExcluded`'s job (called separately by `runTransform`).
 3. Rewrite function calls: `cpi:setHeader(` → `js:cpiSetHeader(`
-4. Same for `setProperty`, `getHeader`, `getProperty`
+4. Same for `setProperty`
+
+**Reads:** `cpi:getHeader` / `cpi:getProperty` are deliberately **not** simulated — CPI does not expose them. Headers/Properties are read by declaring `<xsl:param name="X"/>`, populated by `buildParamsXPath()` from the Headers/Properties panels.
 
 **Comment/CDATA safety:** `_extractInsensitiveRegions()` swaps out `<!-- ... -->` and `<![CDATA[ ... ]]>` regions with placeholders before rewriting, then restores them. Placeholders preserve newline counts so Saxon-reported line numbers stay accurate.
 
@@ -82,13 +83,6 @@ Installed during transform if `cpi:` calls detected. Saxon-JS passes the implici
 window.cpiSetHeader = (_exchange, name, value) => {
   cpiCaptured.headers[_cpiStrVal(name)] = _cpiStrVal(value);
   return '';  // Empty string return mirrors CPI
-};
-
-window.cpiGetHeader = (_exchange, name) => {
-  const key = _cpiStrVal(name).trim();           // .trim() guards against
-  const row = kvData.headers.find(r => r.name === key);  // whitespace from XPath
-  if (!row) clog(`cpi:getHeader — '${key}' not found in Headers panel, returning empty string`, 'warn');
-  return row?.value ?? '';
 };
 ```
 
@@ -233,7 +227,6 @@ if (hasCPI) {
 - CPI setHeader with static string
 - CPI setHeader with `concat()`
 - CPI setHeader with XPath expression
-- CPI getHeader with missing header (warn)
 - Invalid param names (skip with warning)
 - Namespace already declared edge cases
 
@@ -274,7 +267,7 @@ expect(headers).toBe(0);      // Headers panel not visible, kvData not accessibl
 **Error on CPI in XPath:**
 If XPath input contains `cpi:` namespace calls:
 ```xslt
-xdebugx:cpi:getHeader('X-MyHeader')  // ❌ XSLT only
+xdebugx:cpi:setHeader('X-MyHeader', 'val')  // ❌ XSLT only
 ```
 Result: Saxon XPath evaluator rejects `cpi:` namespace as undefined. No graceful fallback.
 

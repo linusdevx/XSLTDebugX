@@ -895,10 +895,10 @@ const EXAMPLES = {
 </xsl:stylesheet>`
   },
 
-  cpiGetSet: {
+  cpiHeadersProps: {
     label: 'CPI Headers & Properties (Complete)',
     icon: 'refresh-cw',
-    desc: 'Set + Get headers/properties with console debugging',
+    desc: 'Read headers/properties as xsl:param, set via cpi:setHeader/setProperty',
     cat:  'cpi',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
 <CustomerOrder>
@@ -949,35 +949,30 @@ const EXAMPLES = {
       - Properties: environment, maxRetries (from CPI exchange properties)
   -->
   <xsl:param name="exchange"/>
-  <xsl:param name="source"      select="'UNKNOWN'"/>  <!-- Incoming header: source system  -->
-  <xsl:param name="channel"     select="'UNKNOWN'"/>  <!-- Incoming header: B2B or B2C     -->
-  <xsl:param name="environment" select="'DEV'"/>      <!-- Incoming property: DEV/QA/PROD  -->
-  <xsl:param name="maxRetries"  select="'1'"/>        <!-- Incoming property: retry limit  -->
+  <xsl:param name="source"/>
+  <xsl:param name="channel"/>
+  <xsl:param name="environment"/>
+  <xsl:param name="maxRetries"/>
 
 
   <!-- ═══════ MAIN TEMPLATE ══════════════════════════════════════ -->
   <xsl:template match="/CustomerOrder">
-    <!-- ─── STEP 1: Retrieve incoming header values via cpi:getHeader() ─── -->
-    <xsl:variable name="incomingSource"  select="cpi:getHeader($exchange, 'source')"/>
-    <xsl:variable name="incomingChannel" select="cpi:getHeader($exchange, 'channel')"/>
-
-    <!-- ─── Console Debug: Show incoming values ─── -->
+    <!-- ─── STEP 1: Read incoming header values from xsl:param ─── -->
+    <!-- CPI binds header "source" to <xsl:param name="source"/> automatically.
+         Same applies to "channel". Mirrors real CPI runtime. -->
     <xsl:message>
       <xsl:text>🔵 [DEBUG] Incoming Headers: </xsl:text>
-      <xsl:text>source=</xsl:text><xsl:value-of select="$incomingSource"/>
-      <xsl:text>, channel=</xsl:text><xsl:value-of select="$incomingChannel"/>
+      <xsl:text>source=</xsl:text><xsl:value-of select="$source"/>
+      <xsl:text>, channel=</xsl:text><xsl:value-of select="$channel"/>
     </xsl:message>
 
 
-    <!-- ─── STEP 2: Retrieve incoming property values via cpi:getProperty() ─── -->
-    <xsl:variable name="env"      select="cpi:getProperty($exchange, 'environment')"/>
-    <xsl:variable name="retries"  select="cpi:getProperty($exchange, 'maxRetries')"/>
-
-    <!-- ─── Console Debug: Show incoming properties ─── -->
+    <!-- ─── STEP 2: Read incoming property values from xsl:param ─── -->
+    <!-- Properties bind exactly the same way as headers. -->
     <xsl:message>
       <xsl:text>🟢 [DEBUG] Incoming Properties: </xsl:text>
-      <xsl:text>environment=</xsl:text><xsl:value-of select="$env"/>
-      <xsl:text>, maxRetries=</xsl:text><xsl:value-of select="$retries"/>
+      <xsl:text>environment=</xsl:text><xsl:value-of select="$environment"/>
+      <xsl:text>, maxRetries=</xsl:text><xsl:value-of select="$maxRetries"/>
     </xsl:message>
 
 
@@ -1057,9 +1052,9 @@ const EXAMPLES = {
     <ProcessedOrder>
       <Metadata>
         <OrderId><xsl:value-of select="$orderId"/></OrderId>
-        <Source><xsl:value-of select="$incomingSource"/></Source>
-        <Channel><xsl:value-of select="$incomingChannel"/></Channel>
-        <Environment><xsl:value-of select="$env"/></Environment>
+        <Source><xsl:value-of select="$source"/></Source>
+        <Channel><xsl:value-of select="$channel"/></Channel>
+        <Environment><xsl:value-of select="$environment"/></Environment>
         <Priority><xsl:value-of select="$priority"/></Priority>
         <Route><xsl:value-of select="$route"/></Route>
         <ProcessedTimestamp><xsl:value-of select="current-dateTime()"/></ProcessedTimestamp>

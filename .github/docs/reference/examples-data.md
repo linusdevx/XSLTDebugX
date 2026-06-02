@@ -207,7 +207,7 @@ These rules are a manual checklist — not enforced by code at load time. Before
 
 ### CPI Specifics (M10–M11)
 - [ ] **M10** (CPI examples only): Includes `<xsl:param name="exchange"/>` declaration
-- [ ] **M11** (CPI examples only): Uses `cpi:setHeader/getHeader/setProperty/getProperty` correctly
+- [ ] **M11** (CPI examples only): Uses `cpi:setHeader`/`cpi:setProperty` for writes; reads via `<xsl:param>` only (no `cpi:get*` — CPI doesn't expose getters)
 
 ### Completeness (M12–M13)
 - [ ] **M12**: No `TODO`, `FIXME`, or placeholder text

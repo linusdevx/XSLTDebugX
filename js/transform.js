@@ -75,7 +75,7 @@ function rewriteCPICalls(xslt) {
   const JS_NS = 'http://saxonica.com/ns/globalJS';
 
   const { stripped, restore } = _extractInsensitiveRegions(xslt);
-  const hasCPI = /cpi:(?:set|get)(?:Header|Property)/.test(stripped);
+  const hasCPI = /cpi:set(?:Header|Property)/.test(stripped);
   if (!hasCPI) return { rewritten: xslt, hasCPI: false };
   xslt = stripped;
 
@@ -91,8 +91,6 @@ function rewriteCPICalls(xslt) {
 
   xslt = xslt.replace(/cpi:setHeader\s*\(/g,    'js:cpiSetHeader(');
   xslt = xslt.replace(/cpi:setProperty\s*\(/g,  'js:cpiSetProperty(');
-  xslt = xslt.replace(/cpi:getHeader\s*\(/g,    'js:cpiGetHeader(');
-  xslt = xslt.replace(/cpi:getProperty\s*\(/g,  'js:cpiGetProperty(');
 
   return { rewritten: restore(xslt), hasCPI: true };
 }
@@ -201,7 +199,7 @@ function buildParamsXPath() {
   }
   if (dupes.length) {
     dupes.forEach(n =>
-      clog(`Warning: "${n}" exists in both Headers and Properties — property value used for $${n} param (cpi:getHeader/getProperty still work independently)`, 'warn')
+      clog(`Warning: "${n}" exists in both Headers and Properties — property value used for $${n} param`, 'warn')
     );
   }
   return `, 'stylesheet-params': map { ${entries.join(', ')} }`;
@@ -484,13 +482,11 @@ function runTransform() {
     // evaluates all arguments (including dynamic ones) and calls our JS interceptors.
     const { rewritten: _xsltRewritten, hasCPI } = rewriteCPICalls(xsltSrc);
     const cpiCaptured = { headers: {}, properties: {} };
-    let _prevCpiSetHeader, _prevCpiSetProperty, _prevCpiGetHeader, _prevCpiGetProperty;
+    let _prevCpiSetHeader, _prevCpiSetProperty;
 
     if (hasCPI) {
       _prevCpiSetHeader   = window.cpiSetHeader;
       _prevCpiSetProperty = window.cpiSetProperty;
-      _prevCpiGetHeader   = window.cpiGetHeader;
-      _prevCpiGetProperty = window.cpiGetProperty;
 
       const _cpiStrVal = v => {
         if (v == null) return '';
@@ -504,22 +500,6 @@ function runTransform() {
       // setHeader / setProperty — capture computed values into cpiCaptured
       window.cpiSetHeader   = (_exchange, name, value) => { cpiCaptured.headers[_cpiStrVal(name)]    = _cpiStrVal(value); return ''; };
       window.cpiSetProperty = (_exchange, name, value) => { cpiCaptured.properties[_cpiStrVal(name)] = _cpiStrVal(value); return ''; };
-
-      // getHeader / getProperty — read from input Headers/Properties panels
-      window.cpiGetHeader   = (_exchange, name) => {
-        const key = _cpiStrVal(name).trim();
-        const row = kvData.headers.find(r => r.name === key);
-        const val = row?.value ?? '';
-        if (!row) clog(`cpi:getHeader — '${key}' not found in Headers panel, returning empty string`, 'warn');
-        return val;
-      };
-      window.cpiGetProperty = (_exchange, name) => {
-        const key = _cpiStrVal(name).trim();
-        const row = kvData.properties.find(r => r.name === key);
-        const val = row?.value ?? '';
-        if (!row) clog(`cpi:getProperty — '${key}' not found in Properties panel, returning empty string`, 'warn');
-        return val;
-      };
 
       xsltSrc = _xsltRewritten;
       clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
@@ -662,8 +642,6 @@ function runTransform() {
       if (hasCPI) {
         _prevCpiSetHeader   !== undefined ? (window.cpiSetHeader   = _prevCpiSetHeader)   : delete window.cpiSetHeader;
         _prevCpiSetProperty !== undefined ? (window.cpiSetProperty = _prevCpiSetProperty) : delete window.cpiSetProperty;
-        _prevCpiGetHeader   !== undefined ? (window.cpiGetHeader   = _prevCpiGetHeader)   : delete window.cpiGetHeader;
-        _prevCpiGetProperty !== undefined ? (window.cpiGetProperty = _prevCpiGetProperty) : delete window.cpiGetProperty;
       }
     }
 

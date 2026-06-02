@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Products>
+    <Product>
+        <ProductId>P-1001</ProductId>
+        <Name>Wireless Mouse</Name>
+        <Category>Electronics</Category>
+        <Price>24.99</Price>
+        <CurrencyCode>USD</CurrencyCode>
+    </Product>
+    <Product>
+        <ProductId>P-1002</ProductId>
+        <Name>Mechanical Keyboard</Name>
+        <Category>Electronics</Category>
+        <Price>89.50</Price>
+        <CurrencyCode>USD</CurrencyCode>
+    </Product>
+    <Product>
+        <ProductId>P-2003</ProductId>
+        <Name>Office Chair</Name>
+        <Category>Furniture</Category>
+        <Price>199.00</Price>
+        <CurrencyCode>USD</CurrencyCode>
+    </Product>
+    <Product>
+        <ProductId>P-3004</ProductId>
+        <Name>Notebook A5</Name>
+        <Category>Stationery</Category>
+        <Price>3.75</Price>
+        <CurrencyCode>USD</CurrencyCode>
+    </Product>
+</Products>

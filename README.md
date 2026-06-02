@@ -85,7 +85,7 @@ A condensed highlight reel — the full catalog (200+ features with file/functio
 
 - **Two modes, one app** — XSLT transform mode and XPath evaluator mode share the XML editor; loading an example switches automatically.
 - **Monaco Editor** — XML/XSLT syntax highlighting, bracket-pair colorisation, live validation with inline squiggles, format/minify, word-wrap toggle, drag-drop file load.
-- **CPI runtime simulation** — Headers and Properties injected as `xsl:param`, `cpi:setHeader/setProperty/getHeader/getProperty` fully evaluated, `$exchange` auto-injected, `xsl:message` streamed to console with `terminate="yes"` shown as warning. Deep dive: **[.github/docs/TRANSFORM.md](.github/docs/TRANSFORM.md)**.
+- **CPI runtime simulation** — Headers and Properties injected as `xsl:param` (read via `$name`, exactly like real CPI), `cpi:setHeader`/`cpi:setProperty` fully evaluated, `$exchange` auto-injected, `xsl:message` streamed to console with `terminate="yes"` shown as warning. Deep dive: **[.github/docs/TRANSFORM.md](.github/docs/TRANSFORM.md)**.
 - **XPath 3.1 evaluator** — namespace bindings (`xs`, `fn`, `math`, `map`, `array`) auto-provided; live syntax colorisation as you type; expression history (last 20); amber highlighting on matched nodes; right-click "Copy XPath — Exact / General".
 - **Console** — colour-coded info/success/warn/error with timestamps, search, type filter, minimize/restore with error-count badge, auto-expand on errors.
 - **Examples library** — built-in examples across 6 categories (Data Transformation, Aggregation, Format Conversion, XSLT 3.0 Advanced, SAP CPI Patterns, XPath Explorer); searchable; one-click load.
@@ -98,7 +98,7 @@ A condensed highlight reel — the full catalog (200+ features with file/functio
 
 ## CPI Cheat Sheet
 
-XSLTDebugX rewrites `cpi:` calls to Saxon-JS's `js:` namespace before running the transform, so all four extension functions work just like in CPI. For namespace rewriting, error line mapping, and interceptor patterns, see **[.github/docs/TRANSFORM.md](.github/docs/TRANSFORM.md)**.
+XSLTDebugX rewrites `cpi:setHeader` / `cpi:setProperty` to Saxon-JS's `js:` namespace before running the transform, so the setters work just like in CPI. Reads use `<xsl:param name="X"/>`, populated automatically from the Headers/Properties panels — the same pattern CPI uses at runtime. For namespace rewriting, error line mapping, and interceptor patterns, see **[.github/docs/TRANSFORM.md](.github/docs/TRANSFORM.md)**.
 
 ```xslt
 <xsl:stylesheet version="3.0"
@@ -107,13 +107,12 @@ XSLTDebugX rewrites `cpi:` calls to Saxon-JS's `js:` namespace before running th
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   exclude-result-prefixes="cpi xs">
 
-  <xsl:param name="SAPClient"/>                                   <!-- from Headers panel -->
+  <xsl:param name="SAPClient"/>                                   <!-- bound automatically from Headers panel -->
 
-  <xsl:variable name="client" select="cpi:getHeader($exchange, 'SAPClient')"/>
   <xsl:value-of select="cpi:setHeader($exchange, 'OrderRef', concat('REF-', Id))"/>
   <xsl:value-of select="cpi:setProperty($exchange, 'Status', if (Amount gt 1000) then 'HIGH' else 'LOW')"/>
 
-  <xsl:message select="concat('🔵 client = ', $client)"/>          <!-- shows in console -->
+  <xsl:message select="concat('🔵 client = ', $SAPClient)"/>       <!-- shows in console -->
   <xsl:message terminate="yes" select="'FATAL: bad status'"/>      <!-- shown as warning -->
 </xsl:stylesheet>
 ```
@@ -186,7 +185,7 @@ For more recipes (XPath empty results, lost session, console filtering), see **[
 
 | Limitation | Detail | Workaround |
 |---|---|---|
-| `$exchange` not a real object | Injected as a dummy string — only works as the first argument to `cpi:set*/get*` | Always pass `$exchange` as first param |
+| `$exchange` not a real object | Injected as a dummy string — only works as the first argument to `cpi:setHeader`/`cpi:setProperty` | Always pass `$exchange` as first param |
 | Share URL length | Browser URL limit ~2,000 chars; large XSLT + XML may exceed this | Use **Download** for large payloads |
 | Share is XSLT only | XPath expressions and XPath mode aren't included in share URLs | Screenshot results or copy the expression manually |
 | Large file performance | Files >500 KB may slow Monaco | Split large IDocs or pre-clean in an external editor |
@@ -201,7 +200,7 @@ Vanilla JavaScript, 12 modules, no module system, **no npm runtime dependencies*
 | Component | Type | Purpose |
 |---|---|---|
 | **Monaco Editor** | CDN (`cdn.jsdelivr.net`) | Code editing & syntax highlighting |
-| **Lucide Icons** | CDN (`unpkg.com`) | UI icons |
+| **Lucide Icons** | CDN (`cdn.jsdelivr.net`) | UI icons |
 | **pako** | CDN (`cdnjs.cloudflare.com`) | Share-URL compression |
 | **Saxon-JS 2.x** | Bundled (`lib/SaxonJS2.js`, MPL-2.0) | XSLT 3.0 + XPath 3.1 engine |
 | **`@playwright/test`, `http-server`, `vite`** | Dev only | Tests, local server, production build |

@@ -159,8 +159,8 @@ require(['vs/editor/editor.main'], () => {
     folding: true,
     renderLineHighlight: 'all',
     smoothScrolling: true,
-    cursorBlinking: 'smooth',
-    cursorSmoothCaretAnimation: 'on',
+    cursorBlinking: 'blink',
+    cursorSmoothCaretAnimation: 'off',
     bracketPairColorization: { enabled: true, independentColorPoolPerBracketType: true },
     guides: { bracketPairs: 'active', indentation: true, highlightActiveIndentation: true },
     padding: { top: 10, bottom: 10 },
@@ -697,22 +697,12 @@ require(['vs/editor/editor.main'], () => {
       snippet: `<xsl:value-of select="cpi:setHeader($exchange, '(: header name e.g. ContentType :)', '(: header value or XPath :)')"/>`
     },
     {
-      id: 'snip-cpi-get-header', order: 12,
-      label: 'Snippet → cpi:getHeader',
-      snippet: `<xsl:variable name="(: variable name :)" select="cpi:getHeader($exchange, '(: header name to read :)')"/>`
-    },
-    {
-      id: 'snip-cpi-set-property', order: 13,
+      id: 'snip-cpi-set-property', order: 12,
       label: 'Snippet → cpi:setProperty',
       snippet: `<xsl:value-of select="cpi:setProperty($exchange, '(: property name e.g. OrderStatus :)', '(: property value or XPath :)')"/>`
     },
     {
-      id: 'snip-cpi-get-property', order: 14,
-      label: 'Snippet → cpi:getProperty',
-      snippet: `<xsl:variable name="(: variable name :)" select="cpi:getProperty($exchange, '(: property name to read :)')"/>`
-    },
-    {
-      id: 'snip-param', order: 15,
+      id: 'snip-param', order: 13,
       label: 'Snippet → xsl:param',
       snippet: `<xsl:param name="(: param name e.g. SAPClient :)"/>`
     },
@@ -965,7 +955,6 @@ require(['vs/editor/editor.main'], () => {
         }
       } else {
         clog('Identity Transform loaded. Use Examples menu to load CPI scenarios.', 'info');
-        if (typeof _applyXPathToggleState === 'function') _applyXPathToggleState();
         // Pre-load default XPath so the bar is ready when user switches to XPath mode
         const _defaultExpr = EXAMPLES.xpathNavigation?.xpathExpr ?? '';
         if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
