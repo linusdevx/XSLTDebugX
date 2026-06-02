@@ -101,7 +101,7 @@ class ModeManager {
       // consumes this flag. Without it every mode switch fires a spurious
       // scheduleSave + marker clear + xpath-highlight clear + 800ms re-validate.
       if (eds.xml.getModel() !== targetModel) {
-        _suppressNextXmlChange = true;
+        _suppress.xmlChange = true;
         eds.xml.setModel(targetModel);
         eds.xml.layout();
       }

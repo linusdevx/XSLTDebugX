@@ -172,14 +172,17 @@ function setStatus(txt, state = 'ok') {
 const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
-// Set _suppressNextSave = true before a programmatic setValue to skip that save.
-let _suppressNextSave = false;
+const _suppress = { save: false, validation: false, xmlChange: false };
 
-// Guard against synthetic content-change event when swapping models in toggleXPath
-let _suppressNextXmlChange = false;
+function _withSuppress(flags, fn) {
+  const prev = {};
+  for (const k of flags) { prev[k] = _suppress[k]; _suppress[k] = true; }
+  try { return fn(); }
+  finally { for (const k of flags) _suppress[k] = prev[k]; }
+}
 
 function scheduleSave() {
-  if (_suppressNextSave) { _suppressNextSave = false; return; }
+  if (_suppress.save) { _suppress.save = false; return; }
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(saveState, 800);
 }
@@ -224,16 +227,9 @@ function _resetXPathMode() {
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Arm _suppressNextSave BEFORE setValue — Monaco fires onDidChangeModelContent
-  // synchronously and editor.js's listener calls scheduleSave(). try/finally
-  // restores any flag set by an outer caller.
-  const _prevSuppress = _suppressNextSave;
-  _suppressNextSave = true;
-  try {
+  _withSuppress(['save'], () => {
     if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
-  } finally {
-    _suppressNextSave = _prevSuppress;
-  }
+  });
 
   _resetOutputPane('xml', 'output.xml');
   if (eds.xml) clearAllMarkers();
@@ -256,19 +252,10 @@ function _resetXsltMode() {
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  const _prevSuppress = _suppressNextSave;
-  try {
-    if (xmlModelXslt) {
-      _suppressNextSave = true;
-      xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    }
-    if (eds.xslt) {
-      _suppressNextSave = true;
-      eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
-    }
-  } finally {
-    _suppressNextSave = _prevSuppress;
-  }
+  _withSuppress(['save'], () => {
+    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+    if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+  });
 
   _resetOutputPane('xml', 'output.xml');
 

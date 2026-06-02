@@ -144,7 +144,7 @@ function fmtEditor(which) {
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
   const formatted = prettyXML(ed.getValue());
   // Suppress the live-validation debounce — formatting doesn't change validity
-  _suppressNextValidation = true;
+  _suppress.validation = true;
   // Use executeEdits instead of setValue so the format is pushed onto Monaco's undo
   // stack as a single bracketed step — Ctrl+Z undoes the format without wiping
   // the edit history that existed before Format was applied.
@@ -157,4 +157,3 @@ function fmtEditor(which) {
 }
 
 // Flag read by debounce handlers to skip one validation cycle after Format
-let _suppressNextValidation = false;

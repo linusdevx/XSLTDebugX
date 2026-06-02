@@ -454,7 +454,7 @@ require(['vs/editor/editor.main'], () => {
       return;
     }
 
-    _suppressNextValidation = true;
+    _suppress.validation = true;
     ed.pushUndoStop();
     ed.executeEdits('inject-cpi-ns', [{
       range: ed.getModel().getFullModelRange(),
@@ -708,7 +708,7 @@ require(['vs/editor/editor.main'], () => {
 
   eds.xslt.onDidChangeModelContent(() => {
     scheduleSave();
-    if (_suppressNextValidation) { _suppressNextValidation = false; return; }
+    if (_suppress.validation) { _suppress.validation = false; return; }
     // Clear immediately so stale markers don't linger while user types
     monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
     if (xsltDecorations) { xsltDecorations.clear(); xsltDecorations = null; }
@@ -718,9 +718,9 @@ require(['vs/editor/editor.main'], () => {
 
   eds.xml.onDidChangeModelContent(() => {
     // Synthetic content-change fires during model swap in toggleXPath
-    if (_suppressNextXmlChange) { _suppressNextXmlChange = false; return; }
+    if (_suppress.xmlChange) { _suppress.xmlChange = false; return; }
     scheduleSave();
-    if (_suppressNextValidation) { _suppressNextValidation = false; return; }
+    if (_suppress.validation) { _suppress.validation = false; return; }
     monaco.editor.setModelMarkers(eds.xml.getModel(), 'xsltdebugx', []);
     if (xmlDecorations) { xmlDecorations.clear(); xmlDecorations = null; }
     if (typeof clearXPathHighlights === 'function') clearXPathHighlights();

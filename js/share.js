@@ -76,26 +76,11 @@ function applyShareData(data) {
   }
 
   // Suppress per-setValue listener-driven scheduleSave; call once at the end.
-  if (data.xml  !== undefined) {
-    const _prevSS = _suppressNextSave;
-    _suppressNextSave = true;
-    try {
-      xmlModelXslt?.setValue(data.xml);
-    } finally {
-      _suppressNextSave = _prevSS;
-    }
+  if (data.xml !== undefined) {
+    _withSuppress(['save'], () => xmlModelXslt?.setValue(data.xml));
   }
   if (data.xslt !== undefined) {
-    const _prevSV = _suppressNextValidation;
-    const _prevSS = _suppressNextSave;
-    _suppressNextValidation = true;
-    _suppressNextSave       = true;
-    try {
-      eds.xslt?.setValue(data.xslt);
-    } finally {
-      _suppressNextSave       = _prevSS;
-      _suppressNextValidation = _prevSV;
-    }
+    _withSuppress(['save', 'validation'], () => eds.xslt?.setValue(data.xslt));
   }
 
   kvData  = { headers: [], properties: [] };
