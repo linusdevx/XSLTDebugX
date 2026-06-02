@@ -790,7 +790,7 @@
     body.light .console-chevron:hover {
       background: rgba(0,0,0,0.06);
     }
-    .console-panel.minimized .console-chevron { transform: rotate(-90deg); }
+    .console-panel.minimized .console-chevron { transform: rotate(180deg); }
     .console-body {
       flex: 1; overflow-y: auto;
       padding: 4px 14px;
