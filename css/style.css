@@ -665,7 +665,7 @@
       overflow: hidden;
     }
     .console-panel.dragging { transition: none; }
-    .console-panel.minimized { height: 31px; }
+    .console-panel.minimized { height: 31px !important; }
 
     .console-resize-handle {
       position: absolute;
@@ -773,13 +773,13 @@
     #consoleBody[data-filter="warn"]  .log-line:not(.warn)               { display: none; }
     #consoleBody[data-filter="error"] .log-line:not(.error)              { display: none; }
     .console-chevron {
-      width: 12px; height: 12px;
+      width: 20px; height: 20px;
       color: var(--text-dim);
       transition: transform 0.2s, color 0.15s, background 0.15s;
       flex-shrink: 0;
       margin-left: 4px;
       padding: 4px;
-      box-sizing: content-box;
+      box-sizing: border-box;
       border-radius: 4px;
       cursor: pointer;
     }
