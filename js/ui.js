@@ -95,10 +95,34 @@ function startConsoleResize(e) {
   panel.classList.add('dragging');
   e.target.setPointerCapture?.(e.pointerId);
 
+  function relayoutEditors() {
+    [eds.xml, eds.xslt, eds.out].forEach(ed => {
+      if (!ed) return;
+      // Capture the bottom line and whether the user was at the document bottom
+      // BEFORE layout shrinks the editor.
+      const ranges = ed.getVisibleRanges?.();
+      let oldBottomLine = null;
+      let wasAtDocBottom = false;
+      if (ranges && ranges.length) {
+        oldBottomLine = ranges[ranges.length - 1].endLineNumber;
+        const lineCount = ed.getModel?.()?.getLineCount?.() ?? 0;
+        wasAtDocBottom = oldBottomLine >= lineCount - 1;  // within 1 line of the end
+      }
+      ed.layout();
+      // Pin the previously-bottom line to the new bottom so shrinking the editor
+      // doesn't push the user's last-visible line out of view.
+      if (oldBottomLine != null && typeof monaco !== 'undefined') {
+        const targetLine = wasAtDocBottom ? ed.getModel().getLineCount() : oldBottomLine;
+        const range = new monaco.Range(targetLine, 1, targetLine, 1);
+        ed.revealRange(range, 1 /* Immediate */, 4 /* BottomOfScrollableViewport */);
+      }
+    });
+  }
+
   function onMove(ev) {
     // Drag UP grows the console — invert the delta
     setConsoleHeight(startH - (ev.clientY - startY));
-    eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout();
+    relayoutEditors();
   }
   function onUp() {
     panel.classList.remove('dragging');

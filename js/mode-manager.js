@@ -239,6 +239,9 @@ class ModeManager {
     } else {
       colCenter.appendChild(console_);
     }
+    // Re-apply the saved height after the DOM move so Monaco lays out against
+    // the new flex parent (workspace vs colCenter) immediately.
+    if (typeof setConsoleHeight === 'function') setConsoleHeight(consoleHeight);
   }
 
   layout() {

@@ -337,7 +337,11 @@
     .editor-wrap > div { position: absolute; inset: 0; }
     /* Side columns: keep the XML / Output editor readable even when the
        Headers + Properties panels below are packed with rows. */
-    .col-side .editor-wrap { min-height: 200px; }
+    /* Side columns: editor-wrap shrinks freely with the column. The original
+       200px floor caused overflow when the resizable console pushed the
+       workspace small (the wrap kept its min-height while siblings xpathBar
+       and xmlPaneBar held their fixed heights). */
+    .col-side .editor-wrap { min-height: 0; }
 
     /* ── PANE BAR ── */
     .pane-bar {
