@@ -63,6 +63,24 @@ function _makeBackdropClose(backdropId, closeFn) {
   };
 }
 
+function _layoutAfterTransition(el, fallbackMs = 400) {
+  const relayout = () => {
+    eds.xml?.layout();
+    eds.xslt?.layout();
+    eds.out?.layout();
+  };
+  if (!el) { setTimeout(relayout, fallbackMs); return; }
+  let done = false;
+  const fire = () => {
+    if (done) return;
+    done = true;
+    relayout();
+    el.removeEventListener('transitionend', fire);
+  };
+  el.addEventListener('transitionend', fire, { once: true });
+  setTimeout(fire, fallbackMs);
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 

@@ -49,13 +49,7 @@ function toggleSideCol(side) {
   const col = document.getElementById(side === 'left' ? 'colLeft' : 'colRight');
   col.classList.toggle('collapsed');
   scheduleSave();
-
-  // Relayout all Monaco editors after spring transition (0.35s)
-  setTimeout(() => {
-    eds.xml?.layout();
-    eds.xslt?.layout();
-    eds.out?.layout();
-  }, 400);
+  _layoutAfterTransition(col, 400);
 }
 
 // ════════════════════════════════════════════

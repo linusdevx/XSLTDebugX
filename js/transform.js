@@ -597,16 +597,11 @@ function runTransform() {
       clog(`Transform complete in ${elapsed} ms · output: ${_outLang.toUpperCase()} ✓`, 'success');
       setStatus(`Done · ${elapsed} ms`, 'ok');
       _flashPaneResult(true);
-      // Auto-expand output pane on first successful run
       const colRight = document.getElementById('colRight');
       if (colRight.classList.contains('collapsed')) {
         colRight.classList.remove('collapsed');
         scheduleSave();
-        setTimeout(() => {
-          eds.xml?.layout();
-          eds.xslt?.layout();
-          eds.out?.layout();
-        }, 250);
+        _layoutAfterTransition(colRight, 400);
       }
 
     } catch (err) {

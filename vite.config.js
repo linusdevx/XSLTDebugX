@@ -17,6 +17,7 @@ const JS_MODULES = [
   'js/ui.js',
   'js/share.js',
   'js/xpath.js',
+  'js/themes.js',
   'js/editor.js',
 ];
 
