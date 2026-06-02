@@ -53,10 +53,13 @@ function toggleSideCol(side) {
 }
 
 // ════════════════════════════════════════════
-//  CONSOLE STATE (minimize / maximize)
+//  CONSOLE STATE (minimize / maximize / resize)
 // ════════════════════════════════════════════
 let consoleState = 'normal';  // 'normal' | 'minimized'
 let consoleErrCount = 0;
+let consoleHeight = 160;       // current height in px (matches CSS default)
+const CONSOLE_MIN_H = 80;
+const CONSOLE_MAX_VH = 0.7;    // 70% of viewport height
 
 function setConsoleState(state) {
   const panel = document.getElementById('consolePanel');
@@ -73,6 +76,38 @@ function setConsoleState(state) {
     if (now - start < duration) requestAnimationFrame(pump);
   }
   requestAnimationFrame(pump);
+}
+
+function setConsoleHeight(px) {
+  const max = Math.max(CONSOLE_MIN_H, Math.floor(window.innerHeight * CONSOLE_MAX_VH));
+  consoleHeight = Math.max(CONSOLE_MIN_H, Math.min(max, px));
+  const panel = document.getElementById('consolePanel');
+  if (panel) panel.style.height = consoleHeight + 'px';
+}
+
+function startConsoleResize(e) {
+  e.preventDefault();
+  const panel = document.getElementById('consolePanel');
+  if (!panel || panel.classList.contains('minimized')) return;
+
+  const startY = e.clientY;
+  const startH = panel.getBoundingClientRect().height;
+  panel.classList.add('dragging');
+  e.target.setPointerCapture?.(e.pointerId);
+
+  function onMove(ev) {
+    // Drag UP grows the console — invert the delta
+    setConsoleHeight(startH - (ev.clientY - startY));
+    eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout();
+  }
+  function onUp() {
+    panel.classList.remove('dragging');
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    scheduleSave();
+  }
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
 }
 
 // Clicking the bar toggles minimize
