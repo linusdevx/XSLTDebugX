@@ -250,26 +250,6 @@ export const sampleData = {
   </xsl:template>
 </xsl:stylesheet>`,
 
-  cpiGetHeaderXslt: `<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:cpi="http://sap.com/cpi">
-  <xsl:template match="/">
-    <result>
-      <received-header>
-        <xsl:value-of select="cpi:getHeader('Authorization')"/>
-      </received-header>
-      <received-property>
-        <xsl:value-of select="cpi:getProperty('ProcessingMode')"/>
-      </received-property>
-      <data>
-        <xsl:for-each select="//user">
-          <user><xsl:value-of select="name"/></user>
-        </xsl:for-each>
-      </data>
-    </result>
-  </xsl:template>
-</xsl:stylesheet>`,
-
   // ============ LARGE PAYLOAD (for share URL testing) ============
 
   generateLargeXslt(lines = 50) {
