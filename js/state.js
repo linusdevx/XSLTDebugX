@@ -123,18 +123,20 @@ function clog(msg, type = 'info') {
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
   // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
-  // evicted line was an error/warn so the badge stays in sync.
+  // evicted line was an error so the badge stays in sync.
   const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
     const t = evicted.dataset.type;
-    if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
+    if (t === 'error') consoleErrCount = Math.max(0, consoleErrCount - 1);
     body.removeChild(evicted);
   }
   body.scrollTop = body.scrollHeight;
-  if (type === 'error' || type === 'warn') {
+  if (type === 'error') {
     consoleErrCount++;
     // Auto-restore minimised console so errors aren't silently hidden
+    if (consoleState === 'minimized') setConsoleState('normal');
+  } else if (type === 'warn') {
     if (consoleState === 'minimized') setConsoleState('normal');
   }
   if (consoleErrCount !== errCountBefore) updateConsoleErrBadge();
