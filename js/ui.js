@@ -89,7 +89,7 @@ function handleConsoleBarClick(e) {
 function updateConsoleErrBadge() {
   const badge = document.getElementById('consoleErrBadge');
   if (!badge) return;
-  if (consoleErrCount > 0 && consoleState === 'minimized') {
+  if (consoleErrCount > 0) {
     badge.textContent = consoleErrCount;
     badge.classList.add('visible');
   } else {
@@ -150,6 +150,8 @@ function applyConsoleSearch(query) {
 //  THEME TOGGLE
 // ════════════════════════════════════════════
 function toggleTheme() {
+  document.body.classList.add('theme-switching');
+
   const isLight = document.body.classList.toggle('light');
   localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark');
   clog(`Theme: ${isLight ? 'light' : 'dark'} mode`, 'info');
@@ -159,17 +161,12 @@ function toggleTheme() {
     monaco.editor.setTheme(monacoTheme);
     setTimeout(() => { if (typeof refreshXPathColors === 'function') refreshXPathColors(); }, 50);
   }
+
+  requestAnimationFrame(() => {
+    document.body.classList.remove('theme-switching');
+  });
 }
 
-// Symmetric theme restore — handle both 'light' and 'dark'. Surviving a
-// future flip of the default theme in index.html requires touching the class
-// in both directions, not just removing 'light' on saved=='dark'.
-(function() {
-  const saved = localStorage.getItem('xdebugx-theme');
-  if (saved === 'light')      document.body.classList.add('light');
-  else if (saved === 'dark')  document.body.classList.remove('light');
-  // saved === null (first visit) → leave whatever index.html shipped
-})();
 // ════════════════════════════════════════════
 //  HELP MODAL
 // ════════════════════════════════════════════

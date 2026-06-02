@@ -1739,3 +1739,45 @@
 }
 .stat-link:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
 .stat-divider { opacity: 0.5; }
+.saved-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #3fb950;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.help-row.help-row-feature {
+  background: rgba(34, 139, 230, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+  border-left: 3px solid #228be6;
+}
+.help-row .help-key.help-key-feature {
+  color: #228be6;
+}
+.help-row .help-feature-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  font-size: 0.95em;
+}
+
+@media (max-width: 1100px) {
+  .header .logo-tag,
+  .header .logo-tag-ide {
+    display: none;
+  }
+  .header .run-btn .kbd {
+    display: none;
+  }
+}
+
+body.theme-switching,
+body.theme-switching * {
+  transition: none !important;
+}
