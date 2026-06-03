@@ -119,10 +119,16 @@ function findXPathExpressionLine(saxonMsg, originalXslt, saxonReportedLine, cpiL
   const expr = candidates.reduce((a, b) => a.length <= b.length ? a : b);
   if (!expr) return null;
 
+  // Saxon collapses runs of whitespace inside XPath expressions when echoing
+  // them in error messages (e.g. `'a',   'b'` → `'a', 'b'`). Compare on
+  // whitespace-collapsed forms so source indentation/multi-space formatting
+  // still matches a single occurrence.
+  const collapseWS = s => s.replace(/\s+/g, ' ').trim();
+  const exprNorm = collapseWS(expr);
   const lines = originalXslt.split('\n');
   const matches = [];
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes(expr)) matches.push(i + 1); // 1-based
+    if (collapseWS(lines[i]).includes(exprNorm)) matches.push(i + 1); // 1-based
   }
   if (!matches.length) return null;
   if (matches.length === 1) return matches[0];
