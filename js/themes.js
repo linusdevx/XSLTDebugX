@@ -25,7 +25,7 @@ var MONACO_THEME_DARK = {
     { token: 'entity.xml',            foreground: 'c084fc' },
   ],
   colors: {
-    'editor.background':                  '#070c14',
+    'editor.background':                  '#00000000',
     'editor.foreground':                  '#c8d8e8',
     'editorLineNumber.foreground':        '#1e3050',
     'editorLineNumber.activeForeground':  '#4a70a8',
@@ -81,7 +81,7 @@ var MONACO_THEME_LIGHT = {
     { token: 'entity.xml',            foreground: '6f42c1' },
   ],
   colors: {
-    'editor.background':                  '#ffffff',
+    'editor.background':                  '#00000000',
     'editor.foreground':                  '#1a2535',
     'editorLineNumber.foreground':        '#c0cfe0',
     'editorLineNumber.activeForeground':  '#6080a0',
