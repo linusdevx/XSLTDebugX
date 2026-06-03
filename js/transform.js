@@ -231,28 +231,14 @@ const _KV_PANEL_MAP = {
 };
 
 function toggleKVSearch(panelId) {
-  const bar = document.getElementById(panelId + 'SearchBar');
-  if (!bar) return;
-  const opening = bar.style.display === 'none';
-  bar.style.display = opening ? 'flex' : 'none';
-  const input = bar.querySelector('input');
-  // Mirror open/closed state on the toggle button so the icon stays lit.
-  const btn = document.querySelector('#' + panelId + ' .kv-header .kv-search-btn');
-  if (btn) btn.classList.toggle('kv-search-open', opening);
-  if (opening) {
-    input.focus();
-    input.select();
-  } else {
-    // Closing clears the filter so rows aren't left hidden.
-    input.value = '';
-    _applyKVFilter(panelId);
-  }
+  // Legacy no-op — search is now an always-visible inline input in the panel header.
+  // Kept as a stub so any stray callers don't throw; can be removed once nothing references it.
+  void panelId;
 }
 
 function clearKVSearch(panelId) {
-  const bar = document.getElementById(panelId + 'SearchBar');
-  if (!bar) return;
-  const input = bar.querySelector('input');
+  const input = document.getElementById(panelId + 'Search');
+  if (!input) return;
   input.value = '';
   _applyKVFilter(panelId);
   input.focus();
@@ -264,10 +250,8 @@ function _applyKVFilter(panelId) {
   if (!cfg) return;
   const rowsEl = document.getElementById(cfg.rowsId);
   if (!rowsEl) return;
-  const bar = document.getElementById(panelId + 'SearchBar');
-  // If the search bar is closed or empty, treat as "no filter".
-  const input = bar?.querySelector('input');
-  const q = (bar && bar.style.display !== 'none' && input ? input.value : '').trim().toLowerCase();
+  const input = document.getElementById(panelId + 'Search');
+  const q = (input?.value || '').trim().toLowerCase();
   const children = rowsEl.querySelectorAll(cfg.childSelector);
 
   let visibleCount = 0;
@@ -300,10 +284,8 @@ function _applyKVFilter(panelId) {
     noMatch.remove();
   }
 
-  // Show active state on the toggle button even when the panel is collapsed.
-  const panelHeader = document.querySelector('#' + panelId + ' .kv-header');
-  const btn = panelHeader?.querySelector('.kv-search-btn');
-  if (btn) btn.classList.toggle('kv-search-active', q.length > 0);
+  // Mirror active-filter state on the input itself so a non-empty query is visually distinct.
+  if (input) input.classList.toggle('kv-search-active', q.length > 0);
 }
 
 function addKVRow(type) {
