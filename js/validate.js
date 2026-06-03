@@ -73,9 +73,79 @@ function validateXML(src) {
   if (lineMatch) line = parseInt(lineMatch[1]);
   if (colMatch)  col  = parseInt(colMatch[1]);
 
-  // Clean up the message — strip leading <?xml...?> declaration if present
-  const message = text.replace(/<\?xml[^?]*\?>\s*/i, '').trim().split('\n')[0].trim();
+  // Clean up the message — strip leading <?xml...?> declaration and the
+  // "This page contains the following errors:" Chrome wrapper, then take
+  // the most informative line. Falls back to the raw first line if our
+  // cleaners eat everything (defensive).
+  const message = _cleanDomParserMessage(text);
   return { ok: false, line, col, message };
+}
+
+// Strip browser noise from a DOMParser parsererror textContent.
+// Chrome wraps the real error in:
+//   "This page contains the following errors:\nerror on line N at column M: <real>\n..."
+// Firefox uses a different shape. Returns the cleanest single-line message we can find.
+function _cleanDomParserMessage(text) {
+  if (!text) return 'XML parse error';
+  // Remove common wrappers
+  let cleaned = text
+    .replace(/<\?xml[^?]*\?>\s*/i, '')
+    .replace(/^This page contains the following errors:\s*/i, '')
+    .replace(/Below is a rendering of the page.*$/is, '')
+    .trim();
+  // Take the most informative line — prefer one starting with "error " or
+  // containing ":", else fall back to the first non-empty line.
+  const lines = cleaned.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return text.trim() || 'XML parse error';
+  const errLine = lines.find(l => /^error\b/i.test(l)) || lines.find(l => l.includes(':')) || lines[0];
+  // Strip the redundant "error on line N at column M:" prefix — line/col are
+  // shown separately by the caller.
+  return errLine.replace(/^error on line \d+ at column \d+:\s*/i, '').trim();
+}
+
+// Read the user-stylesheet line number from a Saxon-JS error object.
+// Saxon-JS exposes location data in two non-overlapping places depending on
+// the error class. The xsltModule field tells us which:
+//
+//   "normalize.xsl"           → compile-time error.  xsltLineNr points
+//                               into Saxon's OWN stylesheet (useless).
+//                               The user's line lives on errorObject.value
+//                               as " on line N in /NoStylesheetBaseURI".
+//                               Returns kind='compile' — line is at or near
+//                               the offending element.
+//   "NoStylesheetBaseURI"     → runtime error in the user's stylesheet.
+//                               xsltLineNr is the line of the enclosing
+//                               <xsl:template> — Saxon-JS does not track
+//                               per-instruction lines for runtime errors,
+//                               so this is the closest anchor available.
+//                               Returns kind='runtime-template' so callers
+//                               can warn that the marker is template-level.
+//   "xpath.xsl" or other      → static XPath error with location embedded
+//                               in the message itself (handled by
+//                               parseSaxonErrorLine + findXPathExpressionLine).
+//
+// Returns { line, kind } or null. The callers chain this with the other
+// extractors so static-XPath errors still land via the existing path.
+function extractSaxonErrorLine(err) {
+  const mod = err?.xsltModule;
+
+  if (mod === 'normalize.xsl') {
+    const v = err?.errorObject?.value;
+    if (typeof v === 'string') {
+      const m = v.match(/on line (\d+) in \/NoStylesheetBaseURI/);
+      if (m) return { line: parseInt(m[1], 10), kind: 'compile' };
+    }
+    return null;
+  }
+
+  if (mod === 'NoStylesheetBaseURI') {
+    // xsltLineNr can arrive as a string ("3") or number (3) depending on the
+    // Saxon-JS internal path. Coerce to number, reject non-numeric.
+    const n = Number(err?.xsltLineNr);
+    if (Number.isFinite(n) && n > 0) return { line: n, kind: 'runtime-template' };
+  }
+
+  return null;
 }
 
 // Parse Saxon error message to extract line number
@@ -101,6 +171,24 @@ function _findLineOf(src, needle) {
     if (collapseWS(lines[i]).includes(target)) return i + 1;
   }
   return null;
+}
+
+// Saxon-JS reports runtime errors against the enclosing template's start —
+// but in stylesheets where <xsl:template> or <xsl:stylesheet> spans several
+// lines (namespace declarations on their own lines, multi-line attributes),
+// xsltLineNr can land on a non-instruction line like a bare xmlns: declaration.
+// Nudge the marker forward to the first line whose first non-whitespace
+// content begins with "<xsl:" — typically the template/instruction the user
+// expects. Search is forward-only and bounded, falling back to the original
+// line if nothing better is found within the window.
+function nudgeToNextXslElement(src, startLine) {
+  if (!src || !Number.isFinite(startLine) || startLine < 1) return startLine;
+  const lines = src.split('\n');
+  const max = Math.min(lines.length, startLine - 1 + 50);
+  for (let i = startLine - 1; i < max; i++) {
+    if (/^\s*<xsl:/.test(lines[i])) return i + 1;
+  }
+  return startLine;
 }
 
 // Saxon error messages include the failing XPath expression in braces:
@@ -345,16 +433,18 @@ function preflight(xmlSrc, xsltSrc) {
   // 1. Validate XML source
   const xmlResult = validateXML(xmlSrc);
   if (!xmlResult.ok) {
-    clog(`XML parse error at line ${xmlResult.line}: ${xmlResult.message}`, 'error');
+    clog(`[XML] line ${xmlResult.line}: ${xmlResult.message}`, 'error');
     xmlDecorations = markErrorLine(eds.xml, xmlResult.line, xmlResult.message, xmlDecorations);
+    clog(`↳ highlighted in XML editor at line ${xmlResult.line}`, 'error');
     ok = false;
   }
 
   // 2. Validate XSLT — must be well-formed XML first
   const xsltResult = validateXML(xsltSrc);
   if (!xsltResult.ok) {
-    clog(`XSLT parse error at line ${xsltResult.line}: ${xsltResult.message}`, 'error');
+    clog(`[XSLT] line ${xsltResult.line}: ${xsltResult.message}`, 'error');
     xsltDecorations = markErrorLine(eds.xslt, xsltResult.line, xsltResult.message, xsltDecorations);
+    clog(`↳ highlighted in XSLT editor at line ${xsltResult.line}`, 'error');
     ok = false;
   }
 
@@ -363,12 +453,22 @@ function preflight(xmlSrc, xsltSrc) {
   // arity, missing xmlns:cpi, missing <xsl:param name="exchange"/>, etc.
   if (xsltResult.ok) {
     const cpi = validateCPIStructure(xsltSrc);
-    cpi.warnings.forEach(w => clog(`CPI: ${w.message}` + (w.line ? ` (line ${w.line})` : ''), 'warn'));
+    cpi.warnings.forEach(w => {
+      const where = w.line ? ` (line ${w.line})` : '';
+      clog(`[CPI] warning${where}: ${w.message}`, 'warn');
+    });
     if (cpi.errors.length) {
-      const first = cpi.errors[0];
-      cpi.errors.forEach(e => clog(`CPI error: ${e.message}` + (e.line ? ` (line ${e.line})` : ''), 'error'));
-      if (first.line) {
-        xsltDecorations = markErrorLine(eds.xslt, first.line, first.message, xsltDecorations);
+      // Log every error in unified format. Mark the FIRST one with a line —
+      // Monaco's marker collection only shows one anchor per file at a time
+      // for clarity, but we log all of them so the user sees the full list.
+      cpi.errors.forEach(e => {
+        if (e.line) clog(`[CPI] line ${e.line}: ${e.message}`, 'error');
+        else        clog(`[CPI] ${e.message}`, 'error');
+      });
+      const firstWithLine = cpi.errors.find(e => e.line);
+      if (firstWithLine) {
+        xsltDecorations = markErrorLine(eds.xslt, firstWithLine.line, firstWithLine.message, xsltDecorations);
+        clog(`↳ highlighted in XSLT editor at line ${firstWithLine.line}`, 'error');
       }
       ok = false;
     }

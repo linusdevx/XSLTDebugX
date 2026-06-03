@@ -617,15 +617,50 @@ function runTransform() {
       if (terminateMatch) {
         clog(`xsl:message terminate="yes" — ${terminateMatch[1]}`, 'warn');
       } else {
-        clog(`Error: ${msg}`, 'error');
+        // Find the user-stylesheet line, in priority order:
+        //   1. Structured fields on the error object — covers compile-time
+        //      errors (errorObject.value) and runtime errors (xsltLineNr
+        //      gated on xsltModule). See extractSaxonErrorLine for details.
+        //   2. The {expr} match against original source — handles static
+        //      XPath errors where Saxon's xsltModule points to its own
+        //      xpath.xsl but the message contains the user's expression.
+        //   3. Bare line-number parse from the message string — last resort.
         const originalXslt = eds.xslt?.getValue() ?? '';
         const saxonLine    = parseSaxonErrorLine(fullMsg);
-        const errLine =
+        const _structured  = extractSaxonErrorLine(err);
+        let errLine =
+          _structured?.line ||
           findXPathExpressionLine(fullMsg, originalXslt, saxonLine, 0) ||
           (saxonLine !== null ? saxonLine : null);
+
+        // Saxon-JS attributes runtime errors to the enclosing template's
+        // start line, not the failing instruction. When that's the source of
+        // the line number, append a hint so users know to scan downward.
+        const isTemplateLevel = _structured?.kind === 'runtime-template';
+
+        // Saxon's runtime line can fall on a multi-line element's continuation
+        // (e.g. an xmlns: declaration on its own line). Nudge to the next
+        // <xsl:…> element so the marker lands on something instruction-shaped.
+        if (isTemplateLevel && errLine) {
+          errLine = nudgeToNextXslElement(originalXslt, errLine);
+        }
+
+        // Strip Saxon's "on line N in /NoStylesheetBaseURI" location prefix
+        // from the displayed message — line is shown separately.
+        const cleanMsg = msg
+          .replace(/\s*(?:on|at)\s+line\s+\d+\s+in\s+\/NoStylesheetBaseURI\s*/i, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
         if (errLine) {
-          xsltDecorations = markErrorLine(eds.xslt, errLine, msg, xsltDecorations);
-          clog(`↳ Error at line ${errLine} (highlighted in XSLT editor)`, 'error');
+          clog(`[Saxon] line ${errLine}: ${cleanMsg}`, 'error');
+          xsltDecorations = markErrorLine(eds.xslt, errLine, cleanMsg, xsltDecorations);
+          const trail = isTemplateLevel
+            ? `↳ highlighted in XSLT editor at line ${errLine} (enclosing template — Saxon-JS does not pinpoint runtime-error instructions; scan downward)`
+            : `↳ highlighted in XSLT editor at line ${errLine}`;
+          clog(trail, 'error');
+        } else {
+          clog(`[Saxon] ${cleanMsg}`, 'error');
         }
       }
 
