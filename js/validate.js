@@ -89,6 +89,20 @@ function parseSaxonErrorLine(msg) {
   return m ? parseInt(m[1]) : null;
 }
 
+// Find the 1-based line number of the first source line containing `needle`
+// (whitespace-insensitive). Returns null if not found. Used by the CPI
+// pre-flight validator to point users at the offending source line.
+function _findLineOf(src, needle) {
+  const collapseWS = s => s.replace(/\s+/g, ' ').trim();
+  const target = collapseWS(needle);
+  if (!target) return null;
+  const lines = src.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    if (collapseWS(lines[i]).includes(target)) return i + 1;
+  }
+  return null;
+}
+
 // Saxon error messages include the failing XPath expression in braces:
 //   "Static error in XPath on line 4 in /NoStylesheetBaseURI {DOES_NOT_EXIST()}: ..."
 // Extract that expression and search for it in the ORIGINAL (unstripped) XSLT source
@@ -146,6 +160,180 @@ function findXPathExpressionLine(saxonMsg, originalXslt, saxonReportedLine, cpiL
 }
 
 
+// ────────────────────────────────────────────────────────────────────────────
+// CPI structural validation
+// ────────────────────────────────────────────────────────────────────────────
+// Catches the common CPI mistakes BEFORE Saxon sees the stylesheet:
+//   - typos like cpi:setHeaders / cpi:setProperties / cpi:getHeader
+//   - wrong arity on cpi:setHeader / cpi:setProperty (must be exactly 3 args)
+//   - missing xmlns:cpi="http://sap.com/it/"
+//   - missing <xsl:param name="exchange"/>
+//   - first arg of cpi:set* must be $exchange
+//
+// Reference (SAP CPI docs):
+//   - Read  headers/properties: declare <xsl:param name="..."/>; reference as $name
+//   - Write headers/properties: cpi:setHeader($exchange,'n','v') / cpi:setProperty(...)
+//   - There is NO cpi:getHeader / cpi:getProperty
+//
+// Returns { errors: [{message, line}], warnings: [{message, line}] }.
+
+const _CPI_VALID_FNS = ['setHeader', 'setProperty'];
+const _CPI_NS_URI    = 'http://sap.com/it/';
+
+// Strip XML comments and CDATA so cpi: text inside docs/CDATA isn't flagged.
+// Preserves newline count so line numbers in regex matches stay accurate
+// against the *stripped* source. We translate back to original line numbers
+// using _findLineOf, which searches the original.
+function _stripCommentsAndCDATA(src) {
+  return src.replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g, m => {
+    const newlines = (m.match(/\n/g) || []).length;
+    return ' '.repeat(Math.max(0, m.length - newlines)) + '\n'.repeat(newlines);
+  });
+}
+
+// Count top-level commas inside an XPath argument list. Skips commas inside
+// quoted strings and nested parentheses. `body` is the substring between the
+// outer `(` and matching `)`. Returns the comma count (so 3 args → 2 commas).
+// Returns null if the parens don't balance (caller treats as parse failure).
+function _countTopLevelArgs(body) {
+  let depth = 0, commas = 0, q = null;
+  for (let i = 0; i < body.length; i++) {
+    const c = body[i];
+    if (q) {
+      if (c === q) q = null;
+      continue;
+    }
+    if (c === '"' || c === "'") { q = c; continue; }
+    if (c === '(') { depth++; continue; }
+    if (c === ')') { if (depth === 0) return null; depth--; continue; }
+    if (c === ',' && depth === 0) commas++;
+  }
+  if (depth !== 0 || q) return null;
+  return body.trim() === '' ? -1 : commas + 1; // arg count, or -1 for empty list
+}
+
+// Find the matching closing `)` for the `(` at index `open` in `src`.
+// Returns the index of the `)`, or -1 if unbalanced. Skips quoted content.
+function _findMatchingParen(src, open) {
+  let depth = 1, q = null;
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i];
+    if (q) {
+      if (c === q) q = null;
+      continue;
+    }
+    if (c === '"' || c === "'") { q = c; continue; }
+    if (c === '(') depth++;
+    else if (c === ')') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function validateCPIStructure(xsltSrc) {
+  const errors = [];
+  const warnings = [];
+  const stripped = _stripCommentsAndCDATA(xsltSrc);
+
+  if (!/\bcpi:/.test(stripped)) return { errors, warnings };
+
+  const callRe = /\bcpi:([A-Za-z_][\w.-]*)\s*\(/g;
+  let m;
+  let firstSetCallLine = null;
+  while ((m = callRe.exec(stripped)) !== null) {
+    const fnName = m[1];
+    const openIdx = m.index + m[0].length - 1;
+    const callText = `cpi:${fnName}(`;
+    const line = _findLineOf(xsltSrc, callText);
+
+    if (!_CPI_VALID_FNS.includes(fnName)) {
+      errors.push({
+        line,
+        message: `cpi:${fnName} is not a valid CPI function. Valid functions: cpi:setHeader, cpi:setProperty. ` +
+                 `To READ a header or property, declare <xsl:param name="${fnName.startsWith('get') ? 'name' : '…'}"/> and reference $name.`
+      });
+      continue;
+    }
+
+    if (firstSetCallLine === null) firstSetCallLine = line;
+
+    const closeIdx = _findMatchingParen(stripped, openIdx);
+    if (closeIdx === -1) {
+      errors.push({ line, message: `cpi:${fnName}(...) — unbalanced parentheses.` });
+      continue;
+    }
+    const body = stripped.slice(openIdx + 1, closeIdx);
+    const argCount = _countTopLevelArgs(body);
+    if (argCount === null) {
+      errors.push({ line, message: `cpi:${fnName}(...) — could not parse argument list.` });
+      continue;
+    }
+    if (argCount !== 3) {
+      const got = argCount === -1 ? 0 : argCount;
+      errors.push({
+        line,
+        message: `cpi:${fnName} requires exactly 3 arguments (got ${got}). ` +
+                 `Signature: cpi:${fnName}($exchange, 'name', value)`
+      });
+      continue;
+    }
+
+    let depth = 0, q = null, firstArgEnd = body.length;
+    for (let i = 0; i < body.length; i++) {
+      const c = body[i];
+      if (q) { if (c === q) q = null; continue; }
+      if (c === '"' || c === "'") { q = c; continue; }
+      if (c === '(') depth++;
+      else if (c === ')') depth--;
+      else if (c === ',' && depth === 0) { firstArgEnd = i; break; }
+    }
+    const firstArg = body.slice(0, firstArgEnd).trim();
+    if (firstArg !== '$exchange') {
+      errors.push({
+        line,
+        message: `cpi:${fnName} — first argument must be $exchange (got "${firstArg}"). ` +
+                 `In CPI, $exchange is bound to the message exchange object.`
+      });
+    }
+  }
+
+  if (firstSetCallLine !== null) {
+    const nsMatch = stripped.match(/xmlns:cpi\s*=\s*(["'])([^"']*)\1/);
+    if (!nsMatch) {
+      errors.push({
+        line: firstSetCallLine,
+        message: `Missing xmlns:cpi declaration. Add xmlns:cpi="${_CPI_NS_URI}" to <xsl:stylesheet>.`
+      });
+    } else if (nsMatch[2] !== _CPI_NS_URI) {
+      warnings.push({
+        line: _findLineOf(xsltSrc, nsMatch[0]) ?? 1,
+        message: `xmlns:cpi is "${nsMatch[2]}" but CPI uses "${_CPI_NS_URI}". This may not deploy.`
+      });
+    }
+
+    if (!/<xsl:param\s+[^>]*\bname\s*=\s*(["'])exchange\1/.test(stripped)) {
+      errors.push({
+        line: firstSetCallLine,
+        message: `Missing <xsl:param name="exchange"/>. CPI binds the exchange object to this param; without it, $exchange is unbound.`
+      });
+    }
+
+    const erpMatch = stripped.match(/exclude-result-prefixes\s*=\s*(["'])([^"']*)\1/);
+    const erpHasCpi = erpMatch && erpMatch[2].split(/\s+/).includes('cpi');
+    if (!erpHasCpi) {
+      warnings.push({
+        line: 1,
+        message: `Add 'cpi' to exclude-result-prefixes so the cpi: prefix doesn't leak into output.`
+      });
+    }
+  }
+
+  return { errors, warnings };
+}
+
+
 // Pre-flight: validate XML source and XSLT structure before running Saxon
 // Returns true if OK to proceed, false if a blocking error was found
 function preflight(xmlSrc, xsltSrc) {
@@ -166,6 +354,22 @@ function preflight(xmlSrc, xsltSrc) {
     clog(`XSLT parse error at line ${xsltResult.line}: ${xsltResult.message}`, 'error');
     xsltDecorations = markErrorLine(eds.xslt, xsltResult.line, xsltResult.message, xsltDecorations);
     ok = false;
+  }
+
+  // 3. CPI structural validation — only if XSLT is well-formed.
+  // Catches typos (cpi:setHeaders), unknown functions (cpi:getHeader), wrong
+  // arity, missing xmlns:cpi, missing <xsl:param name="exchange"/>, etc.
+  if (xsltResult.ok) {
+    const cpi = validateCPIStructure(xsltSrc);
+    cpi.warnings.forEach(w => clog(`CPI: ${w.message}` + (w.line ? ` (line ${w.line})` : ''), 'warn'));
+    if (cpi.errors.length) {
+      const first = cpi.errors[0];
+      cpi.errors.forEach(e => clog(`CPI error: ${e.message}` + (e.line ? ` (line ${e.line})` : ''), 'error'));
+      if (first.line) {
+        xsltDecorations = markErrorLine(eds.xslt, first.line, first.message, xsltDecorations);
+      }
+      ok = false;
+    }
   }
 
   if (!ok) {
