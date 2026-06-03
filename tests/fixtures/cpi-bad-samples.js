@@ -73,6 +73,23 @@ export const cpiBadSamples = {
     expectedLine: 8,
   },
 
+  wrongNamespaceUri: {
+    description: 'xmlns:cpi declared with wrong URI (http://sap.com/cpi)',
+    xml: minimalXml,
+    xslt: `<?xml version="1.0"?>
+<xsl:stylesheet version="3.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:cpi="http://sap.com/cpi"
+  exclude-result-prefixes="cpi">
+  <xsl:param name="exchange"/>
+  <xsl:template match="/">
+    <xsl:value-of select="cpi:setHeader($exchange, 'X-Foo', 'bar')"/>
+  </xsl:template>
+</xsl:stylesheet>`,
+    expectedFragment: 'CPI requires "http://sap.com/it/"',
+    expectedLine: 4,
+  },
+
   missingNamespace: {
     description: 'cpi:setHeader called but xmlns:cpi not declared',
     xml: minimalXml,

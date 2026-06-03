@@ -126,10 +126,10 @@ Hard errors (block):
 - **Missing `xmlns:cpi`.** If any `cpi:set*` call exists, `xmlns:cpi="http://sap.com/it/"` must be declared on the stylesheet root.
 - **Missing `<xsl:param name="exchange"/>`.** Required because `$exchange` is the first argument of every `cpi:set*` call. CPI binds the exchange object to this param at runtime.
 - **First arg not `$exchange`.** Catches calls where the user passed a literal or another variable.
+- **Wrong `xmlns:cpi` URI.** Must be exactly `http://sap.com/it/` — anything else (e.g. `http://sap.com/cpi`) will fail to deploy on real CPI.
 
 Warnings (don't block):
 
-- `xmlns:cpi` declared but its URI is not `http://sap.com/it/`.
 - `cpi` missing from `exclude-result-prefixes` (the prefix may leak into output).
 
 Why pre-flight, not post-rewrite? `rewriteCPICalls` strips `xmlns:cpi` so Saxon-JS can call our JS interceptors. If a typo'd call (`cpi:setHeaders`) leaks past the rewriter, Saxon then reports "No namespace binding for prefix 'cpi'" — confusing because the user *did* declare it. Catching mistakes before any rewriting keeps the error message faithful to the user's source.

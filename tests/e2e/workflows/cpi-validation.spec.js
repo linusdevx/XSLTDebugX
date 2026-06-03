@@ -86,6 +86,13 @@ test.describe('CPI pre-flight validation', () => {
     expect(errors.some(m => m.text.includes(f.expectedFragment))).toBe(true);
   });
 
+  test('wrong xmlns:cpi URI is rejected as a hard error', async () => {
+    const f = cpiBadSamples.wrongNamespaceUri;
+    const messages = await loadAndRun(f);
+    const errors = messages.filter(m => m.type === 'error');
+    expect(errors.some(m => m.text.includes(f.expectedFragment))).toBe(true);
+  });
+
   test('missing <xsl:param name="exchange"/> is detected', async () => {
     const f = cpiBadSamples.missingExchangeParam;
     const messages = await loadAndRun(f);

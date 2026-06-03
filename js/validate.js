@@ -307,9 +307,9 @@ function validateCPIStructure(xsltSrc) {
         message: `Missing xmlns:cpi declaration. Add xmlns:cpi="${_CPI_NS_URI}" to <xsl:stylesheet>.`
       });
     } else if (nsMatch[2] !== _CPI_NS_URI) {
-      warnings.push({
+      errors.push({
         line: _findLineOf(xsltSrc, nsMatch[0]) ?? 1,
-        message: `xmlns:cpi is "${nsMatch[2]}" but CPI uses "${_CPI_NS_URI}". This may not deploy.`
+        message: `xmlns:cpi is "${nsMatch[2]}" but CPI requires "${_CPI_NS_URI}". This will fail to deploy on CPI.`
       });
     }
 
