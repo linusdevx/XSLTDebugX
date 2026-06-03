@@ -1,14 +1,8 @@
-// ════════════════════════════════════════════
-//  XSLT VALIDATION & MONACO MARKERS
-// ════════════════════════════════════════════
-
-// Track decoration collections per editor
 let xsltDecorations = null;
 let xmlDecorations  = null;
 
-// Clear all markers and decorations from both editors
 function clearAllMarkers() {
-  // Clear markers on both XML models — prevents stale markers on inactive model
+  // Clear markers on both XML models — prevents stale markers on inactive model.
   if (xmlModelXslt)  monaco.editor.setModelMarkers(xmlModelXslt,  'xsltdebugx', []);
   if (xmlModelXpath) monaco.editor.setModelMarkers(xmlModelXpath, 'xsltdebugx', []);
   if (eds.xslt)      monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
@@ -16,16 +10,13 @@ function clearAllMarkers() {
   if (xmlDecorations)  { xmlDecorations.clear();  xmlDecorations  = null; }
 }
 
-// Set a red squiggle + glyph on a specific line in an editor
 function markErrorLine(editor, lineNumber, message, oldDecor) {
-  // Always clear the previous decoration collection before creating a new one
   if (oldDecor) { try { oldDecor.clear(); } catch(e) {} }
   const model = editor.getModel();
   const lineCount = model.getLineCount();
   const line = Math.min(Math.max(lineNumber, 1), lineCount);
   const lineLen = model.getLineLength(line);
 
-  // Monaco marker (squiggle underline)
   monaco.editor.setModelMarkers(model, 'xsltdebugx', [{
     startLineNumber: line, startColumn: 1,
     endLineNumber:   line, endColumn: lineLen + 1,
@@ -33,7 +24,6 @@ function markErrorLine(editor, lineNumber, message, oldDecor) {
     severity: monaco.MarkerSeverity.Error,
   }]);
 
-  // Glyph + line background decoration
   const dec = editor.createDecorationsCollection([
     {
       range: new monaco.Range(line, 1, line, 1),
@@ -46,25 +36,23 @@ function markErrorLine(editor, lineNumber, message, oldDecor) {
     }
   ]);
 
-  // Scroll to the error line
   editor.revealLineInCenter(line);
 
   return dec;
 }
 
-// Try to parse XML using DOMParser; return { ok, line, col, message }
+// Try to parse XML using DOMParser; return { ok, line, col, message }.
 function validateXML(src) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(src, 'application/xml');
   const err = doc.querySelector('parsererror');
   if (!err) return { ok: true };
 
-  // Firefox/Chrome put the error text in the parsererror element
   const text = err.textContent || '';
 
-  // Try to extract line number — format varies by browser
-  // Chrome:  "error on line 7 at column 3"
-  // Firefox: "XML Parsing Error: ... Line Number 7, Column 3"
+  // Line/col format varies:
+  //   Chrome:  "error on line 7 at column 3"
+  //   Firefox: "XML Parsing Error: ... Line Number 7, Column 3"
   let line = 1, col = 1;
   const lineMatch = text.match(/line[\s:]+([0-9]+)/i) ||
                     text.match(/Line Number\s+([0-9]+)/i);
@@ -73,33 +61,24 @@ function validateXML(src) {
   if (lineMatch) line = parseInt(lineMatch[1]);
   if (colMatch)  col  = parseInt(colMatch[1]);
 
-  // Clean up the message — strip leading <?xml...?> declaration and the
-  // "This page contains the following errors:" Chrome wrapper, then take
-  // the most informative line. Falls back to the raw first line if our
-  // cleaners eat everything (defensive).
   const message = _cleanDomParserMessage(text);
   return { ok: false, line, col, message };
 }
 
 // Strip browser noise from a DOMParser parsererror textContent.
-// Chrome wraps the real error in:
-//   "This page contains the following errors:\nerror on line N at column M: <real>\n..."
+// Chrome wraps the real error in "This page contains the following errors:\nerror on line N..."
 // Firefox uses a different shape. Returns the cleanest single-line message we can find.
 function _cleanDomParserMessage(text) {
   if (!text) return 'XML parse error';
-  // Remove common wrappers
   let cleaned = text
     .replace(/<\?xml[^?]*\?>\s*/i, '')
     .replace(/^This page contains the following errors:\s*/i, '')
     .replace(/Below is a rendering of the page.*$/is, '')
     .trim();
-  // Take the most informative line — prefer one starting with "error " or
-  // containing ":", else fall back to the first non-empty line.
   const lines = cleaned.split('\n').map(s => s.trim()).filter(Boolean);
   if (!lines.length) return text.trim() || 'XML parse error';
   const errLine = lines.find(l => /^error\b/i.test(l)) || lines.find(l => l.includes(':')) || lines[0];
-  // Strip the redundant "error on line N at column M:" prefix — line/col are
-  // shown separately by the caller.
+  // Strip "error on line N at column M:" prefix — line/col are shown separately by the caller.
   return errLine.replace(/^error on line \d+ at column \d+:\s*/i, '').trim();
 }
 
@@ -148,7 +127,7 @@ function extractSaxonErrorLine(err) {
   return null;
 }
 
-// Parse Saxon error message to extract line number
+// Parse Saxon error message to extract line number.
 // Formats seen:
 //   "on line 7 in /NoStylesheetBaseURI"
 //   "at line 7"
@@ -203,9 +182,8 @@ function nudgeToNextXslElement(src, startLine) {
 //
 // Returns the 1-based line number, or null if not found.
 function findXPathExpressionLine(saxonMsg, originalXslt, saxonReportedLine, cpiLineOffset) {
-  // Saxon embeds the expression in {…} immediately after the location info.
-  // Skip namespace URIs (they look like {http://…}) by requiring the content
-  // not to start with "http" or "https".
+  // Saxon embeds the expression in {…} after the location info.
+  // Skip namespace URIs (they look like {http://…}).
   const candidates = [];
   const re = /\{([^}]+)\}/g;
   let m;
@@ -222,15 +200,13 @@ function findXPathExpressionLine(saxonMsg, originalXslt, saxonReportedLine, cpiL
   if (!expr) return null;
 
   // Saxon collapses runs of whitespace inside XPath expressions when echoing
-  // them in error messages (e.g. `'a',   'b'` → `'a', 'b'`). Compare on
-  // whitespace-collapsed forms so source indentation/multi-space formatting
-  // still matches a single occurrence.
+  // them in error messages — compare on whitespace-collapsed forms.
   const collapseWS = s => s.replace(/\s+/g, ' ').trim();
   const exprNorm = collapseWS(expr);
   const lines = originalXslt.split('\n');
   const matches = [];
   for (let i = 0; i < lines.length; i++) {
-    if (collapseWS(lines[i]).includes(exprNorm)) matches.push(i + 1); // 1-based
+    if (collapseWS(lines[i]).includes(exprNorm)) matches.push(i + 1);
   }
   if (!matches.length) return null;
   if (matches.length === 1) return matches[0];
@@ -243,15 +219,12 @@ function findXPathExpressionLine(saxonMsg, originalXslt, saxonReportedLine, cpiL
       Math.abs(line - hintLine) < Math.abs(best - hintLine) ? line : best
     );
   }
-  // No hint — return last occurrence (expressions that error are usually later in the file)
+  // No hint — return last occurrence (errors tend to be later in the file).
   return matches[matches.length - 1];
 }
 
 
-// ────────────────────────────────────────────────────────────────────────────
-// CPI structural validation
-// ────────────────────────────────────────────────────────────────────────────
-// Catches the common CPI mistakes BEFORE Saxon sees the stylesheet:
+// CPI structural validation — catches common CPI mistakes BEFORE Saxon sees the stylesheet:
 //   - typos like cpi:setHeaders / cpi:setProperties / cpi:getHeader
 //   - wrong arity on cpi:setHeader / cpi:setProperty (must be exactly 3 args)
 //   - missing xmlns:cpi="http://sap.com/it/"
@@ -269,9 +242,7 @@ const _CPI_VALID_FNS = ['setHeader', 'setProperty'];
 const _CPI_NS_URI    = 'http://sap.com/it/';
 
 // Strip XML comments and CDATA so cpi: text inside docs/CDATA isn't flagged.
-// Preserves newline count so line numbers in regex matches stay accurate
-// against the *stripped* source. We translate back to original line numbers
-// using _findLineOf, which searches the original.
+// Preserves newline count so line numbers in regex matches stay accurate.
 function _stripCommentsAndCDATA(src) {
   return src.replace(/<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>/g, m => {
     const newlines = (m.match(/\n/g) || []).length;
@@ -279,10 +250,8 @@ function _stripCommentsAndCDATA(src) {
   });
 }
 
-// Count top-level commas inside an XPath argument list. Skips commas inside
-// quoted strings and nested parentheses. `body` is the substring between the
-// outer `(` and matching `)`. Returns the comma count (so 3 args → 2 commas).
-// Returns null if the parens don't balance (caller treats as parse failure).
+// Count top-level commas in an XPath argument list. Skips quoted strings and
+// nested parens. Returns arg count, -1 for empty list, or null if unbalanced.
 function _countTopLevelArgs(body) {
   let depth = 0, commas = 0, q = null;
   for (let i = 0; i < body.length; i++) {
@@ -297,11 +266,10 @@ function _countTopLevelArgs(body) {
     if (c === ',' && depth === 0) commas++;
   }
   if (depth !== 0 || q) return null;
-  return body.trim() === '' ? -1 : commas + 1; // arg count, or -1 for empty list
+  return body.trim() === '' ? -1 : commas + 1;
 }
 
-// Find the matching closing `)` for the `(` at index `open` in `src`.
-// Returns the index of the `)`, or -1 if unbalanced. Skips quoted content.
+// Find the matching closing `)` for the `(` at index `open`. Skips quoted content.
 function _findMatchingParen(src, open) {
   let depth = 1, q = null;
   for (let i = open + 1; i < src.length; i++) {
@@ -424,13 +392,12 @@ function validateCPIStructure(xsltSrc) {
 }
 
 
-// Pre-flight: validate XML source and XSLT structure before running Saxon
-// Returns true if OK to proceed, false if a blocking error was found
+// Pre-flight: validate XML source and XSLT structure before running Saxon.
+// Returns true if OK to proceed, false if a blocking error was found.
 function preflight(xmlSrc, xsltSrc) {
   clearAllMarkers();
   let ok = true;
 
-  // 1. Validate XML source
   const xmlResult = validateXML(xmlSrc);
   if (!xmlResult.ok) {
     clog(`[XML] line ${xmlResult.line}: ${xmlResult.message}`, 'error');
@@ -439,7 +406,6 @@ function preflight(xmlSrc, xsltSrc) {
     ok = false;
   }
 
-  // 2. Validate XSLT — must be well-formed XML first
   const xsltResult = validateXML(xsltSrc);
   if (!xsltResult.ok) {
     clog(`[XSLT] line ${xsltResult.line}: ${xsltResult.message}`, 'error');
@@ -448,9 +414,7 @@ function preflight(xmlSrc, xsltSrc) {
     ok = false;
   }
 
-  // 3. CPI structural validation — only if XSLT is well-formed.
-  // Catches typos (cpi:setHeaders), unknown functions (cpi:getHeader), wrong
-  // arity, missing xmlns:cpi, missing <xsl:param name="exchange"/>, etc.
+  // CPI structural validation — only if XSLT is well-formed.
   if (xsltResult.ok) {
     const cpi = validateCPIStructure(xsltSrc);
     cpi.warnings.forEach(w => {
@@ -458,9 +422,8 @@ function preflight(xmlSrc, xsltSrc) {
       clog(`[CPI] warning${where}: ${w.message}`, 'warn');
     });
     if (cpi.errors.length) {
-      // Log every error in unified format. Mark the FIRST one with a line —
-      // Monaco's marker collection only shows one anchor per file at a time
-      // for clarity, but we log all of them so the user sees the full list.
+      // Log every error; mark the FIRST one with a line — Monaco only shows
+      // one anchor per file at a time, but the full list still goes to console.
       cpi.errors.forEach(e => {
         if (e.line) clog(`[CPI] line ${e.line}: ${e.message}`, 'error');
         else        clog(`[CPI] ${e.message}`, 'error');

@@ -1,11 +1,6 @@
-// ════════════════════════════════════════════
-//  EXAMPLES LIBRARY MODAL
-// ════════════════════════════════════════════
-
 let exActiveCat = 'all';
 let exAutoRunChecked = false;
 
-// ── Render sidebar category buttons from CATEGORIES object ───────────────────
 function renderExSidebar() {
   const sidebar = document.getElementById('exSidebar');
   if (!sidebar) return;
@@ -17,7 +12,7 @@ function renderExSidebar() {
 
   html += `<button class="ex-cat-btn${exActiveCat === 'all' ? ' active' : ''}" data-cat="all" onclick="setExCat('all')"><i data-lucide="layout-grid" width="14" height="14"></i> All <span class="ex-cat-count">${total}</span></button>`;
 
-  // Order follows CATEGORIES definition
+  // Order follows CATEGORIES definition.
   Object.entries(CATEGORIES).forEach(([cat, { label, icon }]) => {
     const count = allExamples.filter(ex => ex.cat === cat).length;
     if (count === 0) return;
@@ -37,7 +32,7 @@ function openExModal() {
   const checkbox = document.getElementById('exAutoRunCheckbox');
   if (checkbox) checkbox.checked = savedAutoRun;
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
-  // Force fresh render — examples list / icons may have changed since last open
+  // Force fresh render — examples list / icons may have changed since last open.
   _exRendered = false;
   renderExSidebar();
   renderExGrid();
@@ -58,7 +53,7 @@ document.addEventListener('keydown', e => {
     if (typeof closeHelpModal  === 'function') closeHelpModal();
     return;
   }
-  // Ctrl+Enter / Cmd+Enter → mode-aware run (works even when KV inputs have focus)
+  // Ctrl+Enter / Cmd+Enter → mode-aware run (works even when KV inputs have focus).
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     if (modeManager.isXpath) runXPath();
@@ -100,7 +95,7 @@ function filterExamples() {
       if (show) sectionVisible++;
     });
     visibleCount += sectionVisible;
-    // Section label is the immediately-preceding sibling
+    // Section label is the immediately-preceding sibling.
     const labelEl = grid.previousElementSibling;
     if (labelEl?.classList.contains('ex-grid-section-label')) {
       labelEl.style.display = sectionVisible ? '' : 'none';
@@ -111,7 +106,7 @@ function filterExamples() {
   document.getElementById('exModalCount').textContent =
     visibleCount + ' example' + (visibleCount !== 1 ? 's' : '');
 
-  // No-results placeholder — kept around and toggled
+  // No-results placeholder — kept around and toggled.
   let empty = wrap.querySelector('.ex-no-results');
   if (visibleCount === 0) {
     if (!empty) {
@@ -133,7 +128,6 @@ function renderExGrid() {
   const query  = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
   const wrap   = document.getElementById('exGridWrap');
 
-  // Single-pass filter + group
   const groups = {};
   const keys = [];
   Object.keys(EXAMPLES).forEach(k => {
@@ -153,7 +147,7 @@ function renderExGrid() {
   }
 
   let html = '';
-  // Preserve CATEGORIES order
+  // Preserve CATEGORIES order.
   const orderedCats = [...Object.keys(CATEGORIES), ...Object.keys(groups).filter(c => !CATEGORIES[c])];
   orderedCats.filter(cat => groups[cat]).forEach(cat => {
     const catDef = CATEGORIES[cat] || { label: cat, accent: 'var(--sap-blue)' };
@@ -164,8 +158,8 @@ function renderExGrid() {
     groups[cat].forEach(k => {
       const ex = EXAMPLES[k];
       const accent = catDef.accent;
-      // ex.icon is a Lucide icon name [a-z-]+ and k is a bundled example key [a-zA-Z0-9]+ —
-      // both bundled-internal. Add escapes if external sources ever interpolate here.
+      // ex.icon is a Lucide name [a-z-]+ and k is a bundled key [a-zA-Z0-9]+ —
+      // both internal. Add escapes if external sources ever feed this template.
       html += `
         <div class="ex-card" data-ex-key="${k}" style="--card-accent:${accent}" onclick="loadExample('${k}')">
           <div class="ex-card-top">
@@ -187,12 +181,12 @@ function renderExGrid() {
   _exRendered = true;
 }
 
-// ── Load an example ──
+// Load an example.
 function loadExample(key) {
   const ex = EXAMPLES[key];
   if (!ex) return;
 
-  // ── Switch mode based on example type BEFORE loading content ──
+  // Switch mode based on example type BEFORE loading content.
   try {
     if (ex.xpathExpr && !modeManager.isXpath) {
       modeManager.setMode('XPATH');
@@ -228,7 +222,7 @@ function loadExample(key) {
   eds.out?.updateOptions({ readOnly: true });
   renderOutputKV({}, {});
 
-  // KV panels are hidden in XPath mode
+  // KV panels are hidden in XPath mode.
   if (!modeManager.isXpath) {
     kvData = { headers: [], properties: [] };
     kvIdSeq = 0;

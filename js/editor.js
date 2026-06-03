@@ -1,6 +1,3 @@
-// ════════════════════════════════════════════
-//  MONACO INIT
-// ════════════════════════════════════════════
 require.config({
   paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
 });
@@ -20,7 +17,7 @@ require(['vs/editor/editor.main'], () => {
     monaco.editor.setTheme('xdebugx-light');
   }
 
-  // Override XML language to remove <> auto-close (our custom handler does tags)
+  // Disable Monaco's built-in <> auto-pair — our custom handler does tags.
   monaco.languages.setLanguageConfiguration('xml', {
     autoClosingPairs: [],
     surroundingPairs: [],
@@ -78,10 +75,9 @@ require(['vs/editor/editor.main'], () => {
     { ...shared, language: 'xml', value: '', readOnly: true, renderValidationDecorations: 'off' }
   );
 
-  // ── Initialize Mode Manager with model references ──
   modeManager.initializeModels(xmlModelXslt, xmlModelXpath);
 
-  // Ctrl/Cmd+Enter → run XPath in XPath mode, run transform in XSLT mode
+  // Ctrl/Cmd+Enter → run XPath in XPath mode, run transform in XSLT mode.
   [eds.xml, eds.xslt].forEach(ed => {
     ed.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
@@ -92,8 +88,8 @@ require(['vs/editor/editor.main'], () => {
   setupDragDrop('xmlEdWrap', 'xml');
   setupDragDrop('xsltEdWrap', 'xslt');
 
-  // ── Auto-close XML tags ──
-  // Implemented manually because Monaco's built-in only works for 'html' mode.
+  // Auto-close XML tags — implemented manually because Monaco's built-in only
+  // works for 'html' mode.
 
   function _isOffsetInsensitive(model, line, column1Based) {
     try {
@@ -118,7 +114,7 @@ require(['vs/editor/editor.main'], () => {
       if (_inserting) return;
       const ch = e.browserEvent.key;
 
-      // ── Block Monaco's built-in <> auto-pair ──
+      // Block Monaco's built-in <> auto-pair.
       if (ch === '<') {
         e.preventDefault();
         const pos = editor.getPosition();
@@ -135,13 +131,13 @@ require(['vs/editor/editor.main'], () => {
         return;
       }
 
-      // ── Bracket / quote pairs ──
+      // Bracket / quote pairs.
       if (PAIRS[ch]) {
         const model = editor.getModel();
         const sel   = editor.getSelection();
         const pos   = editor.getPosition();
 
-        // Wrap selected text
+        // Wrap selected text.
         const selectedText = sel && !sel.isEmpty() ? model.getValueInRange(sel) : null;
         if (selectedText !== null) {
           e.preventDefault();
@@ -152,7 +148,7 @@ require(['vs/editor/editor.main'], () => {
           return;
         }
 
-        // Skip over existing closing char
+        // Skip over an existing closing char.
         const lineText = model.getLineContent(pos.lineNumber);
         const nextChar = lineText[pos.column - 1];
         if (nextChar === PAIRS[ch]) {
@@ -175,7 +171,7 @@ require(['vs/editor/editor.main'], () => {
         return;
       }
 
-      // ── Skip-over ) and ] ──
+      // Skip-over ) and ].
       if (ch === ')' || ch === ']') {
         const pos      = editor.getPosition();
         const lineText = editor.getModel().getLineContent(pos.lineNumber);
@@ -185,7 +181,7 @@ require(['vs/editor/editor.main'], () => {
         }
       }
 
-      // ── Attribute = → ="" with cursor between quotes ──
+      // Attribute = → ="" with cursor between quotes.
       if (ch === '=') {
         const pos      = editor.getPosition();
         const model    = editor.getModel();
@@ -193,7 +189,7 @@ require(['vs/editor/editor.main'], () => {
         const charBefore = lineText[pos.column - 2];
         const charAfter  = lineText[pos.column - 1];
 
-        // Only trigger inside a tag opener: prev char is word char, next is not already "
+        // Only trigger inside a tag opener: prev char is word char, next is not already ".
         const lineUpToCursor = lineText.substring(0, pos.column - 1);
         const inTag = (lineUpToCursor.lastIndexOf('<') > lineUpToCursor.lastIndexOf('>'));
         if (/\w/.test(charBefore) && charAfter !== '"' && inTag) {
@@ -212,7 +208,7 @@ require(['vs/editor/editor.main'], () => {
       }
     });
 
-    // ── XML auto-close tags ──
+    // XML auto-close tags.
     editor.onDidChangeModelContent(ev => {
       if (_inserting) return;
       for (const change of ev.changes) {
@@ -242,8 +238,6 @@ require(['vs/editor/editor.main'], () => {
 
   setupAutoClose(eds.xml);
   setupAutoClose(eds.xslt);
-
-  // ── Custom context menu actions ───────────────────────────────────────────
 
   function _toggleXmlComment(editor) {
     const model = editor.getModel();
@@ -275,7 +269,7 @@ require(['vs/editor/editor.main'], () => {
     if (edits.length) editor.executeEdits('toggle-comment', edits);
   }
 
-  // Collapses whitespace outside quoted attributes
+  // Collapses whitespace outside quoted attributes.
   function _minifyXml(src) {
     let result = src.replace(/>\s+</g, '><');
     const parts = [];
@@ -298,7 +292,7 @@ require(['vs/editor/editor.main'], () => {
     return parts.join('');
   }
 
-  // ── XML editor actions ──
+  // XML editor actions.
   eds.xml.addAction({
     id:    'xd-format-xml',
     label: 'Format XML',
@@ -339,7 +333,6 @@ require(['vs/editor/editor.main'], () => {
     run(ed) { _toggleXmlComment(ed); }
   });
 
-  // ── Shared clipboard helper for XPath copy actions ──
   function _copyXPathToClipboard(xpath, label) {
     _clipboardWrite(xpath, () => {
       clog(`ƒx  ${label}: ${xpath}`, 'success');
@@ -347,7 +340,7 @@ require(['vs/editor/editor.main'], () => {
     });
   }
 
-  // ── Mode-aware: XSLT mode logs + copies; XPath mode also sets bar + runs ──
+  // XSLT mode logs + copies; XPath mode also fills the bar and runs.
   function _handleCopyXPath(xpath, label) {
     if (!modeManager.isXpath) {
       clog(`ƒx  ${label}: ${xpath}`, 'info');
@@ -387,7 +380,7 @@ require(['vs/editor/editor.main'], () => {
     }
   });
 
-  // ── XSLT editor actions ──
+  // XSLT editor actions.
   eds.xslt.addAction({
     id:    'xd-format-xslt',
     label: 'Format XSLT',
@@ -428,9 +421,9 @@ require(['vs/editor/editor.main'], () => {
     run(ed) { _toggleXmlComment(ed); }
   });
 
-  // ── CPI namespace auto-injector ──────────────────────────────────────────────
-  // Ensures xmlns:cpi is declared on xsl:stylesheet and removed from
-  // exclude-result-prefixes before inserting any cpi: snippet.
+  // CPI namespace auto-injector — ensures xmlns:cpi is declared on
+  // xsl:stylesheet and removed from exclude-result-prefixes before inserting
+  // any cpi: snippet.
   function _ensureCpiNamespace(ed) {
     const src = ed.getValue();
     if (src.includes('xmlns:cpi=')) return;
@@ -465,7 +458,7 @@ require(['vs/editor/editor.main'], () => {
   }
 
 
-  // Inserts snippet at cursor position using executeEdits so it's undoable.
+  // Insert snippet at cursor position via executeEdits so it's undoable.
   function _insertSnippet(ed, snippet) {
     const pos  = ed.getPosition();
     const line = ed.getModel().getLineContent(pos.lineNumber);
@@ -681,7 +674,7 @@ require(['vs/editor/editor.main'], () => {
       xsltDecorations = markErrorLine(eds.xslt, result.line, result.message, xsltDecorations);
       setStatus(`XSLT error at line ${result.line}`, 'err');
     } else {
-      // Don't clobber a transform-failure status
+      // Don't clobber a transform-failure status.
       const current = document.getElementById('statTxt').textContent;
       if (current.startsWith('XSLT error')) setStatus('Ready', 'ok');
     }
@@ -709,7 +702,7 @@ require(['vs/editor/editor.main'], () => {
   eds.xslt.onDidChangeModelContent(() => {
     scheduleSave();
     if (_suppress.validation) { _suppress.validation = false; return; }
-    // Clear immediately so stale markers don't linger while user types
+    // Clear immediately so stale markers don't linger while user types.
     monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
     if (xsltDecorations) { xsltDecorations.clear(); xsltDecorations = null; }
     clearTimeout(xsltDebounce);
@@ -717,7 +710,7 @@ require(['vs/editor/editor.main'], () => {
   });
 
   eds.xml.onDidChangeModelContent(() => {
-    // Synthetic content-change fires during model swap in toggleXPath
+    // Synthetic content-change fires during model swap in toggleXPath.
     if (_suppress.xmlChange) { _suppress.xmlChange = false; return; }
     scheduleSave();
     if (_suppress.validation) { _suppress.validation = false; return; }
@@ -730,7 +723,7 @@ require(['vs/editor/editor.main'], () => {
     xmlDebounce = setTimeout(runXmlValidation, 800);
   });
 
-  // ── Cursor position + character count in status bar ──────────────────────────
+  // Cursor position + character count in status bar.
   function _getXmlLabel() {
     return modeManager.isXpath ? 'XML Source' : 'XML Input';
   }
@@ -746,7 +739,7 @@ require(['vs/editor/editor.main'], () => {
       `${label}  Ln ${pos.lineNumber}/${lines} · Col ${pos.column} · ${chars.toLocaleString()} chars`;
   }
 
-  // Expose so toggleXPath can update cursor stat after mode switch
+  // Expose so toggleXPath can update cursor stat after mode switch.
   window._updateCursorStat = _updateCursorStat;
 
   [
@@ -765,8 +758,8 @@ require(['vs/editor/editor.main'], () => {
   const checkSaxon = setInterval(() => {
     if (typeof SaxonJS !== 'undefined') {
       clearInterval(checkSaxon);
-      // Cancel failure path — prevents double hideLoader() if Saxon
-      // loads in the same event-loop turn as the 12s timeout fires
+      // Cancel failure path — prevents double hideLoader() if Saxon loads in
+      // the same event-loop turn as the 12s timeout fires.
       clearTimeout(saxonTimeout);
       saxonReady = true;
       reinitIcons();
@@ -774,7 +767,7 @@ require(['vs/editor/editor.main'], () => {
       clog('Saxon-JS 2.x loaded · XSLT 3.0 engine ready ✓', 'success');
       clog('Ctrl+Enter runs XSLT transform in XSLT mode · runs XPath in XPath mode', 'info');
 
-      // ── Share link takes priority over saved session ──
+      // Share link takes priority over saved session.
       if (window._pendingShareData) {
         applyShareData(window._pendingShareData);
       } else if (_savedSession) {
@@ -837,7 +830,7 @@ require(['vs/editor/editor.main'], () => {
         }
       } else {
         clog('Identity Transform loaded. Use Examples menu to load CPI scenarios.', 'info');
-        // Pre-load default XPath so the bar is ready when user switches to XPath mode
+        // Pre-load default XPath so the bar is ready when user switches to XPath mode.
         const _defaultExpr = EXAMPLES.xpathNavigation?.xpathExpr ?? '';
         if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
         else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
@@ -851,7 +844,7 @@ require(['vs/editor/editor.main'], () => {
     }
   }, 200);
 
-  // Timeout fallback — ID stored so the success path can cancel it
+  // Timeout fallback — ID stored so the success path can cancel it.
   const saxonTimeout = setTimeout(() => {
     if (!saxonReady) {
       clearInterval(checkSaxon);

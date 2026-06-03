@@ -1,8 +1,3 @@
-// ════════════════════════════════════════════
-//  STATE
-// ════════════════════════════════════════════
-
-// ── Shared Utilities ──
 function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 function formatFileSize(bytes) { return (bytes / 1024).toFixed(1); }
 function logError(context, err) {
@@ -15,8 +10,7 @@ function guardReady() {
   return true;
 }
 
-// ── Clipboard helper — single source of truth for navigator + execCommand fallback.
-// onFail is optional; when omitted, logs a generic "Clipboard access denied" error.
+// Clipboard helper — single source of truth for navigator + execCommand fallback.
 // Pass a custom onFail when the UI needs a different affordance (e.g. share.js).
 function _clipboardWrite(text, onSuccess, onFail) {
   const fallback = () => {
@@ -55,8 +49,7 @@ function _resetOutputPane(lang, defaultName) {
   eds.out.updateOptions({ readOnly: true });
 }
 
-// Backdrop click-to-close factory — three modals share an
-// `e.target.id === backdropId && close()` pattern.
+// Backdrop click-to-close factory shared by three modals.
 function _makeBackdropClose(backdropId, closeFn) {
   return function(e) {
     if (e.target.id === backdropId) closeFn();
@@ -91,13 +84,10 @@ let xmlModelXpath = null;
 let kvData = { headers: [], properties: [] };
 let kvIdSeq = 0;
 
-// Top-level so loadExample can cancel them
+// Top-level so loadExample can cancel them.
 let xsltDebounce = null;
 let xmlDebounce  = null;
 
-// ════════════════════════════════════════════
-//  CONSOLE
-// ════════════════════════════════════════════
 // Console DOM elements don't exist when state.js loads — lazy-cache on first use.
 let _consoleBodyEl   = null;
 let _consoleSearchEl = null;
@@ -115,15 +105,13 @@ function clog(msg, type = 'info') {
   line.dataset.type = type;
   const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
   line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${escHtml(msg)}</span>`;
-  // Apply current search filter to new line before appending
   const term = search?.value.trim().toLowerCase() ?? '';
   const typeFilter = consoleFilter || 'all';
   const matchesType = typeFilter === 'all' || type === typeFilter || (typeFilter === 'info' && type === 'success');
   const matchesText = !term || msg.toLowerCase().includes(term);
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
-  // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
-  // evicted line was an error so the badge stays in sync.
+  // Cap visible console at 500 lines; keep consoleErrCount in sync when an error scrolls off.
   const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
@@ -134,7 +122,7 @@ function clog(msg, type = 'info') {
   body.scrollTop = body.scrollHeight;
   if (type === 'error') {
     consoleErrCount++;
-    // Auto-restore minimised console so errors aren't silently hidden
+    // Auto-restore minimised console so errors aren't silently hidden.
     if (consoleState === 'minimized') setConsoleState('normal');
   } else if (type === 'warn') {
     if (consoleState === 'minimized') setConsoleState('normal');
@@ -157,20 +145,12 @@ function clearConsole() {
   if (search) search.value = '';
 }
 
-// ════════════════════════════════════════════
-//  STATUS
-// ════════════════════════════════════════════
 function setStatus(txt, state = 'ok') {
   document.getElementById('statTxt').textContent = txt;
   const d = document.getElementById('statDot');
   d.className = 'stat-dot ' + state;
 }
 
-
-
-// ════════════════════════════════════════════
-//  STATE PERSISTENCE  (localStorage)
-// ════════════════════════════════════════════
 const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
@@ -224,7 +204,7 @@ function loadSavedState() {
 }
 
 function _resetXPathMode() {
-  // Cancel pending validation/save timers so they don't fire against the freshly-reset content
+  // Cancel pending validation/save timers so they don't fire against the freshly-reset content.
   clearTimeout(xmlDebounce);  xmlDebounce  = null;
   clearTimeout(xsltDebounce); xsltDebounce = null;
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
@@ -274,7 +254,7 @@ function _resetXsltMode() {
   if (typeof renderXPathHints === 'function') renderXPathHints(null);
   window._lastExampleKey = null;
 
-  // XPath bar is hidden in XSLT mode — only sync if we're actually in XPath
+  // XPath bar is hidden in XSLT mode — only sync if we're actually in XPath.
   if (modeManager.isXpath) {
     const _defaultExpr = EXAMPLES.xpathNavigation.xpathExpr ?? '';
     if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
@@ -304,7 +284,7 @@ function clearSavedState() {
   if (ind) ind.style.opacity = '0';
 }
 
-// ── Tiny "● Saved" pill in the status bar ──
+// "● Saved" pill in the status bar.
 let _savedFadeTimer = null;
 function showSavedIndicator() {
   const ind = document.getElementById('savedIndicator');
