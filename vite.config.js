@@ -2,7 +2,19 @@
 import { defineConfig } from 'vite';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
+import { execSync } from 'child_process';
 import { buildSync } from 'esbuild';
+
+// Last-modified date for SEO (JSON-LD dateModified, sitemap <lastmod>).
+// Prefer the last git commit date so rebuilds from older commits don't lie;
+// fall back to wall-clock today when git is unavailable (e.g. tarball builds).
+function resolveLastModified() {
+  try {
+    return execSync('git log -1 --format=%cs', { encoding: 'utf8' }).trim(); // %cs = YYYY-MM-DD
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
 
 // Exact load order from index.html — critical for global namespace correctness
 const JS_MODULES = [
@@ -17,6 +29,7 @@ const JS_MODULES = [
   'js/ui.js',
   'js/share.js',
   'js/xpath.js',
+  'js/themes.js',
   'js/editor.js',
 ];
 
@@ -100,8 +113,18 @@ export default defineConfig({
         if (existsSync('favicon-192.png')) copyFileSync('favicon-192.png', 'dist/favicon-192.png');
         if (existsSync('site.webmanifest')) copyFileSync('site.webmanifest', 'dist/site.webmanifest');
         if (existsSync('robots.txt')) copyFileSync('robots.txt', 'dist/robots.txt');
-        if (existsSync('sitemap.xml')) copyFileSync('sitemap.xml', 'dist/sitemap.xml');
         if (existsSync('og-image.png')) copyFileSync('og-image.png', 'dist/og-image.png');
+        if (existsSync('screenshot.png')) copyFileSync('screenshot.png', 'dist/screenshot.png');
+
+        // ── Resolve a single SEO date for this build, then inject it everywhere ──
+        const lastModified = resolveLastModified();
+
+        // sitemap.xml — replace <lastmod>…</lastmod> in-flight (read source, write dist)
+        if (existsSync('sitemap.xml')) {
+          const sitemap = readFileSync('sitemap.xml', 'utf8')
+            .replace(/<lastmod>[^<]*<\/lastmod>/, `<lastmod>${lastModified}</lastmod>`);
+          writeFileSync('dist/sitemap.xml', sitemap);
+        }
 
         // ── Remove the empty JS stub Vite emits for the CSS-only entry ────
         rmSync('dist/assets', { recursive: true, force: true });
@@ -114,6 +137,8 @@ export default defineConfig({
         html = html.replace('src="./lib/SaxonJS2.js"', 'src="lib/SaxonJS2.js"');
         if (cssFile) html = html.replace('href="css/style.css"', `href="${cssFile}"`);
         html = html.replace('</body>', `  <script src="${jsFilename}"></script>\n</body>`);
+        // Refresh JSON-LD dateModified — keeps SEO signals current without manual edits
+        html = html.replace(/"dateModified":\s*"[^"]*"/, `"dateModified": "${lastModified}"`);
 
         writeFileSync('dist/index.html', html);
       },

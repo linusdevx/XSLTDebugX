@@ -216,7 +216,7 @@ function renderOutputKV(headers, properties) {
             <span class="kv-k">${escHtml(k)}</span>
             <span class="kv-v">${escHtml(data[k])}</span>
           </div>`).join('')
-      : '<div class="kv-empty">— none —</div>';
+      : '<div class="kv-empty">None set by transform</div>';
   };
   render('outHdrRows',  'outHdrCount',  headers);
   render('outPropRows', 'outPropCount', properties);
@@ -403,7 +403,7 @@ function renderKV(type) {
   const rows    = kvData[type];
   countEl.textContent = rows.filter(r => r.name.trim()).length;
   rowsEl.innerHTML = rows.length === 0
-    ? '<div class="kv-empty">Click + to add</div>'
+    ? `<div class="kv-empty">No ${type} yet — click + to add one</div>`
     : rows.map(r => `
         <div class="kv-row-wrapper">
           <div class="kv-row">
@@ -597,16 +597,11 @@ function runTransform() {
       clog(`Transform complete in ${elapsed} ms · output: ${_outLang.toUpperCase()} ✓`, 'success');
       setStatus(`Done · ${elapsed} ms`, 'ok');
       _flashPaneResult(true);
-      // Auto-expand output pane on first successful run
       const colRight = document.getElementById('colRight');
       if (colRight.classList.contains('collapsed')) {
         colRight.classList.remove('collapsed');
         scheduleSave();
-        setTimeout(() => {
-          eds.xml?.layout();
-          eds.xslt?.layout();
-          eds.out?.layout();
-        }, 250);
+        _layoutAfterTransition(colRight, 400);
       }
 
     } catch (err) {

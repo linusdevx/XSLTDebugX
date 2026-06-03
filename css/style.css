@@ -205,6 +205,20 @@
       flex-shrink: 0;
     }
     .header nav { display: contents; }
+    /* Visually hidden but kept in the DOM and a11y tree.
+       Used by the SEO content block: crawlers (Google, Bing) and screen readers see it;
+       sighted users don't. Standard "sr-only" pattern — not display:none, which would
+       hide from assistive tech and JS-rendering crawlers alike. */
+    .seo-content {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .logo {
       display: flex; align-items: center; gap: 9px; text-decoration: none;
       margin: 0; font-size: inherit; font-weight: inherit;
@@ -337,7 +351,11 @@
     .editor-wrap > div { position: absolute; inset: 0; }
     /* Side columns: keep the XML / Output editor readable even when the
        Headers + Properties panels below are packed with rows. */
-    .col-side .editor-wrap { min-height: 200px; }
+    /* Side columns: editor-wrap shrinks freely with the column. The original
+       200px floor caused overflow when the resizable console pushed the
+       workspace small (the wrap kept its min-height while siblings xpathBar
+       and xmlPaneBar held their fixed heights). */
+    .col-side .editor-wrap { min-height: 0; }
 
     /* ── PANE BAR ── */
     .pane-bar {
@@ -660,10 +678,27 @@
       border-top: 1px solid var(--border);
       display: flex; flex-direction: column;
       height: 160px;
+      position: relative;
       transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       overflow: hidden;
     }
-    .console-panel.minimized { height: 31px; }
+    .console-panel.dragging { transition: none; }
+    .console-panel.minimized { height: 31px !important; }
+
+    .console-resize-handle {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      cursor: ns-resize;
+      background: transparent;
+      z-index: 2;
+      transition: background 0.15s;
+    }
+    .console-resize-handle:hover,
+    .console-panel.dragging .console-resize-handle {
+      background: var(--border-bright);
+    }
+    .console-panel.minimized .console-resize-handle { display: none; }
 
     .console-bar {
       background: var(--bg-panel);
@@ -756,13 +791,24 @@
     #consoleBody[data-filter="warn"]  .log-line:not(.warn)               { display: none; }
     #consoleBody[data-filter="error"] .log-line:not(.error)              { display: none; }
     .console-chevron {
-      width: 12px; height: 12px;
+      width: 20px; height: 20px;
       color: var(--text-dim);
-      transition: transform 0.2s;
+      transition: transform 0.2s, color 0.15s, background 0.15s;
       flex-shrink: 0;
       margin-left: 4px;
+      padding: 4px;
+      box-sizing: border-box;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    .console-panel.minimized .console-chevron { transform: rotate(-90deg); }
+    .console-chevron:hover {
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.06);
+    }
+    body.light .console-chevron:hover {
+      background: rgba(0,0,0,0.06);
+    }
+    .console-panel.minimized .console-chevron { transform: rotate(180deg); }
     .console-body {
       flex: 1; overflow-y: auto;
       padding: 4px 14px;
@@ -1739,3 +1785,45 @@
 }
 .stat-link:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
 .stat-divider { opacity: 0.5; }
+.saved-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #3fb950;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.help-row.help-row-feature {
+  background: rgba(34, 139, 230, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+  border-left: 3px solid #228be6;
+}
+.help-row .help-key.help-key-feature {
+  color: #228be6;
+}
+.help-row .help-feature-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  font-size: 0.95em;
+}
+
+@media (max-width: 1100px) {
+  .header .logo-tag,
+  .header .logo-tag-ide {
+    display: none;
+  }
+  .header .run-btn .kbd {
+    display: none;
+  }
+}
+
+body.theme-switching,
+body.theme-switching * {
+  transition: none !important;
+}

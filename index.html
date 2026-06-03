@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XSLTDebugX — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</title>
   <meta name="description" content="Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.">
-  <meta name="keywords" content="XSLT editor, XPath evaluator, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, XSLT debugger, XSLT online, Saxon-JS, XML transformation, XSLT IDE, XML editor online, SAP Integration Suite, iFlow XSLT, CPI mapping, XSLT debugger online, XSLT tester, XPath tester online, XSLT playground, online XSLT editor, XSLT testing tool, SAP CPI XSLT debug">
+  <meta name="keywords" content="XSLT debugger, XPath tester, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT IDE">
   <meta name="author" content="XSLTDebugX">
   <meta name="google-site-verification" content="2FIJQa0iXMS64h8tWPm5lUdskRuBHUzKXt8RxuyUlis">
   <meta name="robots" content="index, follow">
@@ -25,6 +25,7 @@
   <meta property="og:site_name" content="XSLTDebugX">
   <meta property="og:locale" content="en_US">
   <meta property="og:image" content="https://xsltdebugx.pages.dev/og-image.png">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="XSLTDebugX — XSLT 3.0 IDE with XML input, XSLT stylesheet editor, and console output">
@@ -35,6 +36,7 @@
   <meta name="twitter:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally — no deployment needed.">
   <meta name="twitter:domain" content="xsltdebugx.pages.dev">
   <meta name="twitter:image" content="https://xsltdebugx.pages.dev/og-image.png">
+  <meta name="twitter:image:alt" content="XSLTDebugX — XSLT 3.0 IDE with XML input, XSLT stylesheet editor, and console output">
 
   <link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -67,7 +69,7 @@
     "browserRequirements": "Requires a modern browser with JavaScript enabled",
     "softwareVersion": "1.0",
     "datePublished": "2025-01-01",
-    "dateModified": "2026-05-04",
+    "dateModified": "2026-06-03",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": {
       "@type": "Person",
@@ -88,7 +90,13 @@
       "XSLT testing without deploying to SAP Integration Suite",
       "No server — runs entirely in-browser"
     ],
-    "screenshot": "https://xsltdebugx.pages.dev/og-image.png",
+    "screenshot": {
+      "@type": "ImageObject",
+      "url": "https://xsltdebugx.pages.dev/screenshot.png",
+      "width": 1280,
+      "height": 800,
+      "caption": "XSLTDebugX IDE — XML input, XSLT stylesheet, and transformation output panels with debug console"
+    },
     "keywords": "XSLT debugger, XSLT IDE online, XPath tester, SAP CPI XSLT, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT editor, XSLT testing tool, XML editor, Saxon-JS, XSLT playground",
     "inLanguage": "en",
     "isAccessibleForFree": true,
@@ -96,35 +104,120 @@
     "sameAs": "https://github.com/linusdevx/XSLTDebugX"
   }
   </script>
+
+  <!-- FAQ schema — eligible for FAQ rich results in SERP. Answers mirror the noscript content. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I debug XSLT for SAP Cloud Integration without deploying an iFlow?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "XSLTDebugX simulates the SAP CPI runtime in your browser — including message headers, exchange properties, and CPI extension functions — so you can run and debug XSLT 3.0 mappings against sample XML and see the output instantly, with no deployment to SAP Integration Suite required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is XSLTDebugX free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. XSLTDebugX is free, open-source (MIT-licensed), and requires no account. It runs entirely in your browser — no XML, XSLT, or message data is sent to any server."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which XSLT and XPath versions are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "XSLTDebugX supports XSLT 3.0 transformations and XPath 3.1 expressions, powered by the Saxon-JS 2 engine — the same XSLT/XPath processor family used by SAP Cloud Integration."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I test XPath expressions against XML in the browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The XPath mode lets you evaluate XPath 3.1 expressions against any XML document with syntax highlighting, expression history, and live result highlighting in the source XML."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does XSLTDebugX work offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "After the first load, XSLTDebugX runs entirely client-side — XSLT execution, XPath evaluation, and CPI simulation all happen in your browser with no network calls. Saved sessions persist in localStorage."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Breadcrumb schema — single-page app, but a Home → Tool trail still helps Google build site links. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://xsltdebugx.pages.dev/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "XSLT 3.0 Debugger & XPath Tester for SAP CPI",
+        "item": "https://xsltdebugx.pages.dev/"
+      }
+    ]
+  }
+  </script>
 </head>
 <body class="light">
+<script>
+  try {
+    var _t = localStorage.getItem('xdebugx-theme');
+    if (_t === 'dark') document.body.classList.remove('light');
+    else if (_t === 'light') document.body.classList.add('light');
+  } catch (_) {}
+</script>
 
-<!-- SEO: visible text for crawlers that don't execute JS -->
+<!-- SEO + a11y: real DOM content for crawlers that DO render JS (Googlebot etc.)
+     and for screen readers. Visually hidden via .seo-content (clip-path, off-screen)
+     but kept in the accessibility tree. The page H1 lives here. -->
+<section class="seo-content" aria-label="About XSLTDebugX">
+  <h1>XSLTDebugX — Free Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</h1>
+  <p>XSLTDebugX is a free online XSLT debugger and XPath 3.1 tester designed for SAP Cloud Integration (CPI) developers. Debug, test, and validate XSLT transformations directly in your browser without deploying to SAP Integration Suite.</p>
+  <h2>XSLT Debugger Features</h2>
+  <ul>
+    <li>Online XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
+    <li>XPath 3.1 expression tester with syntax highlighting and history</li>
+    <li>SAP CPI runtime simulation — debug with headers, properties, and extension functions</li>
+    <li>61 built-in examples covering basic to advanced XSLT patterns</li>
+    <li>Monaco Editor with XML/XSLT syntax highlighting and real-time error detection</li>
+    <li>Share XSLT transformations via URL — no server or account needed</li>
+    <li>Dark and light theme support</li>
+    <li>Runs entirely in your browser — no installation, no data sent to servers</li>
+  </ul>
+  <h2>Use Cases</h2>
+  <ul>
+    <li>Debug and test XSLT mappings for SAP Integration Suite iFlows offline</li>
+    <li>Test XPath expressions against sample XML documents online</li>
+    <li>Learn XSLT 3.0 with interactive examples and instant feedback</li>
+    <li>Validate XML structure and XSLT transformation output before deployment</li>
+  </ul>
+  <h2>Why Use an Online XSLT Debugger?</h2>
+  <p>Testing XSLT in SAP CPI requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and CPI extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
+</section>
+
+<!-- True no-JS fallback: shown only when JavaScript is disabled. -->
 <noscript>
   <div style="padding:2rem;max-width:800px;margin:0 auto;font-family:system-ui,sans-serif">
-    <h1>XSLTDebugX — Free Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</h1>
-    <p>XSLTDebugX is a free online XSLT debugger and XPath 3.1 tester designed for SAP Cloud Integration (CPI) developers. Debug, test, and validate XSLT transformations directly in your browser without deploying to SAP Integration Suite.</p>
-    <h2>XSLT Debugger Features</h2>
-    <ul>
-      <li>Online XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
-      <li>XPath 3.1 expression tester with syntax highlighting and history</li>
-      <li>SAP CPI runtime simulation — debug with headers, properties, and extension functions</li>
-      <li>61 built-in examples covering basic to advanced XSLT patterns</li>
-      <li>Monaco Editor with XML/XSLT syntax highlighting and real-time error detection</li>
-      <li>Share XSLT transformations via URL — no server or account needed</li>
-      <li>Dark and light theme support</li>
-      <li>Runs entirely in your browser — no installation, no data sent to servers</li>
-    </ul>
-    <h2>Use Cases</h2>
-    <ul>
-      <li>Debug and test XSLT mappings for SAP Integration Suite iFlows offline</li>
-      <li>Test XPath expressions against sample XML documents online</li>
-      <li>Learn XSLT 3.0 with interactive examples and instant feedback</li>
-      <li>Validate XML structure and XSLT transformation output before deployment</li>
-    </ul>
-    <h2>Why Use an Online XSLT Debugger?</h2>
-    <p>Testing XSLT in SAP CPI requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and CPI extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
-    <p>Please enable JavaScript to use the XSLTDebugX online XSLT debugger.</p>
+    <p><strong>XSLTDebugX requires JavaScript.</strong> Please enable JavaScript in your browser to use the XSLT 3.0 debugger and XPath 3.1 tester.</p>
   </div>
 </noscript>
 
@@ -139,12 +232,13 @@
 
 <!-- Header -->
 <header class="header">
-  <h1 class="logo">
+  <!-- Visual brand mark, not a heading: the page H1 lives in the .seo-content section above. -->
+  <div class="logo" role="img" aria-label="XSLTDebugX — SAP Cloud Integration XSLT IDE">
     <div class="logo-mark">XD</div>
     <span class="logo-name">XSLTDebugX</span>
     <span class="logo-tag">SAP Cloud Integration</span>
     <span class="logo-tag logo-tag-ide">XSLT IDE</span>
-  </h1>
+  </div>
 
   <div class="h-spacer"></div>
 
@@ -326,6 +420,7 @@
 
     <!-- Console — default position: below XSLT editor. Moved below workspace in XPath mode. -->
     <div class="console-panel" id="consolePanel">
+      <div class="console-resize-handle" onpointerdown="startConsoleResize(event)" title="Drag to resize console"></div>
       <div class="console-bar" onclick="handleConsoleBarClick(event)">
         <span class="kv-icon"><i data-lucide="square-terminal" width="12" height="12"></i></span>
         <span class="console-title">Console</span>
@@ -343,7 +438,7 @@
           <button class="pane-icon-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()"><i data-lucide="clipboard" width="14" height="14"></i></button>
           <button class="pane-icon-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()"><i data-lucide="eraser" width="14" height="14"></i></button>
         </div>
-        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron"></i>
+        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" onclick="event.stopPropagation(); handleConsoleBarClick(event)" title="Minimize / restore console"></i>
       </div>
       <div class="console-body" id="consoleBody"></div>
     </div>
@@ -496,12 +591,8 @@
     <span class="mode-pill mode-xslt" id="modePill">XSLT</span>
   </div>
   <div class="stat-spacer"></div>
-  <div id="savedIndicator" title="Session auto-saved to browser storage" style="
-    font-family:'JetBrains Mono',monospace;font-size:10px;
-    color:#3fb950;opacity:0;transition:opacity 0.4s ease;
-    display:flex;align-items:center;gap:4px;padding:0 4px;
-  ">
-    <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor" style="color:#3fb950"><circle cx="4" cy="4" r="3.5"/></svg>Saved
+  <div id="savedIndicator" class="saved-indicator" title="Session auto-saved to browser storage">
+    <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3.5"/></svg>Saved
   </div>
   <div class="stat stat-author">
     <span>Built by</span>
@@ -553,10 +644,10 @@
         <div class="help-row"><span class="help-key">↵ wrap</span><span>Word wrap toggle per pane — click the wrap icon in any pane bar</span></div>
 
         <!-- Right-click is now prominently featured -->
-        <div class="help-row" style="background: rgba(34, 139, 230, 0.1); padding: 8px 12px; border-radius: 4px; margin: 8px 0; border-left: 3px solid #228be6;">
-          <span class="help-key" style="color: #228be6;">🖱️ Right-click Menu</span>
+        <div class="help-row help-row-feature">
+          <span class="help-key help-key-feature">🖱️ Right-click Menu</span>
           <span><strong>Power feature — right-click in any editor pane for:</strong>
-            <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 0.95em;">
+            <ul class="help-feature-list">
               <li><strong>Format</strong> — Pretty-print XML / XSLT (also toolbar button)</li>
               <li><strong>Minify</strong> — Collapse to single line</li>
               <li><strong>Comment / Uncomment</strong> — Toggle line comments</li>
@@ -652,6 +743,7 @@
         async src="https://gc.zgo.at/count.js"></script>
 <script src="js/share.js"></script>
 <script src="js/xpath.js"></script>
+<script src="js/themes.js"></script>
 <script src="js/editor.js"></script>
 
 </body>

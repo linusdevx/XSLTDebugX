@@ -49,20 +49,17 @@ function toggleSideCol(side) {
   const col = document.getElementById(side === 'left' ? 'colLeft' : 'colRight');
   col.classList.toggle('collapsed');
   scheduleSave();
-
-  // Relayout all Monaco editors after spring transition (0.35s)
-  setTimeout(() => {
-    eds.xml?.layout();
-    eds.xslt?.layout();
-    eds.out?.layout();
-  }, 400);
+  _layoutAfterTransition(col, 400);
 }
 
 // ════════════════════════════════════════════
-//  CONSOLE STATE (minimize / maximize)
+//  CONSOLE STATE (minimize / maximize / resize)
 // ════════════════════════════════════════════
 let consoleState = 'normal';  // 'normal' | 'minimized'
 let consoleErrCount = 0;
+let consoleHeight = 160;       // current height in px (matches CSS default)
+const CONSOLE_MIN_H = 80;
+const CONSOLE_MAX_VH = 0.7;    // 70% of viewport height
 
 function setConsoleState(state) {
   const panel = document.getElementById('consolePanel');
@@ -81,6 +78,62 @@ function setConsoleState(state) {
   requestAnimationFrame(pump);
 }
 
+function setConsoleHeight(px) {
+  const max = Math.max(CONSOLE_MIN_H, Math.floor(window.innerHeight * CONSOLE_MAX_VH));
+  consoleHeight = Math.max(CONSOLE_MIN_H, Math.min(max, px));
+  const panel = document.getElementById('consolePanel');
+  if (panel) panel.style.height = consoleHeight + 'px';
+}
+
+function startConsoleResize(e) {
+  e.preventDefault();
+  const panel = document.getElementById('consolePanel');
+  if (!panel || panel.classList.contains('minimized')) return;
+
+  const startY = e.clientY;
+  const startH = panel.getBoundingClientRect().height;
+  panel.classList.add('dragging');
+  e.target.setPointerCapture?.(e.pointerId);
+
+  function relayoutEditors() {
+    [eds.xml, eds.xslt, eds.out].forEach(ed => {
+      if (!ed) return;
+      // Capture the bottom line and whether the user was at the document bottom
+      // BEFORE layout shrinks the editor.
+      const ranges = ed.getVisibleRanges?.();
+      let oldBottomLine = null;
+      let wasAtDocBottom = false;
+      if (ranges && ranges.length) {
+        oldBottomLine = ranges[ranges.length - 1].endLineNumber;
+        const lineCount = ed.getModel?.()?.getLineCount?.() ?? 0;
+        wasAtDocBottom = oldBottomLine >= lineCount - 1;  // within 1 line of the end
+      }
+      ed.layout();
+      // Pin the previously-bottom line to the new bottom so shrinking the editor
+      // doesn't push the user's last-visible line out of view.
+      if (oldBottomLine != null && typeof monaco !== 'undefined') {
+        const targetLine = wasAtDocBottom ? ed.getModel().getLineCount() : oldBottomLine;
+        const range = new monaco.Range(targetLine, 1, targetLine, 1);
+        ed.revealRange(range, 1 /* Immediate */, 4 /* BottomOfScrollableViewport */);
+      }
+    });
+  }
+
+  function onMove(ev) {
+    // Drag UP grows the console — invert the delta
+    setConsoleHeight(startH - (ev.clientY - startY));
+    relayoutEditors();
+  }
+  function onUp() {
+    panel.classList.remove('dragging');
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    scheduleSave();
+  }
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+}
+
 // Clicking the bar toggles minimize
 function handleConsoleBarClick(e) {
   setConsoleState(consoleState === 'minimized' ? 'normal' : 'minimized');
@@ -89,7 +142,7 @@ function handleConsoleBarClick(e) {
 function updateConsoleErrBadge() {
   const badge = document.getElementById('consoleErrBadge');
   if (!badge) return;
-  if (consoleErrCount > 0 && consoleState === 'minimized') {
+  if (consoleErrCount > 0) {
     badge.textContent = consoleErrCount;
     badge.classList.add('visible');
   } else {
@@ -150,6 +203,8 @@ function applyConsoleSearch(query) {
 //  THEME TOGGLE
 // ════════════════════════════════════════════
 function toggleTheme() {
+  document.body.classList.add('theme-switching');
+
   const isLight = document.body.classList.toggle('light');
   localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark');
   clog(`Theme: ${isLight ? 'light' : 'dark'} mode`, 'info');
@@ -159,17 +214,12 @@ function toggleTheme() {
     monaco.editor.setTheme(monacoTheme);
     setTimeout(() => { if (typeof refreshXPathColors === 'function') refreshXPathColors(); }, 50);
   }
+
+  requestAnimationFrame(() => {
+    document.body.classList.remove('theme-switching');
+  });
 }
 
-// Symmetric theme restore — handle both 'light' and 'dark'. Surviving a
-// future flip of the default theme in index.html requires touching the class
-// in both directions, not just removing 'light' on saved=='dark'.
-(function() {
-  const saved = localStorage.getItem('xdebugx-theme');
-  if (saved === 'light')      document.body.classList.add('light');
-  else if (saved === 'dark')  document.body.classList.remove('light');
-  // saved === null (first visit) → leave whatever index.html shipped
-})();
 // ════════════════════════════════════════════
 //  HELP MODAL
 // ════════════════════════════════════════════

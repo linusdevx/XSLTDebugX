@@ -217,16 +217,8 @@ function loadExample(key) {
       targetXmlModel.setValue(ex.xml);
     }
 
-    // Restore _suppressNextValidation only around the setValue that needs it —
-    // a blanket finally would clobber a flag set by an outer caller.
     if (!modeManager.isXpath && ex.xslt && eds.xslt) {
-      const _prevSV = _suppressNextValidation;
-      _suppressNextValidation = true;
-      try {
-        eds.xslt.setValue(ex.xslt);
-      } finally {
-        _suppressNextValidation = _prevSV;
-      }
+      _withSuppress(['validation'], () => eds.xslt.setValue(ex.xslt));
     }
   } catch (e) {
     logError('loadExample setValue', e);

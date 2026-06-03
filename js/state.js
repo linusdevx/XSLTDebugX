@@ -63,6 +63,24 @@ function _makeBackdropClose(backdropId, closeFn) {
   };
 }
 
+function _layoutAfterTransition(el, fallbackMs = 400) {
+  const relayout = () => {
+    eds.xml?.layout();
+    eds.xslt?.layout();
+    eds.out?.layout();
+  };
+  if (!el) { setTimeout(relayout, fallbackMs); return; }
+  let done = false;
+  const fire = () => {
+    if (done) return;
+    done = true;
+    relayout();
+    el.removeEventListener('transitionend', fire);
+  };
+  el.addEventListener('transitionend', fire, { once: true });
+  setTimeout(fire, fallbackMs);
+}
+
 let eds = { xml: null, xslt: null, out: null };
 let saxonReady  = false;
 
@@ -105,18 +123,20 @@ function clog(msg, type = 'info') {
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
   // Cap visible console DOM at 500 lines. Decrement consoleErrCount when an
-  // evicted line was an error/warn so the badge stays in sync.
+  // evicted line was an error so the badge stays in sync.
   const errCountBefore = consoleErrCount;
   while (body.childElementCount > 500) {
     const evicted = body.firstElementChild;
     const t = evicted.dataset.type;
-    if (t === 'error' || t === 'warn') consoleErrCount = Math.max(0, consoleErrCount - 1);
+    if (t === 'error') consoleErrCount = Math.max(0, consoleErrCount - 1);
     body.removeChild(evicted);
   }
   body.scrollTop = body.scrollHeight;
-  if (type === 'error' || type === 'warn') {
+  if (type === 'error') {
     consoleErrCount++;
     // Auto-restore minimised console so errors aren't silently hidden
+    if (consoleState === 'minimized') setConsoleState('normal');
+  } else if (type === 'warn') {
     if (consoleState === 'minimized') setConsoleState('normal');
   }
   if (consoleErrCount !== errCountBefore) updateConsoleErrBadge();
@@ -154,14 +174,17 @@ function setStatus(txt, state = 'ok') {
 const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
-// Set _suppressNextSave = true before a programmatic setValue to skip that save.
-let _suppressNextSave = false;
+const _suppress = { save: false, validation: false, xmlChange: false };
 
-// Guard against synthetic content-change event when swapping models in toggleXPath
-let _suppressNextXmlChange = false;
+function _withSuppress(flags, fn) {
+  const prev = {};
+  for (const k of flags) { prev[k] = _suppress[k]; _suppress[k] = true; }
+  try { return fn(); }
+  finally { for (const k of flags) _suppress[k] = prev[k]; }
+}
 
 function scheduleSave() {
-  if (_suppressNextSave) { _suppressNextSave = false; return; }
+  if (_suppress.save) { _suppress.save = false; return; }
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(saveState, 800);
 }
@@ -177,6 +200,7 @@ function saveState() {
       leftCollapsed:  document.getElementById('colLeft')?.classList.contains('collapsed')  ?? false,
       rightCollapsed: document.getElementById('colRight')?.classList.contains('collapsed') ?? true,
       centerCollapsed: !modeManager.isXpath && (document.getElementById('colCenter')?.classList.contains('collapsed') ?? false),
+      consoleHeight,
       xpathExpr:    document.getElementById('xpathInput')?.value ?? '',
       xpathEnabled: modeManager.isXpath,
       lastExampleKey: window._lastExampleKey ?? null,
@@ -206,16 +230,9 @@ function _resetXPathMode() {
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  // Arm _suppressNextSave BEFORE setValue — Monaco fires onDidChangeModelContent
-  // synchronously and editor.js's listener calls scheduleSave(). try/finally
-  // restores any flag set by an outer caller.
-  const _prevSuppress = _suppressNextSave;
-  _suppressNextSave = true;
-  try {
+  _withSuppress(['save'], () => {
     if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
-  } finally {
-    _suppressNextSave = _prevSuppress;
-  }
+  });
 
   _resetOutputPane('xml', 'output.xml');
   if (eds.xml) clearAllMarkers();
@@ -238,19 +255,10 @@ function _resetXsltMode() {
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
 
-  const _prevSuppress = _suppressNextSave;
-  try {
-    if (xmlModelXslt) {
-      _suppressNextSave = true;
-      xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    }
-    if (eds.xslt) {
-      _suppressNextSave = true;
-      eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
-    }
-  } finally {
-    _suppressNextSave = _prevSuppress;
-  }
+  _withSuppress(['save'], () => {
+    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
+    if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
+  });
 
   _resetOutputPane('xml', 'output.xml');
 
@@ -283,6 +291,8 @@ function clearSavedState() {
   localStorage.removeItem('xdebugx-xpath-history');
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
+
+  if (typeof setConsoleHeight === 'function') setConsoleHeight(160);
 
   if (modeManager.isXpath) {
     _resetXPathMode();
