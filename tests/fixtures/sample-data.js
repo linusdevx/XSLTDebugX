@@ -221,10 +221,12 @@ export const sampleData = {
 
   cpiWithSetHeader: `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:cpi="http://sap.com/cpi">
+                xmlns:cpi="http://sap.com/it/"
+                exclude-result-prefixes="cpi">
+  <xsl:param name="exchange"/>
   <xsl:template match="/">
     <response>
-      <xsl:copy-of select="cpi:setHeader('X-Custom-Header', 'TestValue')"/>
+      <xsl:copy-of select="cpi:setHeader($exchange, 'X-Custom-Header', 'TestValue')"/>
       <data>
         <xsl:value-of select="//user[1]/name"/>
       </data>
@@ -234,15 +236,17 @@ export const sampleData = {
 
   cpiWithMultipleHeaders: `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:cpi="http://sap.com/cpi">
+                xmlns:cpi="http://sap.com/it/"
+                exclude-result-prefixes="cpi">
+  <xsl:param name="exchange"/>
   <xsl:param name="authToken" select="'default-token'"/>
   <xsl:param name="environment" select="'dev'"/>
-  
+
   <xsl:template match="/">
     <response>
-      <xsl:copy-of select="cpi:setHeader('Authorization', $authToken)"/>
-      <xsl:copy-of select="cpi:setHeader('X-Environment', $environment)"/>
-      <xsl:copy-of select="cpi:setProperty('ProcessingStatus', 'COMPLETED')"/>
+      <xsl:copy-of select="cpi:setHeader($exchange, 'Authorization', $authToken)"/>
+      <xsl:copy-of select="cpi:setHeader($exchange, 'X-Environment', $environment)"/>
+      <xsl:copy-of select="cpi:setProperty($exchange, 'ProcessingStatus', 'COMPLETED')"/>
       <body>
         <xsl:value-of select="count(//user)"/> users processed
       </body>
