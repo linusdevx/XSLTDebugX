@@ -16,6 +16,7 @@
       --error:          #f85149;
       --warning:        #f5a524;
       --scrollbar:      #182030;
+      --kv-row-alt:     rgba(255,255,255,0.025);
       --status-bar-from: #004eb8;
       --status-bar-to:   #0068e0;
       /* XPath tokenizer colors — dark */
@@ -495,8 +496,8 @@
       padding: 0 5px; border-radius: 8px;
       min-width: 18px; text-align: center;
     }
-    /* count starts the right-aligned cluster; give search-btn breathing room after it */
-    .kv-count + .kv-search-btn { margin-left: 4px; }
+    /* count starts the right-aligned cluster; give the search input breathing room after it */
+    .kv-count + .kv-search { margin-left: 6px; }
     .kv-add-btn {
       width: 18px; height: 18px;
       background: rgba(0,112,242,0.15);
@@ -508,56 +509,34 @@
       flex-shrink: 0;
     }
     .kv-add-btn:hover { background: rgba(0,112,242,0.3); }
-    .kv-search-btn {
-      width: 18px; height: 18px;
+    /* Inline search input in KV panel header — mirrors .console-search */
+    .kv-search {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
       background: transparent;
-      border: 1px solid transparent;
+      border: 1px solid var(--border);
       border-radius: 4px;
-      color: var(--text-dim);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
+      color: var(--text-secondary);
+      padding: 2px 6px;
+      width: 90px;
+      outline: none;
       flex-shrink: 0;
-      padding: 0;
+      transition: border-color 0.15s, width 0.2s, background 0.15s;
     }
-    .kv-search-btn:hover { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
-    /* Active state: filter currently has a non-empty query.
-       Open state: search bar is visible (regardless of query). Same visual cue. */
-    .kv-search-btn.kv-search-active,
-    .kv-search-btn.kv-search-open {
-      background: rgba(0,112,242,0.15);
-      border-color: rgba(0,112,242,0.3);
+    .kv-search::placeholder { color: var(--text-dim); }
+    .kv-search:focus {
+      border-color: var(--border-focus, var(--sap-blue));
+      width: 130px;
+    }
+    /* Non-empty filter — subtle blue tint to flag "results are filtered". */
+    .kv-search.kv-search-active {
+      border-color: rgba(0,112,242,0.5);
+      background: rgba(0,112,242,0.06);
       color: #60a0f8;
     }
-    /* Spacing rules — keep search-btn flush against add-btn / chevron */
-    .kv-search-btn + .kv-add-btn { margin-left: 4px; }
-    .kv-search-btn + .kv-chevron { margin-left: 6px; }
-    .kv-search-bar {
-      display: flex; align-items: center;
-      padding: 3px 6px 3px 10px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(0,112,242,0.06);
-      gap: 4px;
-    }
-    .kv-search-bar input {
-      flex: 1;
-      background: transparent;
-      border: none; outline: none;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: var(--text-primary);
-      padding: 3px 0;
-    }
-    .kv-search-bar input::placeholder { color: var(--text-dim); }
-    .kv-search-clear {
-      width: 18px; height: 18px;
-      background: transparent; border: none;
-      color: var(--text-dim); cursor: pointer;
-      font-size: 13px; line-height: 1;
-      display: flex; align-items: center; justify-content: center;
-      transition: color 0.15s;
-      padding: 0;
-    }
-    .kv-search-clear:hover { color: var(--error); }
+    /* Spacing rules — keep search flush against add-btn / chevron */
+    .kv-search + .kv-add-btn { margin-left: 4px; }
+    .kv-search + .kv-chevron { margin-left: 6px; }
     .kv-chevron {
       width: 12px; height: 12px;
       color: var(--text-dim);
@@ -594,6 +573,17 @@
       align-items: center;
     }
     .kv-row:last-child { border-bottom: none; }
+
+    /* All KV rows get the bright background — the panel's own greyish bg becomes
+       the frame around the table. Dividers between rows still come from .kv-row's
+       border-bottom. Hidden rows (display:none) don't paint, so filtered views
+       compact correctly. */
+    #hdrRows .kv-row-wrapper .kv-row,
+    #propRows .kv-row-wrapper .kv-row,
+    #outHdrRows .kv-row-out,
+    #outPropRows .kv-row-out {
+      background: var(--kv-row-alt);
+    }
 
     /* Filter: hide non-matching rows in any KV panel (input wrappers + output rows) */
     .kv-row-wrapper.kv-hidden,
@@ -748,6 +738,28 @@
     .console-search:focus {
       border-color: var(--border-focus);
       width: 150px;
+    }
+    /* Text-label toolbar buttons in console bar (Copy / Clear) — readable at a glance */
+    .console-text-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .console-text-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--border-bright);
+      background: rgba(255,255,255,0.04);
+    }
+    body.light .console-text-btn:hover {
+      background: rgba(0,112,242,0.06);
     }
     .console-filter-btn {
       display: flex; align-items: center; justify-content: center;
@@ -925,6 +937,7 @@
       --error:          #cf222e;
       --warning:        #c87800;
       --scrollbar:      #c0cfe0;
+      --kv-row-alt:     #f4f7fb;
       /* XPath tokenizer colors — light */
       --xpt-attr:  #116329;
       --xpt-str:   #0a3069;

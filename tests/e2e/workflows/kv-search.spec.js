@@ -4,6 +4,8 @@ import { EditorPage } from '../../utils/test-helpers.js';
 /**
  * KV Panel Search: filter rows in Headers / Properties / output Headers / output Properties
  * by substring match against name + value. View-only — does not mutate kvData or persistence.
+ *
+ * Search is an always-visible inline input in each panel header (mirrors the console search).
  */
 
 test.describe('KV Panel Search', () => {
@@ -24,15 +26,9 @@ test.describe('KV Panel Search', () => {
     await page.switchToXslt();
   });
 
-  test('toggles the search bar open and closed', async ({ page: testPage }) => {
-    const bar = testPage.locator('#hdrPanelSearchBar');
-    await expect(bar).toBeHidden();
-
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await expect(bar).toBeVisible();
-
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await expect(bar).toBeHidden();
+  test('search input is always visible in the header bar', async ({ page: testPage }) => {
+    await expect(testPage.locator('#hdrPanelSearch')).toBeVisible();
+    await expect(testPage.locator('#propPanelSearch')).toBeVisible();
   });
 
   test('filters rows by substring match against the name column', async ({ page: testPage }) => {
@@ -40,8 +36,7 @@ test.describe('KV Panel Search', () => {
     await page.addHeader('X-Source-System', 'SAP');
     await page.addHeader('X-Environment', 'prod');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
+    await testPage.fill('#hdrPanelSearch', 'auth');
 
     const wrappers = testPage.locator('#hdrRows .kv-row-wrapper');
     await expect(wrappers).toHaveCount(3);
@@ -56,8 +51,7 @@ test.describe('KV Panel Search', () => {
     await page.addHeader('X-Source-System', 'SAP');
     await page.addHeader('X-Environment', 'prod');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'sap');
+    await testPage.fill('#hdrPanelSearch', 'sap');
 
     const wrappers = testPage.locator('#hdrRows .kv-row-wrapper');
     await expect(wrappers.nth(0)).toHaveClass(/kv-hidden/);          // Authorization
@@ -65,19 +59,18 @@ test.describe('KV Panel Search', () => {
     await expect(wrappers.nth(2)).toHaveClass(/kv-hidden/);          // X-Environment=prod
   });
 
-  test('clear button restores all rows', async ({ page: testPage }) => {
+  test('clearing the input restores all rows', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
     await page.addHeader('X-Source-System', 'SAP');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'nope');
+    await testPage.fill('#hdrPanelSearch', 'nope');
 
     const wrappers = testPage.locator('#hdrRows .kv-row-wrapper');
     await expect(wrappers.nth(0)).toHaveClass(/kv-hidden/);
     await expect(wrappers.nth(1)).toHaveClass(/kv-hidden/);
     await expect(testPage.locator('#hdrRows .kv-no-matches')).toBeVisible();
 
-    await testPage.click('#hdrPanel .kv-search-clear');
+    await testPage.fill('#hdrPanelSearch', '');
 
     await expect(wrappers.nth(0)).not.toHaveClass(/kv-hidden/);
     await expect(wrappers.nth(1)).not.toHaveClass(/kv-hidden/);
@@ -87,8 +80,7 @@ test.describe('KV Panel Search', () => {
   test('shows a "No matches" line when query matches nothing', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'xxxxx');
+    await testPage.fill('#hdrPanelSearch', 'xxxxx');
 
     await expect(testPage.locator('#hdrRows .kv-no-matches')).toHaveText('No matches');
   });
@@ -96,8 +88,7 @@ test.describe('KV Panel Search', () => {
   test('keeps filter active across adding a new row', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
+    await testPage.fill('#hdrPanelSearch', 'auth');
 
     // Add a brand-new empty row — re-render should preserve filter
     await testPage.click('#hdrPanel button.kv-add-btn');
@@ -112,8 +103,7 @@ test.describe('KV Panel Search', () => {
     await page.addHeader('Authorization', 'Bearer token');
     await page.addHeader('X-Source-System', 'SAP');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
+    await testPage.fill('#hdrPanelSearch', 'auth');
 
     // Delete the visible (matching) Authorization row at index 0.
     // The non-matching row at index 1 has display:none and cannot be clicked —
@@ -128,29 +118,23 @@ test.describe('KV Panel Search', () => {
     await expect(testPage.locator('#hdrRows .kv-no-matches')).toBeVisible();
   });
 
-  test('closing the search bar clears the query and restores rows', async ({ page: testPage }) => {
+  test('clicking the search input does not collapse the panel', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
-    await page.addHeader('X-Source-System', 'SAP');
+    const panel = testPage.locator('#hdrPanel');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
+    await expect(panel).not.toHaveClass(/collapsed/);
+    await testPage.click('#hdrPanelSearch');
+    await expect(panel).not.toHaveClass(/collapsed/);
 
-    const wrappers = testPage.locator('#hdrRows .kv-row-wrapper');
-    await expect(wrappers.nth(1)).toHaveClass(/kv-hidden/);
-
-    // Close the bar
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await expect(testPage.locator('#hdrPanelSearchBar')).toBeHidden();
-    await expect(wrappers.nth(0)).not.toHaveClass(/kv-hidden/);
-    await expect(wrappers.nth(1)).not.toHaveClass(/kv-hidden/);
+    await testPage.fill('#hdrPanelSearch', 'auth');
+    await expect(panel).not.toHaveClass(/collapsed/);
   });
 
   test('does not mutate kvData (persistence unchanged)', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
     await page.addHeader('X-Source-System', 'SAP');
 
-    await testPage.click('#hdrPanel button.kv-search-btn');
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
+    await testPage.fill('#hdrPanelSearch', 'auth');
 
     const session = await page.getStoredSession();
     expect(session.headers.length).toBe(2);
@@ -158,26 +142,24 @@ test.describe('KV Panel Search', () => {
     expect(session.headers[1].name).toBe('X-Source-System');
   });
 
-  test('search-toggle button shows active state when query is non-empty', async ({ page: testPage }) => {
+  test('search input shows active state when query is non-empty', async ({ page: testPage }) => {
     await page.addHeader('Authorization', 'Bearer token');
 
-    const btn = testPage.locator('#hdrPanel button.kv-search-btn');
-    await btn.click();
-    await expect(btn).not.toHaveClass(/kv-search-active/);
+    const input = testPage.locator('#hdrPanelSearch');
+    await expect(input).not.toHaveClass(/kv-search-active/);
 
-    await testPage.fill('#hdrPanelSearchBar input', 'auth');
-    await expect(btn).toHaveClass(/kv-search-active/);
+    await testPage.fill('#hdrPanelSearch', 'auth');
+    await expect(input).toHaveClass(/kv-search-active/);
 
-    await testPage.fill('#hdrPanelSearchBar input', '');
-    await expect(btn).not.toHaveClass(/kv-search-active/);
+    await testPage.fill('#hdrPanelSearch', '');
+    await expect(input).not.toHaveClass(/kv-search-active/);
   });
 
   test('Properties panel filter works the same way', async ({ page: testPage }) => {
     await page.addProperty('ProcessingMode', 'ASYNC');
     await page.addProperty('Region', 'EU');
 
-    await testPage.click('#propPanel button.kv-search-btn');
-    await testPage.fill('#propPanelSearchBar input', 'async');
+    await testPage.fill('#propPanelSearch', 'async');
 
     const wrappers = testPage.locator('#propRows .kv-row-wrapper');
     await expect(wrappers.nth(0)).not.toHaveClass(/kv-hidden/);
@@ -210,8 +192,7 @@ test.describe('KV Panel Search', () => {
     // Wait for output panel to populate
     await expect(testPage.locator('#outHdrRows .kv-row-out')).toHaveCount(3);
 
-    await testPage.click('#outHdrPanel button.kv-search-btn');
-    await testPage.fill('#outHdrPanelSearchBar input', 'auth');
+    await testPage.fill('#outHdrPanelSearch', 'auth');
 
     const rows = testPage.locator('#outHdrRows .kv-row-out');
     await expect(rows.nth(0)).not.toHaveClass(/kv-hidden/);   // X-Auth
@@ -219,7 +200,7 @@ test.describe('KV Panel Search', () => {
     await expect(rows.nth(2)).toHaveClass(/kv-hidden/);       // X-Env
 
     // Filter by value column
-    await testPage.fill('#outHdrPanelSearchBar input', 'sap');
+    await testPage.fill('#outHdrPanelSearch', 'sap');
     await expect(rows.nth(0)).toHaveClass(/kv-hidden/);       // X-Auth=token-123
     await expect(rows.nth(1)).not.toHaveClass(/kv-hidden/);   // X-Source=SAP
     await expect(rows.nth(2)).toHaveClass(/kv-hidden/);       // X-Env=prod

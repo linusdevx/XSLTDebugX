@@ -361,15 +361,11 @@
           <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
           <span class="kv-title">Headers</span>
           <span class="kv-count" id="hdrCount">0</span>
-          <button class="kv-search-btn" title="Filter rows" onclick="event.stopPropagation(); toggleKVSearch('hdrPanel')"><i data-lucide="search" width="11" height="11"></i></button>
+          <input class="kv-search" id="hdrPanelSearch" type="text" placeholder="search…" aria-label="Filter headers" onclick="event.stopPropagation()" oninput="_applyKVFilter('hdrPanel')" title="Filter rows by name or value"/>
           <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('headers')">+</button>
           <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="hdrBody">
-          <div class="kv-search-bar" id="hdrPanelSearchBar" style="display:none">
-            <input type="text" placeholder="Filter…" oninput="_applyKVFilter('hdrPanel')" onkeydown="if(event.key==='Escape')toggleKVSearch('hdrPanel')"/>
-            <button class="kv-search-clear" title="Clear" onclick="clearKVSearch('hdrPanel')">×</button>
-          </div>
           <div class="kv-table-head"><span>Name</span><span>Value</span><span></span></div>
           <div id="hdrRows"></div>
         </div>
@@ -381,15 +377,11 @@
           <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
           <span class="kv-title">Properties</span>
           <span class="kv-count" id="propCount">0</span>
-          <button class="kv-search-btn" title="Filter rows" onclick="event.stopPropagation(); toggleKVSearch('propPanel')"><i data-lucide="search" width="11" height="11"></i></button>
+          <input class="kv-search" id="propPanelSearch" type="text" placeholder="search…" aria-label="Filter properties" onclick="event.stopPropagation()" oninput="_applyKVFilter('propPanel')" title="Filter rows by name or value"/>
           <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('properties')">+</button>
           <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="propBody">
-          <div class="kv-search-bar" id="propPanelSearchBar" style="display:none">
-            <input type="text" placeholder="Filter…" oninput="_applyKVFilter('propPanel')" onkeydown="if(event.key==='Escape')toggleKVSearch('propPanel')"/>
-            <button class="kv-search-clear" title="Clear" onclick="clearKVSearch('propPanel')">×</button>
-          </div>
           <div class="kv-table-head"><span>Name</span><span>Value</span><span></span></div>
           <div id="propRows"></div>
         </div>
@@ -435,8 +427,8 @@
           <div class="pane-divider"></div>
           <input class="console-search" id="consoleSearch" type="text" placeholder="search…" aria-label="Search console output" oninput="applyConsoleSearch(this.value)" title="Filter console by text"/>
           <div class="pane-divider"></div>
-          <button class="pane-icon-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()"><i data-lucide="clipboard" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()"><i data-lucide="eraser" width="14" height="14"></i></button>
+          <button class="console-text-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()">Copy</button>
+          <button class="console-text-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()">Clear</button>
         </div>
         <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" onclick="event.stopPropagation(); handleConsoleBarClick(event)" title="Minimize / restore console"></i>
       </div>
@@ -494,14 +486,10 @@
             <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
             <span class="kv-title">Headers</span>
             <span class="kv-count" id="outHdrCount">0</span>
-            <button class="kv-search-btn" title="Filter rows" onclick="event.stopPropagation(); toggleKVSearch('outHdrPanel')"><i data-lucide="search" width="11" height="11"></i></button>
+            <input class="kv-search" id="outHdrPanelSearch" type="text" placeholder="search…" aria-label="Filter output headers" onclick="event.stopPropagation()" oninput="_applyKVFilter('outHdrPanel')" title="Filter rows by name or value"/>
             <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
           </div>
           <div class="kv-body" id="outHdrBody">
-            <div class="kv-search-bar" id="outHdrPanelSearchBar" style="display:none">
-              <input type="text" placeholder="Filter…" oninput="_applyKVFilter('outHdrPanel')" onkeydown="if(event.key==='Escape')toggleKVSearch('outHdrPanel')"/>
-              <button class="kv-search-clear" title="Clear" onclick="clearKVSearch('outHdrPanel')">×</button>
-            </div>
             <div class="kv-table-head"><span>Name</span><span>Value</span></div>
             <div id="outHdrRows"></div>
           </div>
@@ -513,14 +501,10 @@
             <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
             <span class="kv-title">Properties</span>
             <span class="kv-count" id="outPropCount">0</span>
-            <button class="kv-search-btn" title="Filter rows" onclick="event.stopPropagation(); toggleKVSearch('outPropPanel')"><i data-lucide="search" width="11" height="11"></i></button>
+            <input class="kv-search" id="outPropPanelSearch" type="text" placeholder="search…" aria-label="Filter output properties" onclick="event.stopPropagation()" oninput="_applyKVFilter('outPropPanel')" title="Filter rows by name or value"/>
             <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
           </div>
           <div class="kv-body" id="outPropBody">
-            <div class="kv-search-bar" id="outPropPanelSearchBar" style="display:none">
-              <input type="text" placeholder="Filter…" oninput="_applyKVFilter('outPropPanel')" onkeydown="if(event.key==='Escape')toggleKVSearch('outPropPanel')"/>
-              <button class="kv-search-clear" title="Clear" onclick="clearKVSearch('outPropPanel')">×</button>
-            </div>
             <div class="kv-table-head"><span>Name</span><span>Value</span></div>
             <div id="outPropRows"></div>
           </div>
