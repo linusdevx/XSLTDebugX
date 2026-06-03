@@ -121,6 +121,17 @@ test.describe('CPI pre-flight validation', () => {
     expect(out).toContain('<out');
   });
 
+  test('exclude-result-prefixes="#all" covers cpi — no false-positive warning', async () => {
+    const f = cpiBadSamples.excludeAllNoWarning;
+    const messages = await loadAndRun(f);
+    const cpiWarnings = messages.filter(m =>
+      m.type === 'warn' && /exclude-result-prefixes/.test(m.text)
+    );
+    expect(cpiWarnings).toHaveLength(0);
+    const out = await page.getOutput();
+    expect(out).toContain('<out');
+  });
+
   test('whitespace-rich XPath expression resolves to correct source line (Task 1)', async () => {
     const f = cpiBadSamples.whitespaceLineSpacing;
     const messages = await loadAndRun(f);

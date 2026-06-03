@@ -152,4 +152,22 @@ export const cpiBadSamples = {
   </xsl:template>
 </xsl:stylesheet>`,
   },
+
+  excludeAllNoWarning: {
+    description: 'exclude-result-prefixes="#all" covers cpi — no warning expected',
+    xml: minimalXml,
+    xslt: `<?xml version="1.0"?>
+<xsl:stylesheet version="3.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:cpi="http://sap.com/it/"
+  exclude-result-prefixes="#all">
+  <xsl:param name="exchange"/>
+  <xsl:template match="/">
+    <out>
+      <xsl:value-of select="cpi:setHeader($exchange, 'X-Foo', 'bar')"/>
+    </out>
+  </xsl:template>
+</xsl:stylesheet>`,
+  },
 };

@@ -321,7 +321,9 @@ function validateCPIStructure(xsltSrc) {
     }
 
     const erpMatch = stripped.match(/exclude-result-prefixes\s*=\s*(["'])([^"']*)\1/);
-    const erpHasCpi = erpMatch && erpMatch[2].split(/\s+/).includes('cpi');
+    const erpTokens = erpMatch ? erpMatch[2].split(/\s+/).filter(Boolean) : [];
+    // XSLT 3.0 "#all" excludes every declared prefix, so cpi is covered.
+    const erpHasCpi = erpTokens.includes('cpi') || erpTokens.includes('#all');
     if (!erpHasCpi) {
       warnings.push({
         line: 1,
