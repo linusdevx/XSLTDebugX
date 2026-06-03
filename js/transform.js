@@ -1,8 +1,4 @@
-// ════════════════════════════════════════════
-//  CPI HEADER / PROPERTY SIMULATION
-// ════════════════════════════════════════════
-
-// Shared spinner HTML for the Run button running state
+// Spinner for the Run button's running state.
 const _RUN_BTN_SPINNER = `<svg class="spinner" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="8" cy="8" r="6" stroke-opacity="0.3"/><path d="M8 2a6 6 0 0 1 6 6" stroke-linecap="round"/></svg>`;
 
 // Single source of truth for Run button markup — keeps icon, label, and shortcut in sync.
@@ -10,8 +6,6 @@ function _runBtnHtml(mode) {
   const label = mode === 'XPATH' ? 'Run XPath' : 'Run XSLT';
   return `<i data-lucide="play" width="14" height="14"></i> ${label} <span class="kbd">⌘↵</span>`;
 }
-
-// ── Transform Animation Helpers ──
 
 function _triggerRunParticles() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -111,14 +105,13 @@ function ensureJsExcluded(xslt) {
   }
 }
 
-// Valid XML NCName: must start with letter or underscore, then letters/digits/.-_
+// Valid XML NCName: starts with letter or underscore, then letters/digits/.-_
 function isValidNCName(name) {
   return /^[A-Za-z_][\w.\-]*$/.test(name);
 }
 
-// ── XML Validation Badge ──
-// Cache the last validated source so we don't re-parse on every keystroke.
-// Wired to onDidChangeModelContent which fires per character; DOMParser is O(N).
+// Cache the last validated XML so we don't re-parse on every keystroke
+// (onDidChangeModelContent fires per character; DOMParser is O(N)).
 // Mode swaps swap the *model*, not the content, so the cache holds across modes.
 let _lastValidatedXmlSrc = null;
 
@@ -170,10 +163,10 @@ function buildParamsXPath() {
   const entries = [];
   const skipped = [];
   const dupes   = [];
-  // Inject a dummy $exchange so stylesheets that declare it don't error
+  // Inject a dummy $exchange so stylesheets that declare it don't error.
   entries.push(`QName('','exchange'): 'exchange'`);
-  // Merge headers then properties; properties win on name collision (last-write-wins).
-  // Saxon map literals require unique keys — duplicates cause a runtime error.
+  // Properties win on name collision (last-write-wins). Saxon map literals
+  // require unique keys — duplicates would cause a runtime error.
   const seen = new Map();
   [...kvData.headers, ...kvData.properties].forEach(row => {
     const k = row.name.trim();
@@ -220,21 +213,14 @@ function renderOutputKV(headers, properties) {
   };
   render('outHdrRows',  'outHdrCount',  headers);
   render('outPropRows', 'outPropCount', properties);
-  // Re-apply any active filter so newly rendered output rows respect the query
+  // Re-apply any active filter so newly rendered rows respect the query.
   _applyKVFilter('outHdrPanel');
   _applyKVFilter('outPropPanel');
 }
 
-// ════════════════════════════════════════════
-//  KV PANEL MANAGEMENT
-// ════════════════════════════════════════════
 function toggleKVPanel(panelId) {
   document.getElementById(panelId).classList.toggle('collapsed');
 }
-
-// ════════════════════════════════════════════
-//  KV PANEL SEARCH (view-only filter, not persisted)
-// ════════════════════════════════════════════
 
 // panelId → { rowsId, childSelector }
 const _KV_PANEL_MAP = {
@@ -250,14 +236,14 @@ function toggleKVSearch(panelId) {
   const opening = bar.style.display === 'none';
   bar.style.display = opening ? 'flex' : 'none';
   const input = bar.querySelector('input');
-  // Mirror open/closed state on the toggle button so the icon stays lit while the bar is open
+  // Mirror open/closed state on the toggle button so the icon stays lit.
   const btn = document.querySelector('#' + panelId + ' .kv-header .kv-search-btn');
   if (btn) btn.classList.toggle('kv-search-open', opening);
   if (opening) {
     input.focus();
     input.select();
   } else {
-    // Closing clears any active filter so rows aren't left hidden
+    // Closing clears the filter so rows aren't left hidden.
     input.value = '';
     _applyKVFilter(panelId);
   }
@@ -272,15 +258,14 @@ function clearKVSearch(panelId) {
   input.focus();
 }
 
-// Toggle .kv-hidden on each row child based on substring match against name + value.
-// Reads the live query from the panel's search input every call — no module state.
+// Toggle .kv-hidden on each row child by substring match against name + value.
 function _applyKVFilter(panelId) {
   const cfg = _KV_PANEL_MAP[panelId];
   if (!cfg) return;
   const rowsEl = document.getElementById(cfg.rowsId);
   if (!rowsEl) return;
   const bar = document.getElementById(panelId + 'SearchBar');
-  // If the search bar is closed or the input is empty, treat as "no filter"
+  // If the search bar is closed or empty, treat as "no filter".
   const input = bar?.querySelector('input');
   const q = (bar && bar.style.display !== 'none' && input ? input.value : '').trim().toLowerCase();
   const children = rowsEl.querySelectorAll(cfg.childSelector);
@@ -302,7 +287,7 @@ function _applyKVFilter(panelId) {
     if (match) visibleCount++;
   });
 
-  // Toggle a "No matches" line — distinct from the existing .kv-empty "Click + to add" / "— none —"
+  // "No matches" line — distinct from .kv-empty's "Click + to add" / "— none —".
   let noMatch = rowsEl.querySelector('.kv-no-matches');
   if (q && children.length > 0 && visibleCount === 0) {
     if (!noMatch) {
@@ -315,7 +300,7 @@ function _applyKVFilter(panelId) {
     noMatch.remove();
   }
 
-  // Reflect active state on the toggle button so it's visible even when the panel is collapsed
+  // Show active state on the toggle button even when the panel is collapsed.
   const panelHeader = document.querySelector('#' + panelId + ' .kv-header');
   const btn = panelHeader?.querySelector('.kv-search-btn');
   if (btn) btn.classList.toggle('kv-search-active', q.length > 0);
@@ -420,13 +405,10 @@ function renderKV(type) {
     _validateKVField(type, row.id);
   });
 
-  // Re-apply any active search filter so newly rendered rows respect the query
+  // Re-apply any active search filter so newly rendered rows respect the query.
   _applyKVFilter(type === 'headers' ? 'hdrPanel' : 'propPanel');
 }
 
-// ════════════════════════════════════════════
-//  TRANSFORM
-// ════════════════════════════════════════════
 function runTransform() {
   if (!guardReady()) return;
 
@@ -436,7 +418,7 @@ function runTransform() {
   const btn = document.getElementById('runBtn');
   const _runStart = performance.now();
   const _MIN_SPINNER_MS = 300;
-  let _transformStarted = false; // only apply minimum delay if Saxon was actually invoked
+  let _transformStarted = false; // only enforce min spinner if Saxon was actually invoked
 
   function resetBtn() {
     const elapsed = performance.now() - _runStart;
@@ -468,7 +450,6 @@ function runTransform() {
     if (!xmlSrc)  { clog('XML Source is empty',      'error'); setStatus('Ready', 'ok'); return; }
     if (!xsltSrc) { clog('XSLT Stylesheet is empty', 'error'); setStatus('Ready', 'ok'); return; }
 
-    // ── Pre-flight validation ──
     setStatus('Validating…', 'busy');
     if (!preflight(xmlSrc, xsltSrc)) return;
 
@@ -477,9 +458,8 @@ function runTransform() {
     clog(`Starting XSLT transform — XML ${xmlSrc.length} chars · XSLT ${xsltSrc.length} chars`, 'info');
   window.goatcounter?.count({ path: 'run-xslt', title: 'Run XSLT' });
 
-    // ── CPI extension call handling ──
-    // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so Saxon
-    // evaluates all arguments (including dynamic ones) and calls our JS interceptors.
+    // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
+    // Saxon evaluates all arguments (including dynamic ones) and calls our JS interceptors.
     const { rewritten: _xsltRewritten, hasCPI } = rewriteCPICalls(xsltSrc);
     const cpiCaptured = { headers: {}, properties: {} };
     let _prevCpiSetHeader, _prevCpiSetProperty;
@@ -497,7 +477,7 @@ function runTransform() {
         return String(v);
       };
 
-      // setHeader / setProperty — capture computed values into cpiCaptured
+      // setHeader / setProperty — capture computed values into cpiCaptured.
       window.cpiSetHeader   = (_exchange, name, value) => { cpiCaptured.headers[_cpiStrVal(name)]    = _cpiStrVal(value); return ''; };
       window.cpiSetProperty = (_exchange, name, value) => { cpiCaptured.properties[_cpiStrVal(name)] = _cpiStrVal(value); return ''; };
 
@@ -505,7 +485,7 @@ function runTransform() {
       clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
     }
 
-    // Always exclude js: from output — mirrors CPI runtime behaviour
+    // Always exclude js: from output — mirrors CPI runtime behaviour.
     xsltSrc = ensureJsExcluded(xsltSrc);
 
     const namedParams = [...kvData.headers, ...kvData.properties].filter(r => r.name.trim());
@@ -515,7 +495,6 @@ function runTransform() {
 
     const paramsXPath = buildParamsXPath();
 
-    // ── Intercept xsl:message ──
     // Saxon-JS routes xsl:message to console.log("xsl:message: <text>").
     // Patch console.log to capture and route to clog.
     const _xslMessages    = [];
@@ -545,10 +524,10 @@ function runTransform() {
 
       if (typeof restoreOutputSection === 'function') restoreOutputSection();
 
-      // Flush xsl:message lines before completion log — natural execution order
+      // Flush xsl:message lines before completion log — natural execution order.
       _xslMessages.forEach(m => clog(`xsl:message → ${m}`, 'warn'));
 
-      // Detect output language from content (CPI-relevant: XML, JSON, plain text/CSV/fixed)
+      // Detect output language from content (CPI-relevant: XML, JSON, plain text/CSV/fixed).
       const _trimmed = output.trimStart();
       let _outLang = 'plaintext';
       let _outValue = output;
@@ -575,7 +554,7 @@ function runTransform() {
       eds.out.setValue(_outValue);
       eds.out.updateOptions({ readOnly: true });
 
-      // CPI-captured values (dynamic + static) take priority, then pass-through inputs
+      // CPI-captured values (dynamic + static) take priority, then pass-through inputs.
       const outHdrs  = { ...cpiCaptured.headers };
       const outProps = { ...cpiCaptured.properties };
       kvData.headers.filter(r => r.name.trim() && !(r.name in outHdrs))
@@ -605,27 +584,62 @@ function runTransform() {
       }
 
     } catch (err) {
-      // Flush xsl:message before error — trace should precede the failure
+      // Flush xsl:message before error — trace should precede the failure.
       _xslMessages.forEach(m => clog(`xsl:message → ${m}`, 'warn'));
 
       const fullMsg = err.message || String(err);
       const msg = fullMsg.split('\n')[0];
 
-      // Detect terminate="yes" — Saxon throws "Terminated with <message text>".
+      // terminate="yes" — Saxon throws "Terminated with <message text>".
       // Log as warn (intentional halt, not a bug).
       const terminateMatch = msg.match(/^Terminated with (.+)$/i);
       if (terminateMatch) {
         clog(`xsl:message terminate="yes" — ${terminateMatch[1]}`, 'warn');
       } else {
-        clog(`Error: ${msg}`, 'error');
+        // Find the user-stylesheet line, in priority order:
+        //   1. Structured fields on the error object — covers compile-time
+        //      errors (errorObject.value) and runtime errors (xsltLineNr
+        //      gated on xsltModule). See extractSaxonErrorLine for details.
+        //   2. The {expr} match against original source — handles static
+        //      XPath errors where Saxon's xsltModule points to its own
+        //      xpath.xsl but the message contains the user's expression.
+        //   3. Bare line-number parse from the message string — last resort.
         const originalXslt = eds.xslt?.getValue() ?? '';
         const saxonLine    = parseSaxonErrorLine(fullMsg);
-        const errLine =
+        const _structured  = extractSaxonErrorLine(err);
+        let errLine =
+          _structured?.line ||
           findXPathExpressionLine(fullMsg, originalXslt, saxonLine, 0) ||
           (saxonLine !== null ? saxonLine : null);
+
+        // Saxon-JS attributes runtime errors to the enclosing template's
+        // start line, not the failing instruction. When that's the source of
+        // the line number, append a hint so users know to scan downward.
+        const isTemplateLevel = _structured?.kind === 'runtime-template';
+
+        // Saxon's runtime line can fall on a multi-line element's continuation
+        // (e.g. an xmlns: declaration on its own line). Nudge to the next
+        // <xsl:…> element so the marker lands on something instruction-shaped.
+        if (isTemplateLevel && errLine) {
+          errLine = nudgeToNextXslElement(originalXslt, errLine);
+        }
+
+        // Strip Saxon's "on line N in /NoStylesheetBaseURI" location prefix
+        // from the displayed message — line is shown separately.
+        const cleanMsg = msg
+          .replace(/\s*(?:on|at)\s+line\s+\d+\s+in\s+\/NoStylesheetBaseURI\s*/i, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
         if (errLine) {
-          xsltDecorations = markErrorLine(eds.xslt, errLine, msg, xsltDecorations);
-          clog(`↳ Error at line ${errLine} (highlighted in XSLT editor)`, 'error');
+          clog(`[Saxon] line ${errLine}: ${cleanMsg}`, 'error');
+          xsltDecorations = markErrorLine(eds.xslt, errLine, cleanMsg, xsltDecorations);
+          const trail = isTemplateLevel
+            ? `↳ highlighted in XSLT editor at line ${errLine} (enclosing template — Saxon-JS does not pinpoint runtime-error instructions; scan downward)`
+            : `↳ highlighted in XSLT editor at line ${errLine}`;
+          clog(trail, 'error');
+        } else {
+          clog(`[Saxon] ${cleanMsg}`, 'error');
         }
       }
 
@@ -633,7 +647,6 @@ function runTransform() {
       _flashPaneResult(false);
     } finally {
       console.log = _origConsoleLog;
-      // Restore CPI interceptors
       if (hasCPI) {
         _prevCpiSetHeader   !== undefined ? (window.cpiSetHeader   = _prevCpiSetHeader)   : delete window.cpiSetHeader;
         _prevCpiSetProperty !== undefined ? (window.cpiSetProperty = _prevCpiSetProperty) : delete window.cpiSetProperty;
@@ -641,7 +654,7 @@ function runTransform() {
     }
 
   } finally {
-    // Always re-enable Run button — even if preflight or param building throws
+    // Always re-enable Run button — even if preflight or param building throws.
     resetBtn();
   }
 }

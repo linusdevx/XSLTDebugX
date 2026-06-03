@@ -113,6 +113,27 @@ The explicit `typeof first === 'string'` guard (rather than `args[0]?.startsWith
 
 **Special case:** `terminate="yes"` is logged as a warning (`xsl:message terminate="yes" — ...`), not an error.
 
+## Pre-flight Validation
+
+### CPI structural pre-flight (`validateCPIStructure`)
+
+Before `runTransform()` calls Saxon, `preflight()` (in `js/validate.js`) runs `validateCPIStructure(xsltSrc)` to catch the common CPI mistakes that would otherwise produce cryptic Saxon errors. Hard errors block the transformation; soft issues are logged as warnings.
+
+Hard errors (block):
+
+- **Unknown `cpi:` function.** Only `cpi:setHeader` and `cpi:setProperty` exist in real CPI. Anything else (`cpi:setHeaders`, `cpi:getHeader`, `cpi:doesNotExist`, …) is rejected with a message pointing at the offending line.
+- **Wrong arity.** `cpi:setHeader` and `cpi:setProperty` must take exactly 3 arguments: `($exchange, name, value)`.
+- **Missing `xmlns:cpi`.** If any `cpi:set*` call exists, `xmlns:cpi="http://sap.com/it/"` must be declared on the stylesheet root.
+- **Missing `<xsl:param name="exchange"/>`.** Required because `$exchange` is the first argument of every `cpi:set*` call. CPI binds the exchange object to this param at runtime.
+- **First arg not `$exchange`.** Catches calls where the user passed a literal or another variable.
+- **Wrong `xmlns:cpi` URI.** Must be exactly `http://sap.com/it/` — anything else (e.g. `http://sap.com/cpi`) will fail to deploy on real CPI.
+
+Warnings (don't block):
+
+- `cpi` missing from `exclude-result-prefixes` (the prefix may leak into output).
+
+Why pre-flight, not post-rewrite? `rewriteCPICalls` strips `xmlns:cpi` so Saxon-JS can call our JS interceptors. If a typo'd call (`cpi:setHeaders`) leaks past the rewriter, Saxon then reports "No namespace binding for prefix 'cpi'" — confusing because the user *did* declare it. Catching mistakes before any rewriting keeps the error message faithful to the user's source.
+
 ## Modification Guidelines
 
 ### Adding New CPI Functions

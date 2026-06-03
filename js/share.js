@@ -1,12 +1,6 @@
-// ════════════════════════════════════════════
-//  SHARE
-// ════════════════════════════════════════════
-
-// ── Encode ──────────────────────────────────
-
 function buildSharePayload() {
   return {
-    // Share is XSLT-only — always read from XSLT model explicitly
+    // Share is XSLT-only — always read from the XSLT model explicitly.
     xml:        xmlModelXslt?.getValue() ?? '',
     xslt:       eds.xslt?.getValue() ?? '',
     headers:    kvData.headers.map(r    => ({ name: r.name, value: r.value })),
@@ -17,7 +11,7 @@ function buildSharePayload() {
 function encodeShareData(data) {
   const bytes      = new TextEncoder().encode(JSON.stringify(data));
   const compressed = pako.deflateRaw(bytes, { level: 9 });
-  // Chunked to avoid O(n²) string concat and call-stack limits on large payloads
+  // Chunked to avoid O(n²) string concat and call-stack limits on large payloads.
   const CHUNK = 8192;
   let binary = '';
   for (let i = 0; i < compressed.length; i += CHUNK) {
@@ -33,13 +27,11 @@ function generateShareUrl() {
   return url;
 }
 
-// ── Decode (called on page load) ─────────────
-
 function loadFromShareHash() {
   if (!location.hash.startsWith('#share/')) return false;
   try {
     // encodeShareData only emits base64url chars [A-Za-z0-9_-]; none need URL escaping,
-    // so decodeURIComponent would be a no-op here and would throw on hand-edited '%'.
+    // so decodeURIComponent would be a no-op and would throw on hand-edited '%'.
     const raw    = location.hash.slice(7).replace(/-/g, '+').replace(/_/g, '/');
     const b64    = raw.padEnd(Math.ceil(raw.length / 4) * 4, '=');
     const binary = atob(b64);
@@ -60,7 +52,7 @@ function loadFromShareHash() {
 function applyShareData(data) {
   if (!data) return;
 
-  // Share is always XSLT context — switch the receiver if needed
+  // Share is always XSLT context — switch the receiver if needed.
   if (modeManager.isXpath) {
     modeManager.setMode('XSLT');
     clog('Switched to XSLT mode — share link loaded', 'info');
@@ -100,8 +92,6 @@ function applyShareData(data) {
 
   scheduleSave();
 }
-
-// ── Modal ────────────────────────────────────
 
 function openShareModal() {
   document.getElementById('shareModalBackdrop').classList.add('open');

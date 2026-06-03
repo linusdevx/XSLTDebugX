@@ -1,10 +1,8 @@
-// ════════════════════════════════════════════════════════════════════════════
-//  MODE MANAGER - Centralized XSLT/XPath mode handling
-// ════════════════════════════════════════════════════════════════════════════
+// ModeManager — centralizes XSLT ↔ XPath switching (state, models, UI, layout).
 
 class ModeManager {
   constructor() {
-    this.mode = 'XSLT';  // 'XSLT' | 'XPATH'
+    this.mode = 'XSLT';
     this.models = {
       xslt: null,
       xpath: null
@@ -16,15 +14,6 @@ class ModeManager {
     };
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // PRIMARY API
-  // ─────────────────────────────────────────────────────────────────────────
-
-  /**
-   * Switch to a different mode.
-   * @param {string} newMode - 'XSLT' or 'XPATH'
-   * @returns {boolean} - true if successful, false if invalid
-   */
   setMode(newMode) {
     if (!this.isValidMode(newMode)) {
       console.error(`Invalid mode: ${newMode}. Must be 'XSLT' or 'XPATH'`);
@@ -51,10 +40,6 @@ class ModeManager {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // QUERY METHODS
-  // ─────────────────────────────────────────────────────────────────────────
-
   isMode(mode) {
     return this.mode === mode;
   }
@@ -70,10 +55,6 @@ class ModeManager {
   get currentModel() {
     return this.models[this.mode.toLowerCase()];
   }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // INTERNAL HELPERS
-  // ─────────────────────────────────────────────────────────────────────────
 
   isValidMode(mode) {
     return ['XSLT', 'XPATH'].includes(mode);
@@ -97,7 +78,7 @@ class ModeManager {
         : this.models.xslt;
 
       // Arm the synthetic-change guard BEFORE setModel — Monaco fires
-      // onDidChangeModelContent synchronously, and the listener in editor.js
+      // onDidChangeModelContent synchronously and the listener in editor.js
       // consumes this flag. Without it every mode switch fires a spurious
       // scheduleSave + marker clear + xpath-highlight clear + 800ms re-validate.
       if (eds.xml.getModel() !== targetModel) {
@@ -226,7 +207,7 @@ class ModeManager {
     }
   }
 
-  // XPATH: console below workspace; XSLT: console inside colCenter
+  // XPATH: console below workspace; XSLT: console inside colCenter.
   updateConsolePosition() {
     const console_ = document.getElementById('consolePanel');
     const colCenter = document.getElementById('colCenter');
@@ -239,8 +220,8 @@ class ModeManager {
     } else {
       colCenter.appendChild(console_);
     }
-    // Re-apply the saved height after the DOM move so Monaco lays out against
-    // the new flex parent (workspace vs colCenter) immediately.
+    // Re-apply saved height after the DOM move so Monaco lays out against the
+    // new flex parent (workspace vs colCenter) immediately.
     if (typeof setConsoleHeight === 'function') setConsoleHeight(consoleHeight);
   }
 

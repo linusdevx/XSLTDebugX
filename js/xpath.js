@@ -1,18 +1,12 @@
-// ════════════════════════════════════════════
-//  XPATH EVALUATOR  +  XML EDITOR HIGHLIGHTING
-// ════════════════════════════════════════════
-//  Evaluates XPath 3.0 against the XML pane via Saxon-JS.
-//  Matched nodes get amber decorations in the XML editor.
-//  Results show in the XPath Results panel (right column).
-// ════════════════════════════════════════════
+// XPath evaluator + XML editor highlighting.
+// Evaluates XPath 3.0 against the XML pane via Saxon-JS.
+// Matched nodes get amber decorations; results show in the right-column panel.
 
 let xpathDecorations = null;
 
-// ── XPath syntax highlight overlay ───────────────────────────────────────────
-// Tokenizes the expression and injects coloured <span>s into the overlay div.
-// Token order matters — strings first to prevent keywords inside them matching.
-// Sticky regexes (y flag) match only at lastIndex, so we don't allocate a fresh
-// substring (src.slice(i)) per character.
+// XPath syntax-highlight overlay tokenization.
+// Strings first to prevent keywords inside them matching.
+// Sticky regexes (y flag) match only at lastIndex, no per-char src.slice.
 const _XPT_RE_STR  = /'[^']*'|"[^"]*"/y;
 const _XPT_RE_FN   = /[a-zA-Z_][\w-]*(?::[a-zA-Z_][\w-]*)?\s*(?=\()/y;
 const _XPT_RE_ATTR = /@[\w:.-]+/y;
@@ -33,7 +27,6 @@ function _highlightXPath(expr) {
   const len = src.length;
   let i = 0;
 
-  // Try a sticky regex at the current index; on match, push a coloured span and advance.
   const tryMatch = (re, cls) => {
     re.lastIndex = i;
     const m = re.exec(src);
@@ -60,7 +53,7 @@ function _highlightXPath(expr) {
   overlay.innerHTML = out.join('');
 }
 
-// ── Programmatic value setter — updates value, overlay, and auto-grow height ──
+// Programmatic value setter — updates value, overlay, and auto-grow height.
 function _syncXPathInput(value) {
   const input = document.getElementById('xpathInput');
   if (!input) return;
@@ -68,7 +61,7 @@ function _syncXPathInput(value) {
   const bar = document.getElementById('xpathBar');
   const barHidden = !bar || bar.style.display === 'none';
   if (barHidden) {
-    // Bar not visible — reset height so it recalculates correctly when shown
+    // Bar not visible — reset height so it recalculates correctly when shown.
     input.style.height = '';
   } else {
     input.style.height = 'auto';
@@ -93,7 +86,7 @@ let   _xpathDraftExpr     = '';  // saves current typed text while browsing
 
 function _xpathHistoryPush(expr) {
   if (!expr) return;
-  // Move duplicate to front
+  // Move duplicate to front.
   const idx = _xpathHistory.indexOf(expr);
   if (idx !== -1) _xpathHistory.splice(idx, 1);
   _xpathHistory.unshift(expr);
@@ -108,7 +101,7 @@ function _xpathHistoryNavigate(direction, input) {
     return;
   }
   if (_xpathHistoryCursor === -1) {
-    // Save current draft before browsing
+    // Save current draft before browsing.
     _xpathDraftExpr = input.value;
   }
   const prevCursor = _xpathHistoryCursor;
@@ -133,13 +126,11 @@ function _xpathHistoryNavigate(direction, input) {
   scheduleSave();
 }
 
-// ── Toggle XPath evaluator on/off ─────────────────────────────────────────────
 function toggleXPath() {
   const nextMode = modeManager.isXpath ? 'XSLT' : 'XPATH';
   modeManager.setMode(nextMode);
 }
 
-// ── Clear all XPath highlights from the XML editor ───────────────────────────
 function clearXPathHighlights() {
   if (xpathDecorations) {
     try { xpathDecorations.clear(); } catch(e) {}
@@ -147,7 +138,7 @@ function clearXPathHighlights() {
   }
 }
 
-// ── Convert a character offset in a string to { line, col } (1-based) ────────
+// Convert a character offset to { line, col } (1-based).
 // When called many times against the same `src`, pass `newlineIdx` from
 // _buildNewlineIndex(src) so each translation is O(log N) binary search.
 function _offsetToLineCol(src, offset, newlineIdx) {
@@ -166,9 +157,9 @@ function _offsetToLineCol(src, offset, newlineIdx) {
   return { line, col: offset - lineStart + 1 };
 }
 
-// ── Find the character offset of the Nth occurrence of a tag open ────────────
-// Requires the character after the tag name to be whitespace, >, or / so that
-// <Item does not match <ItemDetail.
+// Find the character offset of the Nth occurrence of a tag-open. Requires the
+// character after the tag name to be whitespace, >, or / so that <Item does
+// not match <ItemDetail.
 function _nthTagOpen(src, tag, n) {
   const scan = _blankInsensitive(src);
   const re = new RegExp(`<${_escRe(tag)}(?=[\\s>/])`, 'g');
@@ -190,19 +181,18 @@ function _blankInsensitive(src) {
   );
 }
 
-// ── Find the source range {startOffset, endOffset} for a matched element ──────
+// Find the source range {startOffset, endOffset} for a matched element.
 function _findNodeRange(xmlSrc, el, occurrenceIndex) {
   return _findNodeRangeForTag(xmlSrc, el.nodeName, occurrenceIndex);
 }
 
-// Tag-keyed range finder shared by _findNodeRange (passes el.nodeName) and direct
-// callers like _getXPathDomNodeAtOffset. Walks the Nth open tag, skips attribute
-// quotes, then tracks nest depth via two regexes to find the matching close tag.
+// Tag-keyed range finder. Walks the Nth open tag, skips attribute quotes,
+// then tracks nest depth via two regexes to find the matching close tag.
 function _findNodeRangeForTag(xmlSrc, tag, occurrenceIndex) {
   const openOffset = _nthTagOpen(xmlSrc, tag, occurrenceIndex);
   if (openOffset === -1) return null;
 
-  // Walk to end of opening tag, respecting attribute quotes
+  // Walk to end of opening tag, respecting attribute quotes.
   let i = openOffset + tag.length + 1;
   let inDouble = false, inSingle = false;
   while (i < xmlSrc.length) {
@@ -252,7 +242,7 @@ function _findNodeRangeForTag(xmlSrc, tag, occurrenceIndex) {
     }
   }
 
-  // Fallback: just the opening tag
+  // Fallback: just the opening tag.
   return { startOffset: openOffset, endOffset: openTagEnd };
 }
 
@@ -265,19 +255,18 @@ function _buildNewlineIndex(src) {
   return idx;
 }
 
-// ── Apply Monaco highlight decorations for all matched nodes ──────────────────
+// Apply Monaco highlight decorations for all matched nodes.
 function _highlightMatchedNodes(items, xmlSrc) {
   clearXPathHighlights();
   if (!eds.xml || !items.length) return;
 
   const decorations = [];
-  // Precompute newline offsets once per call so _offsetToLineCol can binary-search.
+  // Precompute newline offsets once so _offsetToLineCol can binary-search.
   const newlineIdx = _buildNewlineIndex(xmlSrc);
 
   // Occurrence index resolved per DOM node identity — a shared tagCounts dict
   // would mis-count when results contain both an element and its text/attr
   // children (the same owner gets counted across branches).
-  //
   // Memoize same-tag siblings per (doc, tag) so getElementsByTagName isn't
   // called once per item.
   const sameTagCache = new Map();
@@ -320,7 +309,7 @@ function _highlightMatchedNodes(items, xmlSrc) {
       return;
     }
 
-    // Element node → full range highlight
+    // Element node → full range highlight.
     const tag   = owner.nodeName;
     const start = _offsetToLineCol(xmlSrc, range.startOffset, newlineIdx);
     const end   = _offsetToLineCol(xmlSrc, range.endOffset - 1, newlineIdx);
@@ -364,7 +353,7 @@ function _xpathSerializeItem(item) {
   if (item === null || item === undefined) return { text: '(empty)', type: 'atomic' };
   if (typeof item === 'object' && item.nodeType) {
     try {
-      // Document node (nodeType 9) — unwrap to its document element
+      // Document node (nodeType 9) — unwrap to its document element.
       const target = item.nodeType === 9 ? item.documentElement : item;
 
       const raw   = new XMLSerializer().serializeToString(target);
@@ -429,7 +418,7 @@ function runXPath() {
   _xpathHistoryPush(expr);
   _xpathHistoryCursor = -1;
 
-  // Show spinner immediately, keep for at least 300ms
+  // Show spinner immediately, keep for at least 300ms.
   const _btn = document.getElementById('runBtn');
   const _xpathRunStart = performance.now();
   const _MIN_SPINNER_MS = 300;
@@ -444,7 +433,8 @@ function runXPath() {
     const restore = () => {
       _btn.disabled = false;
       // Delegate to mode manager — user may have flipped to XSLT during the
-      // spinner window. Hardcoding _btn.onclick = runXPath would silently break Run after the flip.
+      // spinner window. Hardcoding _btn.onclick = runXPath would silently
+      // break Run after the flip.
       modeManager.updateRunButton();
       reinitIcons(_btn);
     };
@@ -495,7 +485,7 @@ function runXPath() {
   }
 }
 
-// ── Build an absolute XPath for a DOM element node ───────────────────────────
+// Build an absolute XPath for a DOM element node.
 // indexed=true  → /Orders/Order[2]/Amount  (positional, exact)
 // indexed=false → /Orders/Order/Amount     (general, pattern)
 function _buildXPathFromNode(el, indexed = true) {
@@ -515,7 +505,7 @@ function _buildXPathFromNode(el, indexed = true) {
   return '/' + parts.join('/');
 }
 
-// ── Public: get XPath at current cursor position in the XML editor ────────────
+// Public: get XPath at current cursor position in the XML editor.
 // Returns { indexed, general } — both absolute XPath strings, or null.
 function getXPathAtCursor(editor) {
   const model  = editor.getModel();
@@ -530,7 +520,7 @@ function getXPathAtCursor(editor) {
   };
 }
 
-// ── Find the element at a character offset in raw XML source ─────────────────
+// Find the element at a character offset in raw XML source.
 function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   const parser = new DOMParser();
   const doc    = parser.parseFromString(xmlSrc, 'application/xml');
@@ -562,7 +552,7 @@ function _getXPathDomNodeAtOffset(xmlSrc, offset) {
   return allNodes[bestOcc - 1] ?? null;
 }
 
-// ── Render results panel ───────────────────────────────────────────────────────
+// Render results panel.
 // Async because monaco.editor.colorize() returns a Promise.
 // Generation counter prevents a slow first run overwriting a faster second run.
 let _showXPathGen = 0;
@@ -579,7 +569,7 @@ async function _showXPathResults(items, errorMsg, isError) {
   const countEl = document.getElementById('xpathMatchCount');
 
   panel.classList.add('visible');
-  // Only minimise output section if visible (it's hidden in XPath mode)
+  // Only minimise output section if visible (it's hidden in XPath mode).
   const outSec = document.getElementById('outputSection');
   if (outSec && outSec.style.display !== 'none') {
     outSec.classList.add('xpath-minimized');
@@ -614,7 +604,7 @@ async function _showXPathResults(items, errorMsg, isError) {
 
   const serialized = items.map(item => _xpathSerializeItem(item));
 
-  // Colorize node/text items via Monaco's XML tokenizer — same colours as editors
+  // Colorize node/text items via Monaco's XML tokenizer — same colours as editors.
   const colorized = await Promise.all(serialized.map(async ({ text, type }) => {
     if ((type === 'node' || type === 'text') && typeof monaco !== 'undefined') {
       try {
@@ -628,7 +618,7 @@ async function _showXPathResults(items, errorMsg, isError) {
     return escHtml(text);
   }));
 
-  // Bail if a newer run started while awaiting colorize, or user switched modes
+  // Bail if a newer run started while awaiting colorize, or user switched modes.
   if (gen !== _showXPathGen) return;
   if (eds.xml?.getModel?.() !== xmlModelAtStart) {
     clearXPathHighlights();
@@ -666,7 +656,7 @@ function refreshXPathColors() {
 
 function restoreOutputSection() {
   document.getElementById('outputSection')?.classList.remove('xpath-minimized');
-  // Mirror the minimisation done during XPath run
+  // Mirror the minimisation done during XPath run.
   document.getElementById('xpathResultsPanel')?.classList.remove('visible');
   clearXPathHighlights();
 }
@@ -698,7 +688,7 @@ function renderXPathHints(hints) {
   strip.appendChild(label);
 
   hints.forEach(hint => {
-    // Each hint is "expression — description", split on em dash
+    // Each hint is "expression — description", split on em dash.
     const dashIdx = hint.indexOf('—');
     const expr = dashIdx >= 0 ? hint.slice(0, dashIdx).trim() : hint.trim();
     const desc = dashIdx >= 0 ? hint.slice(dashIdx + 1).trim() : '';
@@ -718,7 +708,7 @@ function renderXPathHints(hints) {
     strip.appendChild(chip);
   });
 
-  // Chevron toggle — only visible when chips wrap beyond one row
+  // Chevron toggle — only visible when chips wrap beyond one row.
   const toggle = document.createElement('button');
   toggle.className = 'xpath-hints-toggle';
   toggle.title = 'Show more hints';

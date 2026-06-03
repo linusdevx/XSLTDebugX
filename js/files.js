@@ -1,7 +1,3 @@
-// ════════════════════════════════════════════
-//  FILE UPLOAD / DOWNLOAD
-// ════════════════════════════════════════════
-
 function triggerUpload(pane) {
   const id = pane === 'xml' ? 'uploadXml' : 'uploadXslt';
   document.getElementById(id).value = ''; // reset so same file can be re-uploaded
@@ -52,7 +48,6 @@ function downloadPane(pane, defaultName) {
   clog(`Downloaded: ${defaultName}`, 'success');
 }
 
-// ── Drag & Drop onto each editor pane ──
 function setupDragDrop(editorWrapId, pane) {
   const el = document.getElementById(editorWrapId);
   if (!el) return;
@@ -62,8 +57,7 @@ function setupDragDrop(editorWrapId, pane) {
     el.classList.add('drag-over');
   });
   // Monaco's wrapper has many nested children; dragleave fires on every internal
-  // boundary, so a naive remove() flickers continuously. Only clear when the
-  // pointer actually leaves the wrapper (relatedTarget null when leaving the window).
+  // boundary. Only clear when the pointer actually leaves the wrapper.
   el.addEventListener('dragleave', e => {
     if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
   });

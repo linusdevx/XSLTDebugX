@@ -1,11 +1,6 @@
-// ════════════════════════════════════════════
-//  PANE OPERATIONS
-// ════════════════════════════════════════════
-
-// Track word wrap state per editor — off by default
+// Word wrap state per editor — off by default.
 const _wrapState = { xml: false, xslt: false, out: false };
 
-// Map a pane name ('xml' | 'xslt' | 'out') to its Monaco editor instance.
 function _getPaneEd(which) {
   return which === 'xml'  ? eds.xml
        : which === 'xslt' ? eds.xslt
@@ -24,10 +19,9 @@ function toggleWordWrap(which) {
 
 function clearPane(which) {
   if (which === 'xml') {
-    // Clear both XML models to prevent content reappearing on mode switch
+    // Clear both XML models — content otherwise reappears on mode switch.
     if (xmlModelXslt) xmlModelXslt.setValue('');
     if (xmlModelXpath) xmlModelXpath.setValue('');
-    // Clear markers on both models
     if (xmlModelXslt)  monaco.editor.setModelMarkers(xmlModelXslt,  'xsltdebugx', []);
     if (xmlModelXpath) monaco.editor.setModelMarkers(xmlModelXpath, 'xsltdebugx', []);
     if (xmlDecorations)  { xmlDecorations.clear();  xmlDecorations  = null; }
@@ -36,20 +30,18 @@ function clearPane(which) {
     clog('XML cleared', 'info');
     return;
   }
-  
+
   const ed = which === 'xslt' ? eds.xslt : eds.out;
   if (!ed) return;
   const wasReadOnly = ed.getRawOptions().readOnly;
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
   ed.setValue('');
   if (wasReadOnly) ed.updateOptions({ readOnly: true });
-  // Clear error markers from this pane
   if (which === 'xslt' && eds.xslt) {
     monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
     if (xsltDecorations) { xsltDecorations.clear(); xsltDecorations = null; }
     setStatus('Ready', 'ok');
   }
-  // Clear output KV panels when output is cleared
   if (which === 'out') renderOutputKV({}, {});
   scheduleSave();
   clog(`${which.toUpperCase()} cleared`, 'info');
@@ -68,7 +60,7 @@ function copyPane(which) {
   });
 }
 
-// ── XML Token regex — cached at module scope for performance ──
+// XML token regex — cached at module scope.
 const _ATTR_VAL   = `"[^"]*"|'[^']*'`;
 const _TAG_INNER  = `(?:${_ATTR_VAL}|[^<>])*`;
 const _TOKEN_RE   = new RegExp(
@@ -143,11 +135,10 @@ function fmtEditor(which) {
   const wasReadOnly = ed.getRawOptions().readOnly;
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
   const formatted = prettyXML(ed.getValue());
-  // Suppress the live-validation debounce — formatting doesn't change validity
+  // Formatting doesn't change validity — skip the live-validation debounce.
   _suppress.validation = true;
-  // Use executeEdits instead of setValue so the format is pushed onto Monaco's undo
-  // stack as a single bracketed step — Ctrl+Z undoes the format without wiping
-  // the edit history that existed before Format was applied.
+  // Use executeEdits, not setValue, so Format pushes a single bracketed step
+  // onto the undo stack and Ctrl+Z reverts only the format.
   ed.pushUndoStop();
   ed.executeEdits('format', [{ range: ed.getModel().getFullModelRange(), text: formatted }]);
   ed.pushUndoStop();
@@ -155,5 +146,3 @@ function fmtEditor(which) {
   scheduleSave();
   clog(`${which.toUpperCase()} formatted`, 'info');
 }
-
-// Flag read by debounce handlers to skip one validation cycle after Format
