@@ -349,8 +349,7 @@
     .run-btn:active { transform: translateY(0) scale(0.97); }
     .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .run-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .run-btn .spinner { animation: xd-spin 0.7s linear infinite; transform-origin: center; }
-    @keyframes xd-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .run-btn .spinner { animation: spin 0.7s linear infinite; transform-origin: center; }
 
     /* keyboard shortcut hint */
     .kbd {
