@@ -425,7 +425,7 @@
     /* Collapse toggle button in pane-bar */
     .collapse-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px;
+      width: 24px; height: 24px;
       background: transparent;
       border: 1px solid transparent; border-radius: var(--r-xs);
       color: var(--text-dim); cursor: pointer;
@@ -530,7 +530,7 @@
 
     .pane-icon-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 26px; height: 22px;
+      width: 24px; height: 24px;
       background: transparent;
       border: 1px solid transparent;
       border-radius: var(--r-xs);
