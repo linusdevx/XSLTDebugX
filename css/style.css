@@ -10,13 +10,16 @@
       --border-bright:  rgba(255, 255, 255, 0.15);
       --sap-blue:       #0070f2;
       --sap-blue-glow:  rgba(0,112,242,0.25);
-      --sap-gold:       #f59e0b;
+      --sap-blue-from:  #0068e0;
+      --sap-blue-to:    #0098f0;
+      --sap-blue-fg:    #60a0f8;
+      --sap-gold:       #f5a524;
       --text-primary:   #f1f5f9;
       --text-secondary: #94a3b8;
       --text-dim:       #475569;
-      --success:        #10b981;
-      --error:          #ef4444;
-      --warning:        #f59e0b;
+      --success:        #3fb950;
+      --error:          #f85149;
+      --warning:        #f5a524;
       --scrollbar:      rgba(255, 255, 255, 0.1);
       --kv-row-alt:     rgba(255, 255, 255, 0.02);
       --status-bar-from: #004eb8;
@@ -207,7 +210,7 @@
     .mode-switcher .mode-pill {
       position: absolute; top: 2px; left: 2px; bottom: 2px;
       width: calc(50% - 2px); border-radius: 6px;
-      background: linear-gradient(135deg, #0068e0, #0098f0);
+      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       box-shadow: 0 0 14px rgba(0,112,242,0.4);
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 0;
@@ -271,7 +274,7 @@
     }
     .logo-mark {
       width: 30px; height: 30px;
-      background: linear-gradient(135deg, #0068e0, #0098f0);
+      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'JetBrains Mono', monospace;
@@ -292,13 +295,13 @@
       padding: 2px 8px; border-radius: 20px;
       background: rgba(0,112,242,0.12);
       border: 1px solid rgba(0,112,242,0.28);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       letter-spacing: 0.6px;
     }
     .logo-tag-ide {
       background: rgba(63,185,80,0.1);
       border-color: rgba(63,185,80,0.28);
-      color: #3fb950;
+      color: var(--success);
     }
     /* Amber/gold pill — mirrors the XPath-mode accent used by .ind-out,
        .xf-xpath-match-glyph, and .mode-pill.mode-xpath in the status bar. */
@@ -312,7 +315,7 @@
       display: flex; align-items: center; gap: 7px;
       padding: 6px 0;
       min-width: 148px; width: 148px; justify-content: center;
-      background: linear-gradient(135deg, #0068e0, #0098f0);
+      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       border: none;
       border-radius: 7px;
       color: #fff; cursor: pointer;
@@ -451,7 +454,7 @@
     .pane-indicator {
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
-    .ind-xml   { background: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.5); }
+    .ind-xml   { background: var(--success); box-shadow: 0 0 8px rgba(63,185,80,0.5); }
     .ind-xslt  { background: var(--sap-blue); box-shadow: 0 0 8px var(--sap-blue-glow); }
     .ind-out   { background: var(--sap-gold); box-shadow: 0 0 8px rgba(245,165,36,0.4); }
     .pane-title {
@@ -466,7 +469,7 @@
       padding: 1px 6px; border-radius: 3px;
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.25);
-      color: #60a0f8; letter-spacing: 0.5px;
+      color: var(--sap-blue-fg); letter-spacing: 0.5px;
     }
     .pane-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 
@@ -576,7 +579,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       background: rgba(0,112,242,0.2);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       padding: 0 5px; border-radius: 8px;
       min-width: 18px; text-align: center;
     }
@@ -587,7 +590,7 @@
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.3);
       border-radius: 4px;
-      color: #60a0f8; font-size: 14px; line-height: 1;
+      color: var(--sap-blue-fg); font-size: 14px; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all 0.15s;
       flex-shrink: 0;
@@ -616,7 +619,7 @@
     .kv-search.kv-search-active {
       border-color: rgba(0,112,242,0.5);
       background: rgba(0,112,242,0.06);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     /* Spacing rules — keep search flush against add-btn / chevron */
     .kv-search + .kv-add-btn { margin-left: 4px; }
@@ -932,11 +935,11 @@
 
     /* Error line highlight (glyph margin decoration) */
     .xf-error-line-bg  { background: rgba(248,81,73,0.10); }
-    .xf-error-glyph    { background: #f85149; border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
+    .xf-error-glyph    { background: var(--error); border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
 
     /* XPath match highlight decorations — amber/gold to match XML pane indicator */
     .xf-xpath-match-bg       { background: rgba(245,165,36,0.13); border-left: 2px solid rgba(245,165,36,0.6); }
-    .xf-xpath-match-glyph    { background: #f5a524; border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
+    .xf-xpath-match-glyph    { background: var(--sap-gold); border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
     .xf-xpath-match-inline   { background: rgba(245,165,36,0.20); border-radius: 2px; }
 
     /* ── STATUS BAR ── */
@@ -955,7 +958,7 @@
       width: 5px; height: 5px; border-radius: 50%;
       background: rgba(255,255,255,0.5);
     }
-    .stat-dot.ok   { background: #3fb950; }
+    .stat-dot.ok   { background: var(--success); }
     .stat-dot.busy { background: var(--sap-gold); animation: pulse 1s infinite; }
     .stat-dot.err  { background: var(--error); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -966,18 +969,18 @@
       font-size: 9px; font-weight: 700;
       padding: 1px 6px; border-radius: 10px;
       background: rgba(0,112,242,0.18);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       border: 1px solid rgba(0,112,242,0.3);
       letter-spacing: 0.3px;
     }
     .xpath-header-count.has-results {
       background: rgba(63,185,80,0.15);
-      color: #3fb950;
+      color: var(--success);
       border-color: rgba(63,185,80,0.3);
     }
     .xpath-header-count.has-error {
       background: rgba(248,81,73,0.15);
-      color: #f85149;
+      color: var(--error);
       border-color: rgba(248,81,73,0.3);
     }
     .stat-mode { display: flex; align-items: center; }
@@ -1013,12 +1016,15 @@
       --border-bright:  rgba(0, 0, 0, 0.15);
       --sap-blue:       #0070f2;
       --sap-blue-glow:  rgba(0,112,242,0.15);
+      --sap-blue-from:  #0058c8;
+      --sap-blue-to:    #0085ff;
+      --sap-blue-fg:    #0550ae;
       --sap-gold:       #d97706;
       --text-primary:   #0f172a;
       --text-secondary: #475569;
       --text-dim:       #94a3b8;
-      --success:        #059669;
-      --error:          #dc2626;
+      --success:        #1a7f37;
+      --error:          #cf222e;
       --warning:        #d97706;
       --scrollbar:      rgba(0, 0, 0, 0.15);
       --kv-row-alt:     rgba(0, 0, 0, 0.02);
@@ -1273,7 +1279,7 @@
       padding: 1px 8px; border-radius: 10px;
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.3);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     .xpath-match-count.has-results {
       background: rgba(63,185,80,0.12);
@@ -1329,7 +1335,7 @@
       margin-top: 2px;
       text-transform: uppercase; letter-spacing: 0.4px;
     }
-    .xpath-result-type.node  { background: rgba(0,112,242,0.12); color: #60a0f8; border: 1px solid rgba(0,112,242,0.2); }
+    .xpath-result-type.node  { background: rgba(0,112,242,0.12); color: var(--sap-blue-fg); border: 1px solid rgba(0,112,242,0.2); }
     .xpath-result-type.text  { background: rgba(63,185,80,0.12);  color: var(--success); border: 1px solid rgba(63,185,80,0.2); }
     .xpath-result-type.atomic { background: rgba(245,165,36,0.12); color: var(--warning); border: 1px solid rgba(245,165,36,0.2); }
 
@@ -1639,7 +1645,7 @@
       padding: 2px 6px; border-radius: 4px;
       background: rgba(0,112,242,0.1);
       border: 1px solid rgba(0,112,242,0.2);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     .ex-card-load {
       margin-left: auto;
@@ -1654,7 +1660,7 @@
 
     /* ── SHARE BUTTON ── */
     .xf-session-share {
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       border-color: rgba(0,112,242,0.3);
       background: rgba(0,112,242,0.08);
     }
@@ -1670,7 +1676,7 @@
     }
     .xf-session-share:disabled:hover,
     .xf-session-share[disabled]:hover {
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       border-color: rgba(0,112,242,0.3);
       background: rgba(0,112,242,0.08);
     }
@@ -1887,7 +1893,7 @@
 .saved-indicator {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: #3fb950;
+  color: var(--success);
   opacity: 0;
   transition: opacity 0.4s ease;
   display: flex;
