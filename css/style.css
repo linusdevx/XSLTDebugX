@@ -573,7 +573,7 @@
       max-height: 200px;
       transition: max-height 0.2s ease;
     }
-    .kv-panel.collapsed { max-height: 31px; overflow: hidden; }
+    .kv-panel.collapsed { max-height: 30px; overflow: hidden; }
     .kv-header {
       height: 30px; flex-shrink: 0;
       display: flex; align-items: center;
