@@ -326,20 +326,20 @@
     .h-spacer { flex: 1; }
     .run-btn {
       display: flex; align-items: center; gap: 7px;
-      padding: 6px 0;
+      padding: 7px 0;
       min-width: 148px; width: 148px; justify-content: center;
       background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       border: none;
       border-radius: var(--r-md);
       color: #fff; cursor: pointer;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px; font-weight: 500;
+      font-size: 13px; font-weight: 700;
       letter-spacing: 0.1px;
-      box-shadow: 0 4px 14px rgba(0,112,242,0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 22px rgba(0,112,242,0.35);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative; overflow: hidden;
     }
-    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,112,242,0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(0,112,242,0.5); }
     .run-btn:active { transform: translateY(0) scale(0.97); }
     .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .run-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
@@ -1067,7 +1067,7 @@
     body.light .ripple-circle { background: rgba(0,112,242,0.2); }
     body.light .pane-icon-btn:hover { background: rgba(0,112,242,0.06); }
     body.light .header-icon-btn:hover { box-shadow: 0 0 12px rgba(0,112,242,0.12); }
-    body.light .run-btn:hover { box-shadow: 0 6px 24px rgba(0,112,242,0.25); }
+    body.light .run-btn:hover { box-shadow: 0 0 28px rgba(0,112,242,0.35); }
     body.light .mode-switcher .mode-pill { box-shadow: 0 0 10px rgba(0,112,242,0.25); }
     body.light .load-bg-grid {
       background-image:
