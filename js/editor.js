@@ -45,6 +45,10 @@ require(['vs/editor/editor.main'], () => {
     wordWrap: 'off',
     suggest: { showWords: false },
     'semanticHighlighting.enabled': true,
+    scrollbar: {
+      verticalScrollbarSize: 4,
+      horizontalScrollbarSize: 4,
+    }
   };
 
   // Skip session restore when a share link is pending — applyShareData handles init.

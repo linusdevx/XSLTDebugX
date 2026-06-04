@@ -46,7 +46,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@1.14.0/dist/umd/lucide.min.js"></script>
@@ -224,12 +224,17 @@
 <!-- Loading -->
 <div id="loadingOverlay">
   <div class="load-bg-grid"></div>
-  <div class="load-logo">XSLTDebug<span>X</span></div>
-  <div class="load-logo-shimmer"></div>
-  <div class="load-dots"><span></span><span></span><span></span></div>
-  <div class="load-text" id="loadTxt">Initializing…</div>
+  <div class="skeleton-header"></div>
+  <div class="skeleton-workspace">
+    <div class="skeleton-col"></div>
+    <div class="skeleton-col skeleton-center"></div>
+    <div class="skeleton-col"></div>
+  </div>
+  <div class="skeleton-text">
+    <div class="spinner"></div>
+    <div id="loadTxt">Booting XSLTDebugX…</div>
+  </div>
 </div>
-
 <!-- Header -->
 <header class="header">
   <!-- Visual brand mark, not a heading: the page H1 lives in the .seo-content section above. -->
