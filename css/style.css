@@ -52,6 +52,7 @@
       --ease-spring: var(--ease-spring);
       --hover-bg:        rgba(255,255,255,0.04);
       --hover-bg-strong: rgba(255,255,255,0.08);
+      --bar-h: 32px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -456,7 +457,7 @@
       backdrop-filter: var(--panel-blur);
       -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 36px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 12px; gap: 8px;
     }
@@ -571,9 +572,9 @@
       max-height: 200px;
       transition: max-height 0.2s ease;
     }
-    .kv-panel.collapsed { max-height: 30px; overflow: hidden; }
+    .kv-panel.collapsed { max-height: var(--bar-h); overflow: hidden; }
     .kv-header {
-      height: 30px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 10px; gap: 6px;
       cursor: pointer;
@@ -777,7 +778,7 @@
       overflow: hidden;
     }
     .console-panel.dragging { transition: none; }
-    .console-panel.minimized { height: 31px !important; }
+    .console-panel.minimized { height: var(--bar-h) !important; }
 
     .console-resize-handle {
       position: absolute;
@@ -799,7 +800,7 @@
       backdrop-filter: var(--panel-blur);
       -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 30px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 10px; gap: 6px;
       cursor: pointer; user-select: none;
@@ -1094,7 +1095,7 @@
     .xpath-input-row {
       display: flex; align-items: flex-start; gap: 8px;
       padding: 7px 12px;
-      min-height: 34px;
+      min-height: var(--bar-h);
       background: var(--bg-editor);
       border-bottom: 2px solid var(--sap-blue);
       flex-shrink: 0;
@@ -1279,7 +1280,7 @@
     }
     .xpath-results-bar {
       flex-shrink: 0;
-      height: 36px;
+      height: var(--bar-h);
       display: flex; align-items: center; gap: 6px;
       padding: 0 12px;
       background: var(--bg-panel);
