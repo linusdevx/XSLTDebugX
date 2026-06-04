@@ -49,7 +49,7 @@
       --font-mono: 'JetBrains Mono', monospace;
       --t-fast: 0.15s;
       --t-med:  0.25s;
-      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-spring: var(--ease-spring);
       --hover-bg:        rgba(255,255,255,0.04);
       --hover-bg-strong: rgba(255,255,255,0.08);
     }
@@ -212,16 +212,16 @@
     .run-particle {
       position: absolute; width: 6px; height: 6px; border-radius: 50%;
       top: 50%; left: 50%; pointer-events: none;
-      animation: particle-burst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: particle-burst 0.6s var(--ease-spring) forwards;
     }
-    .pane-success { animation: success-glow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .pane-success { animation: success-glow 0.6s var(--ease-spring); }
     .pane-error { animation: error-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
 
 
     /* ── THEME TOGGLE ICONS ── */
     .theme-toggle { position: relative; }
     .theme-toggle svg {
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.4s var(--ease-spring);
     }
     body.light .theme-icon-sun { display: none; }
     body:not(.light) .theme-icon-moon { display: none; }
@@ -231,7 +231,7 @@
       width: calc(50% - 2px); border-radius: var(--r-sm);
       background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       box-shadow: 0 0 14px rgba(0,112,242,0.4);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.35s var(--ease-spring);
       z-index: 0;
     }
     .mode-switcher.xpath-mode .mode-pill { transform: translateX(100%); }
@@ -342,7 +342,7 @@
       font-size: 13px; font-weight: 700;
       letter-spacing: 0.1px;
       box-shadow: 0 0 32px rgba(0,112,242,0.55);
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.2s var(--ease-spring);
       position: relative; overflow: hidden;
     }
     .run-btn:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,112,242,0.7); }
@@ -376,7 +376,7 @@
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-      transition: flex 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), min-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), max-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+      transition: flex 0.35s var(--ease-spring), min-width 0.35s var(--ease-spring), max-width 0.35s var(--ease-spring), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
     }
     .col:focus-within {
       border-color: var(--sap-blue-glow);
@@ -435,7 +435,7 @@
       background: transparent;
       border: 1px solid transparent; border-radius: var(--r-xs);
       color: var(--text-dim); cursor: pointer;
-      transition: all 0.15s; flex-shrink: 0;
+      transition: all var(--t-fast); flex-shrink: 0;
     }
     .collapse-btn:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
     .collapse-btn svg { width: 12px; height: 12px; }
@@ -542,7 +542,7 @@
       border-radius: var(--r-xs);
       color: var(--text-dim);
       cursor: pointer;
-      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.18s var(--ease-spring);
       flex-shrink: 0;
     }
     .pane-icon-btn:hover {
@@ -611,7 +611,7 @@
       border-radius: var(--r-xs);
       color: var(--sap-blue-fg); font-size: 14px; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       flex-shrink: 0;
     }
     .kv-add-btn:hover { background: rgba(0,112,242,0.3); }
@@ -717,7 +717,7 @@
       color: var(--text-dim); cursor: pointer;
       font-size: 13px; display: flex;
       align-items: center; justify-content: center;
-      transition: color 0.15s;
+      transition: color var(--t-fast);
     }
     .kv-del-btn:hover { color: var(--error); }
 
@@ -775,7 +775,7 @@
       display: flex; flex-direction: column;
       height: 160px;
       position: relative;
-      transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: height 0.35s var(--ease-spring);
       overflow: hidden;
     }
     .console-panel.dragging { transition: none; }
@@ -788,7 +788,7 @@
       cursor: ns-resize;
       background: transparent;
       z-index: 2;
-      transition: background 0.15s;
+      transition: background var(--t-fast);
     }
     .console-resize-handle:hover,
     .console-panel.dragging .console-resize-handle {
@@ -1425,7 +1425,7 @@
       font-family: var(--font-mono);
       font-size: 12px; font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       white-space: nowrap;
     }
     .ex-btn:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--bg-header); }
@@ -1447,7 +1447,7 @@
       border-radius: var(--r-md);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.2s var(--ease-spring);
       flex-shrink: 0;
     }
     .header-icon-btn:hover {
@@ -1486,7 +1486,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      animation: modal-spring-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: modal-spring-in 0.4s var(--ease-spring) both;
     }
     @keyframes modalIn {
       from { opacity: 0; transform: translateY(12px) scale(0.98); }
@@ -1519,7 +1519,7 @@
       font-family: var(--font-mono);
       font-size: 12px; color: var(--text-primary);
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color var(--t-fast);
     }
     .ex-modal-search:focus { border-color: var(--sap-blue); }
     .ex-modal-search::placeholder { color: var(--text-dim); }
@@ -1534,7 +1534,7 @@
       display: flex; align-items: center; justify-content: center;
       background: transparent; border: 1px solid transparent;
       border-radius: var(--r-sm); color: var(--text-dim);
-      cursor: pointer; font-size: 16px; transition: all 0.15s;
+      cursor: pointer; font-size: 16px; transition: all var(--t-fast);
       flex-shrink: 0;
     }
     .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
@@ -1547,7 +1547,7 @@
       cursor: pointer; flex-shrink: 0;
       margin-left: auto;
       padding: 4px 8px; border-radius: var(--r-sm);
-      transition: background 0.15s;
+      transition: background var(--t-fast);
       user-select: none;
     }
     .ex-auto-run-label:hover { background: rgba(128,128,128,0.08); }
@@ -1629,7 +1629,7 @@
       border-radius: var(--r-lg);
       padding: 14px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       display: flex; flex-direction: column; gap: 8px;
       position: relative; overflow: hidden;
     }
@@ -1637,7 +1637,7 @@
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: var(--card-accent, var(--sap-blue));
-      opacity: 0; transition: opacity 0.15s;
+      opacity: 0; transition: opacity var(--t-fast);
     }
     .ex-card:hover {
       border-color: var(--border-bright);
@@ -1674,7 +1674,7 @@
       font-size: 10px; font-weight: 600;
       padding: 3px 10px; border-radius: var(--r-sm);
       background: var(--sap-blue); color: #fff;
-      opacity: 0; transition: opacity 0.15s;
+      opacity: 0; transition: opacity var(--t-fast);
       pointer-events: none;
     }
     .ex-card:hover .ex-card-load { opacity: 1; }
@@ -1755,7 +1755,7 @@
       color: #fff; cursor: pointer;
       font-family: var(--font-mono);
       font-size: 12px; font-weight: 700;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       white-space: nowrap;
     }
     .share-copy-btn:hover { background: #0085ff; }
@@ -1803,7 +1803,7 @@
       background: transparent;
       color: var(--text-dim);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
     }
     .help-tab:hover { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
     .help-tab.active {
@@ -1907,7 +1907,7 @@
   gap: 3px;
   color: rgba(255,255,255,0.55);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color var(--t-fast);
 }
 .stat-link:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
 .stat-divider { opacity: 0.5; }
