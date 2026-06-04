@@ -413,7 +413,7 @@
       -webkit-backdrop-filter: var(--panel-blur);
       flex: 1;
     }
-    .col-tab:hover { background: rgba(128,128,128,0.08); }
+    .col-tab:hover { background: var(--hover-bg-strong); }
     .col-tab-label {
       writing-mode: vertical-rl;
       text-orientation: mixed;
@@ -437,7 +437,7 @@
       color: var(--text-dim); cursor: pointer;
       transition: all var(--t-fast); flex-shrink: 0;
     }
-    .collapse-btn:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
+    .collapse-btn:hover { color: var(--text-primary); border-color: var(--border); background: var(--hover-bg-strong); }
     .collapse-btn svg { width: 12px; height: 12px; }
 
     /* Editor fills the available vertical space in its column */
@@ -468,8 +468,7 @@
       cursor: pointer;
       user-select: none;
     }
-    .pane-bar-clickable:hover { background: rgba(255,255,255,0.02); }
-    body.light .pane-bar-clickable:hover { background: rgba(0,0,0,0.02); }
+    .pane-bar-clickable:hover { background: var(--hover-bg); }
     .pane-indicator {
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
@@ -582,7 +581,7 @@
       user-select: none;
       border-bottom: 1px solid var(--border);
     }
-    .kv-header:hover { background: rgba(255,255,255,0.02); }
+    .kv-header:hover { background: var(--hover-bg); }
     .kv-icon {
       font-size: 11px; color: var(--sap-blue); font-weight: 700;
       width: 14px; text-align: center;
@@ -806,7 +805,7 @@
       padding: 0 10px; gap: 6px;
       cursor: pointer; user-select: none;
     }
-    .console-bar:hover { background: rgba(255,255,255,0.02); }
+    .console-bar:hover { background: var(--hover-bg); }
     .console-title {
       font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
@@ -864,7 +863,7 @@
     .console-text-btn:hover {
       color: var(--text-primary);
       border-color: var(--border-bright);
-      background: rgba(255,255,255,0.04);
+      background: var(--hover-bg);
     }
     body.light .console-text-btn:hover {
       background: rgba(0,112,242,0.06);
@@ -879,7 +878,7 @@
       transition: color 0.15s, background 0.15s, border-color 0.15s;
       flex-shrink: 0;
     }
-    .console-filter-btn:hover { background: rgba(255,255,255,0.05); }
+    .console-filter-btn:hover { background: var(--hover-bg); }
     /* Inactive — each dot has its own muted color so they're distinguishable */
     .console-filter-btn[data-filter="all"]   { color: #4a6080; }
     .console-filter-btn[data-filter="info"]  { color: #2a5a9a; }
@@ -889,7 +888,7 @@
     .console-filter-btn.active[data-filter="all"] {
       color: var(--text-secondary);
       border-color: var(--border-bright);
-      background: rgba(255,255,255,0.06);
+      background: var(--hover-bg-strong);
     }
     .console-filter-btn.active[data-filter="info"] {
       color: var(--sap-blue);
@@ -923,7 +922,7 @@
     }
     .console-chevron:hover {
       color: var(--text-secondary);
-      background: rgba(255,255,255,0.06);
+      background: var(--hover-bg-strong);
     }
     body.light .console-chevron:hover {
       background: rgba(0,0,0,0.06);
@@ -1061,7 +1060,6 @@
     }
 
     /* ── LIGHT THEME: console filter buttons ── */
-    body.light .console-filter-btn:hover { background: rgba(0,0,0,0.05); }
     body.light .console-filter-btn[data-filter="all"]   { color: #8090a8; }
     body.light .console-filter-btn[data-filter="info"]  { color: #5a8ac0; }
     body.light .console-filter-btn[data-filter="warn"]  { color: #c89030; }
@@ -1331,7 +1329,7 @@
       background: transparent;
     }
     .xpath-result-item:last-child { border-bottom: none; }
-    .xpath-result-item:hover { background: rgba(255,255,255,0.025); }
+    .xpath-result-item:hover { background: var(--hover-bg); }
     .xpath-result-num {
       flex-shrink: 0;
       font-size: 10px; font-weight: 700;
@@ -1403,7 +1401,6 @@
     /* Light theme overrides */
     body.light #xpathBar .xpath-input-row { background: var(--bg-editor); }
     body.light .xpath-results-body { background: var(--bg-editor); }
-    body.light .xpath-result-item:hover { background: rgba(0,0,0,0.02); }
     body.light .xpath-result-type.node   { color: #0550ae; background: rgba(5,80,174,0.08);  border-color: rgba(5,80,174,0.2);  }
     body.light .xpath-result-type.text   { background: rgba(26,127,55,0.08);  border-color: rgba(26,127,55,0.2);  }
     body.light .xpath-result-type.atomic { background: rgba(200,120,0,0.08);  border-color: rgba(200,120,0,0.2);  }
@@ -1537,7 +1534,7 @@
       cursor: pointer; font-size: 16px; transition: all var(--t-fast);
       flex-shrink: 0;
     }
-    .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
+    .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: var(--hover-bg-strong); }
 
     /* Auto-run checkbox */
     .ex-auto-run-label {
@@ -1550,7 +1547,7 @@
       transition: background var(--t-fast);
       user-select: none;
     }
-    .ex-auto-run-label:hover { background: rgba(128,128,128,0.08); }
+    .ex-auto-run-label:hover { background: var(--hover-bg-strong); }
     .ex-auto-run-label input[type="checkbox"] {
       cursor: pointer; width: 14px; height: 14px;
       accent-color: var(--sap-blue);
@@ -1586,7 +1583,7 @@
       transition: all 0.12s;
       border-left: 2px solid transparent;
     }
-    .ex-cat-btn:hover { color: var(--text-primary); background: rgba(128,128,128,0.07); }
+    .ex-cat-btn:hover { color: var(--text-primary); background: var(--hover-bg-strong); }
     .ex-cat-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
     .ex-cat-btn.active {
       color: var(--sap-blue);
@@ -1805,7 +1802,7 @@
       cursor: pointer;
       transition: all var(--t-fast);
     }
-    .help-tab:hover { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
+    .help-tab:hover { color: var(--text-secondary); background: var(--hover-bg); }
     .help-tab.active {
       color: var(--sap-blue);
       border-color: rgba(0,112,242,0.3);
@@ -1841,7 +1838,7 @@
     .help-row code {
       font-family: var(--font-mono);
       font-size: 10px;
-      background: rgba(255,255,255,0.06);
+      background: var(--hover-bg-strong);
       padding: 1px 5px; border-radius: var(--r-xs);
       color: var(--text-secondary);
     }
