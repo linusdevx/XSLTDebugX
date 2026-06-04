@@ -941,11 +941,7 @@
     .stat-dot.err  { background: var(--error); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .stat-spacer { flex: 1; }
-    .stat-cursor {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--text-dim);
-      white-space: nowrap; padding: 0 6px;
-    }
+    .stat-cursor {font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-primary); white-space: nowrap; padding: 0 6px;}
     .xpath-header-count {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px; font-weight: 700;

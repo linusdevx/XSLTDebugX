@@ -2,25 +2,25 @@ var MONACO_THEME_DARK = {
   base: 'vs-dark',
   inherit: true,
   rules: [
-    { token: 'delimiter.xml',         foreground: '4a6080' },
+    { token: 'delimiter.xml',         foreground: '5a80b0' },
     { token: 'metatag.xml',           foreground: 'f472b6' },
 
-    { token: 'tag',                   foreground: '56b6c2', fontStyle: 'bold' },
-    { token: 'tag.id.pug',            foreground: '56b6c2' },
-    { token: 'attribute.name',        foreground: 'c084fc' },
-    { token: 'attribute.name.html',   foreground: 'c084fc' },
+    { token: 'tag',                   foreground: '7fbfd4', fontStyle: 'bold' },
+    { token: 'tag.id.pug',            foreground: '7fbfd4' },
+    { token: 'attribute.name',        foreground: '8ab4f8' },
+    { token: 'attribute.name.html',   foreground: '8ab4f8' },
 
-    { token: 'attribute.value',       foreground: 'a8e06a' },
-    { token: 'attribute.value.html',  foreground: 'a8e06a' },
-    { token: 'string',                foreground: 'a8e06a' },
-    { token: 'string.xml',            foreground: 'a8e06a' },
+    { token: 'attribute.value',       foreground: 'a6c96a' },
+    { token: 'attribute.value.html',  foreground: 'a6c96a' },
+    { token: 'string',                foreground: 'a6c96a' },
+    { token: 'string.xml',            foreground: 'a6c96a' },
 
     { token: 'attribute.value.xpath', foreground: 'fbbf24' },
 
-    { token: 'comment',               foreground: '3d5470', fontStyle: 'italic' },
-    { token: 'comment.xml',           foreground: '3d5470', fontStyle: 'italic' },
+    { token: 'comment',               foreground: '6a80a0', fontStyle: 'italic' },
+    { token: 'comment.xml',           foreground: '6a80a0', fontStyle: 'italic' },
 
-    { token: 'number',                foreground: 'e8c56d' },
+    { token: 'number',                foreground: 'd19a66' },
 
     { token: 'entity.xml',            foreground: 'c084fc' },
   ],
