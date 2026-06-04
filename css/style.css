@@ -4,11 +4,12 @@
       --bg-header:      rgba(10, 15, 26, 0.85);
       --bg-console:     rgba(5, 8, 14, 0.9);
       --bg-editor:      #080c14;
+      --bg-modal:       #0e1626;
       --panel-blur:     blur(16px);
       --border:         rgba(255, 255, 255, 0.08);
       --border-bright:  rgba(255, 255, 255, 0.15);
-      --sap-blue:       #2563eb;
-      --sap-blue-glow:  rgba(37, 99, 235, 0.35);
+      --sap-blue:       #0070f2;
+      --sap-blue-glow:  rgba(0,112,242,0.25);
       --sap-gold:       #f59e0b;
       --text-primary:   #f1f5f9;
       --text-secondary: #94a3b8;
@@ -18,8 +19,8 @@
       --warning:        #f59e0b;
       --scrollbar:      rgba(255, 255, 255, 0.1);
       --kv-row-alt:     rgba(255, 255, 255, 0.02);
-      --status-bar-from: #1e3a8a;
-      --status-bar-to:   #2563eb;
+      --status-bar-from: #004eb8;
+      --status-bar-to:   #0068e0;
       /* XPath tokenizer colors — dark */
       --xpt-attr:  #c084fc;
       --xpt-str:   #a8e06a;
@@ -35,7 +36,7 @@
     .hidden { display: none !important; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       background: var(--bg-base);
       color: var(--text-primary);
       height: 100vh;
@@ -124,7 +125,7 @@
     .skeleton-text {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       display: flex; flex-direction: column; align-items: center; gap: 12px;
-      color: var(--text-dim); font-family: 'Inter', sans-serif;
+      color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
       font-size: 13px; font-weight: 500;
       z-index: 2;
     }
@@ -206,8 +207,8 @@
     .mode-switcher .mode-pill {
       position: absolute; top: 2px; left: 2px; bottom: 2px;
       width: calc(50% - 2px); border-radius: 6px;
-      background: linear-gradient(135deg, var(--status-bar-from), var(--status-bar-to));
-      box-shadow: 0 0 14px var(--sap-blue-glow);
+      background: linear-gradient(135deg, #0068e0, #0098f0);
+      box-shadow: 0 0 14px rgba(0,112,242,0.4);
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 0;
     }
@@ -270,7 +271,7 @@
     }
     .logo-mark {
       width: 30px; height: 30px;
-      background: linear-gradient(135deg, #0060d0, #00a0ff);
+      background: linear-gradient(135deg, #0068e0, #0098f0);
       border-radius: 7px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'JetBrains Mono', monospace;
@@ -283,6 +284,8 @@
       line-height: 1.3;
       padding-bottom: 1px;
     }
+    /* Trailing "X" picks up the brand blue and follows the theme. */
+    .logo-name-x { color: var(--sap-blue); }
     .logo-tag {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px; font-weight: 500;
@@ -297,23 +300,30 @@
       border-color: rgba(63,185,80,0.28);
       color: #3fb950;
     }
+    /* Amber/gold pill — mirrors the XPath-mode accent used by .ind-out,
+       .xf-xpath-match-glyph, and .mode-pill.mode-xpath in the status bar. */
+    .logo-tag-xpath {
+      background: rgba(245,165,36,0.1);
+      border-color: rgba(245,165,36,0.28);
+      color: var(--sap-gold);
+    }
     .h-spacer { flex: 1; }
     .run-btn {
       display: flex; align-items: center; gap: 7px;
-      padding: 7px 0;
+      padding: 6px 0;
       min-width: 148px; width: 148px; justify-content: center;
-      background: linear-gradient(135deg, var(--status-bar-from), var(--status-bar-to));
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
+      background: linear-gradient(135deg, #0068e0, #0098f0);
+      border: none;
+      border-radius: 7px;
       color: #fff; cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 0.2px;
-      box-shadow: 0 4px 14px var(--sap-blue-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 500;
+      letter-spacing: 0.1px;
+      box-shadow: 0 4px 14px rgba(0,112,242,0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative; overflow: hidden;
     }
-    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--sap-blue-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,112,242,0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
     .run-btn:active { transform: translateY(0) scale(0.97); }
     .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .run-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
@@ -331,8 +341,8 @@
     /* ── WORKSPACE: 3-column ── */
     .workspace {
       display: flex; flex: 1; overflow: hidden; min-height: 0;
-      padding: 16px;
-      gap: 16px;
+      padding: 6px;
+      gap: 6px;
     }
 
     /* Side cols (Input / Output) are narrower than centre */
@@ -429,6 +439,15 @@
       display: flex; align-items: center;
       padding: 0 12px; gap: 8px;
     }
+    /* Clickable bar — XML / Output pane bars toggle their side-column collapse on
+       click (matches console-bar and kv-header UX). Buttons inside .pane-actions
+       and the validation badge stop propagation. */
+    .pane-bar-clickable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .pane-bar-clickable:hover { background: rgba(255,255,255,0.02); }
+    body.light .pane-bar-clickable:hover { background: rgba(0,0,0,0.02); }
     .pane-indicator {
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
@@ -941,7 +960,7 @@
     .stat-dot.err  { background: var(--error); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .stat-spacer { flex: 1; }
-    .stat-cursor {font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-primary); white-space: nowrap; padding: 0 6px;}
+    .stat-cursor {font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.75); white-space: nowrap; padding: 0 6px;}
     .xpath-header-count {
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px; font-weight: 700;
@@ -981,18 +1000,19 @@
 
     /* ── LIGHT THEME ── */
     body.light {
-      --status-bar-from: #2563eb;
-      --status-bar-to:   #3b82f6;
+      --status-bar-from: #0058c8;
+      --status-bar-to:   #0070f2;
       --bg-console:     rgba(248, 250, 252, 0.9);
       --bg-base:        #f1f5f9;
       --bg-panel:       rgba(226, 232, 240, 0.65);
       --bg-header:      rgba(255, 255, 255, 0.85);
       --bg-editor:      #ffffff;
+      --bg-modal:       #ffffff;
       --panel-blur:     blur(16px);
       --border:         rgba(0, 0, 0, 0.08);
       --border-bright:  rgba(0, 0, 0, 0.15);
-      --sap-blue:       #2563eb;
-      --sap-blue-glow:  rgba(37, 99, 235, 0.2);
+      --sap-blue:       #0070f2;
+      --sap-blue-glow:  rgba(0,112,242,0.15);
       --sap-gold:       #d97706;
       --text-primary:   #0f172a;
       --text-secondary: #475569;
@@ -1077,7 +1097,7 @@
       display: flex; align-items: center; gap: 5px;
       padding: 6px 14px;
       border: none; border-radius: 6px;
-      font-family: 'Syne', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 600;
       cursor: pointer;
       background: transparent;
@@ -1190,7 +1210,7 @@
       white-space: nowrap;
       flex-shrink: 0;
       align-self: flex-start;
-      font-family: 'Syne', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       letter-spacing: 0.4px;
       text-transform: uppercase;
       padding-right: 3px;
@@ -1375,7 +1395,7 @@
       border: 1px solid var(--border);
       border-radius: 7px;
       color: var(--text-secondary);
-      font-family: 'Syne', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
@@ -1432,7 +1452,7 @@
     .ex-modal {
       width: min(860px, 94vw);
       height: min(600px, 88vh);
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
       border-radius: 14px;
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
@@ -1534,7 +1554,7 @@
       width: 100%; padding: 7px 14px;
       background: transparent; border: none;
       cursor: pointer; text-align: left;
-      font-family: 'Syne', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 600;
       color: var(--text-secondary);
       transition: all 0.12s;
@@ -1659,7 +1679,7 @@
     /* ── SHARE MODAL ── */
     .share-modal {
       width: min(500px, 92vw);
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
       border-radius: 14px;
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
@@ -1707,7 +1727,7 @@
       background: var(--sap-blue);
       border: none; border-radius: 7px;
       color: #fff; cursor: pointer;
-      font-family: 'Syne', sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 12px; font-weight: 700;
       transition: all 0.15s;
       white-space: nowrap;
@@ -1724,7 +1744,7 @@
     .help-modal {
       width: min(620px, 94vw);
       max-height: 80vh;
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
       border-radius: 14px;
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
@@ -1850,6 +1870,9 @@
   white-space: nowrap;
   color: rgba(255,255,255,0.55);
 }
+.build-info {
+  color: rgba(255,255,255,0.7);
+}
 .stat-link,
 .stat-link:visited,
 .stat-link:active {
@@ -1892,7 +1915,8 @@
 
 @media (max-width: 1100px) {
   .header .logo-tag,
-  .header .logo-tag-ide {
+  .header .logo-tag-ide,
+  .header .logo-tag-xpath {
     display: none;
   }
   .header .run-btn .kbd {

@@ -46,13 +46,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@1.14.0/dist/umd/lucide.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
   <script src="./lib/SaxonJS2.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', function() { if (typeof lucide !== 'undefined') lucide.createIcons(); });</script>
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    // Local-dev fallback: build pipeline injects the date over a placeholder
+    // marked with data-placeholder. If still present, this is raw-source dev mode.
+    var bi = document.getElementById('buildInfo');
+    if (bi && bi.dataset.placeholder === 'true') bi.textContent = 'Local dev';
+  });</script>
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -240,9 +246,10 @@
   <!-- Visual brand mark, not a heading: the page H1 lives in the .seo-content section above. -->
   <div class="logo" role="img" aria-label="XSLTDebugX — SAP Cloud Integration XSLT IDE">
     <div class="logo-mark">XD</div>
-    <span class="logo-name">XSLTDebugX</span>
+    <span class="logo-name">XSLTDebug<span class="logo-name-x">X</span></span>
     <span class="logo-tag">SAP Cloud Integration</span>
     <span class="logo-tag logo-tag-ide">XSLT IDE</span>
+    <span class="logo-tag logo-tag-xpath">XPath IDE</span>
   </div>
 
   <div class="h-spacer"></div>
@@ -275,12 +282,14 @@
     <i data-lucide="moon" width="15" height="15" class="theme-icon-moon"></i>
   </button>
 
-  <button class="header-icon-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" title="Clear saved session">
+  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" title="Clear saved session">
     <i data-lucide="trash-2" width="14" height="14"></i>
+    Clear
   </button>
 
-  <button class="header-icon-btn help-btn" id="helpBtn" onclick="openHelpModal()" title="Help — features & shortcuts">
-    <i data-lucide="circle-help" width="15" height="15"></i>
+  <button class="ex-btn help-btn" id="helpBtn" onclick="openHelpModal()" title="Help — features & shortcuts">
+    <i data-lucide="circle-help" width="14" height="14"></i>
+    Help
   </button>
 
   <button class="run-btn" id="runBtn" onclick="createRipple(event); runTransform()">
@@ -333,15 +342,15 @@
         <div class="xpath-hints-strip" id="xpathHintsStrip" style="display:none"></div>
       </div>
       <!-- ── XML Input Message bar (always visible) ── -->
-      <div class="pane-bar" id="xmlPaneBar">
+      <div class="pane-bar pane-bar-clickable" id="xmlPaneBar" onclick="toggleSideCol('left')" title="Click to collapse / restore the input panel">
         <div class="pane-indicator ind-xml"></div>
         <span class="pane-title" id="xmlPaneTitle">Input</span>
         <!-- XML Validation Badge -->
-        <span class="xml-validation-badge" id="xmlValidationBadge" title="XML parsing status" style="display: none;">
+        <span class="xml-validation-badge" id="xmlValidationBadge" title="XML parsing status" style="display: none;" onclick="event.stopPropagation()">
           <span class="badge-icon">✓</span>
           <span class="badge-text">Valid</span>
         </span>
-        <div class="pane-actions">
+        <div class="pane-actions" onclick="event.stopPropagation()">
           <span class="lang-badge">XML</span>
           <button class="pane-icon-btn" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
           <button class="pane-icon-btn" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
@@ -467,10 +476,10 @@
 
       <!-- ── Output Section (minimises to header when XPath results open) ── -->
       <div class="output-section" id="outputSection">
-        <div class="pane-bar">
+        <div class="pane-bar pane-bar-clickable" onclick="toggleSideCol('right')" title="Click to collapse / restore the output panel">
           <div class="pane-indicator ind-out"></div>
           <span class="pane-title">Output</span>
-          <div class="pane-actions">
+          <div class="pane-actions" onclick="event.stopPropagation()">
             <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <span class="lang-badge" id="outLangBadge">XML</span>
@@ -589,6 +598,8 @@
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
       Sunil Pharswan
     </a>
+    <span class="stat-divider">·</span>
+    <span id="buildInfo" class="build-info" data-placeholder="true" title="Build date and short commit SHA">__BUILD_INFO__</span>
     <span class="stat-divider">·</span>
     <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" title="View source on GitHub">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
