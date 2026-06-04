@@ -368,8 +368,7 @@
       background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       border: none;
       border-radius: var(--r-md);
-      color: #fff; cursor: pointer;
-      font-family: var(--font-mono);
+      color: #fff;
       font-size: 13px; font-weight: 700;
       letter-spacing: 0.1px;
       box-shadow: 0 0 32px rgba(0,112,242,0.55);
