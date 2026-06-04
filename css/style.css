@@ -33,6 +33,13 @@
       --xpt-node:  #56b6c2;
       --xpt-pred:  #3b82f6;
       --xpt-sep:   #475569;
+      --fs-9:   9px;
+      --fs-10:  10px;
+      --fs-11:  11px;
+      --fs-12:  12px;
+      --fs-13:  13px;
+      --fs-15:  15px;
+      --fs-17:  17px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -915,7 +922,7 @@
       padding: 4px 14px;
       background: var(--bg-console);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
+      font-size: var(--fs-11);
     }
     .console-panel.minimized .console-body { display: none; }
     .console-body::-webkit-scrollbar { width: 5px; }
@@ -1296,7 +1303,7 @@
       flex: 1; overflow-y: auto;
       padding: 8px 0;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
+      font-size: var(--fs-11);
       background: var(--bg-editor);
     }
     .xpath-results-body::-webkit-scrollbar { width: 5px; }
@@ -1322,7 +1329,7 @@
     .xpath-result-content {
       flex: 1; min-width: 0;
       white-space: pre-wrap; word-break: break-all;
-      font-size: 11.5px;
+      font-size: var(--fs-11);
       font-family: 'JetBrains Mono', monospace;
       line-height: 1.6;
       margin: 0;
