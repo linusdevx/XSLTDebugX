@@ -171,6 +171,15 @@ class ModeManager {
     if (xmlPaneTitle) xmlPaneTitle.textContent = newTitle;
     if (xmlColTabLabel) xmlColTabLabel.textContent = newTitle;
 
+    // Editorial direction B: pane numbers flip with the mode so the 01→02→03
+    // sequence reads naturally top-to-bottom in either layout.
+    //   XSLT mode:  XML=01   (Transform=02 in center col, Output=03 in right col)
+    //   XPath mode: XQuery=01 (XML=02 below it,           Results=03 in right col)
+    const xmlPaneNum  = document.getElementById('xmlPaneNum');
+    const xpathPaneNum = document.getElementById('xpathPaneNum');
+    if (xmlPaneNum)   xmlPaneNum.textContent   = this.isXpath ? '02' : '01';
+    if (xpathPaneNum) xpathPaneNum.textContent = '01';
+
     const consoleTitle = document.querySelector('.console-title');
     if (consoleTitle) {
       consoleTitle.textContent = this.isXpath

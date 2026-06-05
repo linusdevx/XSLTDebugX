@@ -381,6 +381,7 @@ function runXPath() {
 
   consoleErrCount = 0;
   updateConsoleErrBadge();
+  document.body.classList.add('running');
 
   const input = document.getElementById('xpathInput');
   const expr  = input?.value?.trim();
@@ -482,6 +483,7 @@ function runXPath() {
     _showXPathResults([], msg, true);
   } finally {
     _resetXPathBtn();
+    document.body.classList.remove('running');
   }
 }
 

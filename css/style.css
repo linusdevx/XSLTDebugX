@@ -291,16 +291,27 @@
       transform: translateY(0);
     }
 
-    /* ── HEADER ── */
+    /* ── HEADER — Linear/Raycast-style command bar ──
+       Hairline dividers between groups, square buttons, monospace 12px,
+       no glows, no rounded pills. The header is chrome — it should sit
+       quietly so the editors and flow-line carry the visual weight. */
     .header {
       background: var(--bg-header);
       backdrop-filter: var(--panel-blur);
       -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 50px;
+      height: 46px;
       display: flex; align-items: center;
-      padding: 0 14px; gap: 12px;
+      padding: 0 10px; gap: 6px;
       flex-shrink: 0;
+      position: relative;
+    }
+    /* Subtle hairline accent under the bar to separate from workspace */
+    .header::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+      height: 1px; background: linear-gradient(90deg,
+        transparent, var(--sap-blue-glow) 20%, var(--sap-blue-glow) 80%, transparent);
+      opacity: 0.5; pointer-events: none;
     }
     .header nav { display: contents; }
     /* Visually hidden but kept in the DOM and a11y tree.
@@ -318,27 +329,46 @@
     }
 
     .logo {
-      display: flex; align-items: center; gap: 9px; text-decoration: none;
-      margin: 0; font-size: inherit; font-weight: inherit;
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      margin: 0; padding: 0 6px 0 4px;
+      font-size: inherit; font-weight: inherit;
       overflow: visible;
+      position: relative;
+    }
+    /* Hairline divider after the logomark — separates brand from command groups */
+    .logo::after {
+      content: ""; position: absolute; right: -3px; top: 50%;
+      width: 1px; height: 20px; transform: translateY(-50%);
+      background: var(--border-bright); opacity: 0.6;
     }
     .logo-mark {
-      width: 30px; height: 30px;
-      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
-      border-radius: var(--r-md);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono);
-      font-weight: 700; font-size: 12px; color: #fff;
-      box-shadow: 0 0 14px rgba(0,112,242,0.4);
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 6px var(--sap-blue-glow));
+      transition: filter 0.3s ease, transform 0.3s var(--ease-spring);
+    }
+    .logo:hover .logo-mark {
+      transform: rotate(-6deg) scale(1.05);
+      filter: drop-shadow(0 0 10px rgba(0,112,242,0.45));
+    }
+    /* Pulse the central arrow on Run — JS toggles .running on body */
+    body.running .logo-mark .logo-mark-arrow {
+      animation: logo-arrow-pulse 1s ease-in-out infinite;
+      transform-origin: center;
+    }
+    @keyframes logo-arrow-pulse {
+      0%, 100% { opacity: 0.7; transform: translateX(0); }
+      50%      { opacity: 1;   transform: translateX(1.5px); }
     }
     .logo-name {
-      font-size: 17px; font-weight: 800; letter-spacing: -0.5px;
+      font-size: 14px; font-weight: 700; letter-spacing: -0.2px;
       color: var(--text-primary);
       line-height: 1.3;
       padding-bottom: 1px;
+      font-family: var(--font-mono);
     }
     /* Trailing "X" picks up the brand blue and follows the theme. */
-    .logo-name-x { color: var(--sap-blue); }
+    .logo-name-x { color: var(--sap-blue); font-weight: 800; }
     .logo-tag {
       font-family: var(--font-mono);
       font-size: 10px; font-weight: 500;
@@ -363,22 +393,22 @@
     .h-spacer { flex: 1; }
     .run-btn {
       display: flex; align-items: center; gap: 7px;
-      padding: 7px 0;
-      min-width: 148px; width: 148px; justify-content: center;
+      padding: 6px 14px;
+      min-width: 110px; height: 32px; justify-content: center;
       background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
-      border: none;
-      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-sm);
       color: #fff;
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.1px;
-      box-shadow: 0 0 32px rgba(0,112,242,0.55);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(0,112,242,0.32), inset 0 1px 0 rgba(255,255,255,0.12);
       transition: all 0.2s var(--ease-spring);
       position: relative; overflow: hidden;
     }
-    .run-btn:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,112,242,0.7); }
+    .run-btn:hover { transform: translateY(-1px); box-shadow: 0 0 18px rgba(0,112,242,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
     .run-btn:active { transform: translateY(0) scale(0.97); }
     .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-    .run-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .run-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
     .run-btn .spinner { animation: spin 0.7s linear infinite; transform-origin: center; }
 
     /* keyboard shortcut hint */
@@ -1052,17 +1082,19 @@
     body.light {
       --status-bar-from: #0058c8;
       --status-bar-to:   #0070f2;
-      --bg-console:     rgba(248, 250, 252, 0.9);
-      --bg-base:        #f1f5f9;
-      --bg-panel:       rgba(226, 232, 240, 0.65);
-      --bg-header:      rgba(255, 255, 255, 0.85);
+      --bg-console:     rgba(248, 250, 252, 0.95);
+      /* Cool blue-tinted background — barely-blue slate that gives the
+         workspace SAP-brand atmosphere without sacrificing readability */
+      --bg-base:        #e8eef7;
+      --bg-panel:       rgba(255, 255, 255, 0.78);
+      --bg-header:      rgba(238, 244, 252, 0.92);
       --bg-editor:      #ffffff;
       --bg-modal:       #ffffff;
       --panel-blur:     blur(16px);
-      --border:         rgba(0, 0, 0, 0.08);
-      --border-bright:  rgba(0, 0, 0, 0.15);
+      --border:         rgba(0, 64, 140, 0.10);
+      --border-bright:  rgba(0, 64, 140, 0.20);
       --sap-blue:       #0070f2;
-      --sap-blue-glow:  rgba(0,112,242,0.15);
+      --sap-blue-glow:  rgba(0,112,242,0.18);
       --sap-blue-from:  #0058c8;
       --sap-blue-to:    #0085ff;
       --sap-blue-fg:    #0550ae;
@@ -1073,10 +1105,10 @@
       --success:        #1a7f37;
       --error:          #cf222e;
       --warning:        #d97706;
-      --scrollbar:      rgba(0, 0, 0, 0.15);
-      --kv-row-alt:     rgba(0, 0, 0, 0.02);
-      --hover-bg:        rgba(0,0,0,0.04);
-      --hover-bg-strong: rgba(0,0,0,0.08);
+      --scrollbar:      rgba(0, 64, 140, 0.18);
+      --kv-row-alt:     rgba(0, 64, 140, 0.025);
+      --hover-bg:        rgba(0, 64, 140, 0.05);
+      --hover-bg-strong: rgba(0, 64, 140, 0.10);
       /* XPath tokenizer colors — light */
       --xpt-attr:  #166534;
       --xpt-str:   #1e3a8a;
@@ -1141,18 +1173,20 @@
       display: flex;
       position: relative;
       overflow: hidden;
-      background: var(--bg-panel);
+      background: var(--hover-bg);
       border: 1px solid var(--border);
-      border-radius: var(--r-md);
+      border-radius: var(--r-sm);
       padding: 2px;
       gap: 0;
+      height: 32px;
     }
     .mode-btn {
       display: flex; align-items: center; gap: 5px;
-      padding: 6px 14px;
-      border: none; border-radius: var(--r-sm);
+      padding: 4px 12px;
+      border: none; border-radius: var(--r-xs);
       font-family: var(--font-mono);
-      font-size: 12px; font-weight: 600;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
       background: transparent;
       color: var(--text-dim);
@@ -1443,19 +1477,22 @@
     /* ── EXAMPLES BUTTON ── */
     .ex-btn {
       display: flex; align-items: center; gap: 6px;
-      padding: 7px 13px;
-      background: var(--bg-panel);
+      padding: 6px 11px;
+      height: 32px;
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: var(--r-md);
+      border-radius: var(--r-sm);
       color: var(--text-secondary);
       font-family: var(--font-mono);
-      font-size: 12px; font-weight: 600;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: all var(--t-fast);
+      transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
       white-space: nowrap;
     }
-    .ex-btn:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--bg-header); }
-    .ex-btn svg { width: 12px; height: 12px; }
+    .ex-btn:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--hover-bg); }
+    .ex-btn svg { width: 12px; height: 12px; opacity: 0.85; }
+    .ex-btn:hover svg { opacity: 1; }
 
     /* ── GROUP 1: unified text+icon secondary buttons (Share, Examples, Clear Session) ── */
     .clear-session-btn:hover {
@@ -1468,23 +1505,21 @@
     .header-icon-btn {
       display: flex; align-items: center; justify-content: center;
       width: 32px; height: 32px;
-      background: var(--bg-panel);
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: var(--r-md);
+      border-radius: var(--r-sm);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.2s var(--ease-spring);
+      transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
       flex-shrink: 0;
     }
     .header-icon-btn:hover {
       color: var(--text-primary);
-      border-color: var(--sap-blue);
-      background: var(--bg-header);
-      transform: scale(1.08);
-      box-shadow: 0 0 14px var(--sap-blue-glow);
+      border-color: var(--border-bright);
+      background: var(--hover-bg);
     }
     .header-icon-btn:active {
-      transform: scale(0.92);
+      transform: scale(0.94);
     }
 
     /* ── EXAMPLES LIBRARY MODAL ── */
@@ -1708,13 +1743,13 @@
     /* ── SHARE BUTTON ── */
     .xf-session-share {
       color: var(--sap-blue-fg);
-      border-color: rgba(0,112,242,0.3);
-      background: rgba(0,112,242,0.08);
+      border-color: rgba(0,112,242,0.25);
+      background: rgba(0,112,242,0.05);
     }
     .xf-session-share:hover {
-      color: #fff;
-      border-color: rgba(0,112,242,0.6);
-      background: rgba(0,112,242,0.18);
+      color: var(--text-primary);
+      border-color: rgba(0,112,242,0.5);
+      background: rgba(0,112,242,0.12);
     }
     .xf-session-share:disabled,
     .xf-session-share[disabled] {
@@ -1724,8 +1759,8 @@
     .xf-session-share:disabled:hover,
     .xf-session-share[disabled]:hover {
       color: var(--sap-blue-fg);
-      border-color: rgba(0,112,242,0.3);
-      background: rgba(0,112,242,0.08);
+      border-color: rgba(0,112,242,0.25);
+      background: rgba(0,112,242,0.05);
     }
 
     /* ── SHARE MODAL ── */
@@ -1979,4 +2014,626 @@
 body.theme-switching,
 body.theme-switching * {
   transition: none !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   EDITORIAL / IDE-LUXE — Direction B
+   Numbered pane labels · inter-column data-flow line · hairline editor grid.
+   These rules sit at the end of the file so they predictably override
+   earlier definitions where needed (pane-bar gap, .col-side flex math).
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Numbered pane labels (01 / INPUT, 02 / TRANSFORM, 03 / OUTPUT) ──
+   The .pane-num chip is a tiny tabular-figures monospace tag.
+   Title typography is tightened to read as an editorial caption. */
+.pane-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--sap-blue-fg);
+  background: rgba(0, 112, 242, 0.10);
+  border: 1px solid rgba(0, 112, 242, 0.22);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+}
+/* Color-tune the chip to match the pane indicator dot — semantic continuity */
+.col:has(.ind-xml)   .pane-num { color: #5fd07a; background: rgba(63,185,80,0.10); border-color: rgba(63,185,80,0.25); }
+.col:has(.ind-xslt)  .pane-num { color: var(--sap-blue-fg); background: rgba(0,112,242,0.10); border-color: rgba(0,112,242,0.22); }
+.col:has(.ind-out)   .pane-num { color: #f0b95a; background: rgba(245,165,36,0.10); border-color: rgba(245,165,36,0.25); }
+/* Slash separator after the chip — pure CSS, no extra DOM */
+.pane-num::after {
+  content: " /";
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+/* Soften the existing pane-title now that it has a numbered prefix */
+.pane-bar .pane-title,
+.xpath-results-bar .xpath-results-title,
+.console-bar .console-title,
+.kv-header .kv-title {
+  letter-spacing: 1.4px;
+  font-weight: 600;
+}
+
+/* ── Inter-column data-flow line ──
+   Two thin horizontal segments rendered absolutely over the workspace gutters.
+   Each segment is a faint base track with a brighter dot that animates
+   left→right when body has the .running class (set by transform.js around
+   the Saxon call). Hidden in collapsed-column states. */
+.workspace { position: relative; }
+.flow-line {
+  position: absolute;
+  top: 50%;
+  height: 1px;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+.flow-line-track {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--sap-blue-glow) 15%,
+    var(--sap-blue-glow) 85%,
+    transparent 100%);
+}
+.flow-line-dot {
+  position: absolute;
+  top: 50%; left: 0;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--sap-blue);
+  box-shadow: 0 0 8px var(--sap-blue), 0 0 16px var(--sap-blue-glow);
+  opacity: 0;
+  transform: translateX(0);
+}
+/* Position the two flow segments using calc() against the column ratios.
+   Side cols flex:1, center flex:1.2 → total parts = 3.2.
+   Workspace padding 6px, gap 6px. Segments span the gap zone roughly. */
+.flow-line-1 { left: calc((100% - 24px) * (1 / 3.2) + 6px); width: 6px; }
+.flow-line-2 { left: calc((100% - 24px) * (2.2 / 3.2) + 12px); width: 6px; }
+/* Hide flow line when adjacent column is collapsed — checked via :has() */
+.workspace:has(#colLeft.collapsed)  .flow-line-1,
+.workspace:has(#colRight.collapsed) .flow-line-2 { opacity: 0; }
+/* Running animation — dot sweeps across the segment, repeats while running */
+body.running .flow-line { opacity: 1; }
+body.running .flow-line-dot {
+  animation: flow-dot-sweep 1.4s var(--ease-spring) infinite;
+}
+body.running .flow-line-2 .flow-line-dot { animation-delay: 0.7s; }
+@keyframes flow-dot-sweep {
+  0%   { left: 0;            opacity: 0; transform: scale(0.6); }
+  20%  {                     opacity: 1; transform: scale(1); }
+  80%  {                     opacity: 1; transform: scale(1); }
+  100% { left: calc(100% - 6px); opacity: 0; transform: scale(0.6); }
+}
+
+/* ── Hairline grid backdrop behind Monaco editors ──
+   24px grid at very low opacity. Sits on .editor-wrap (Monaco renders into
+   the absolutely-positioned child div above it). Light theme uses darker
+   strokes; dark theme uses subtle white. */
+.editor-wrap {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 0;
+}
+body.light .editor-wrap {
+  background-image:
+    linear-gradient(rgba(0,40,90,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,40,90,0.035) 1px, transparent 1px);
+}
+
+/* ── Light-theme shadow tuning ──
+   The dark-mode glows on columns and Run hover translate to muddy haloes
+   on white. Calm them. */
+body.light .col {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+body.light .col:focus-within {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--sap-blue-glow);
+}
+body.light .run-btn {
+  box-shadow: 0 1px 0 rgba(0,40,90,0.12), 0 0 10px rgba(0,112,242,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+body.light .run-btn:hover {
+  box-shadow: 0 2px 0 rgba(0,40,90,0.14), 0 0 16px rgba(0,112,242,0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+body.light .logo-mark {
+  filter: drop-shadow(0 0 4px rgba(0,112,242,0.25));
+}
+body.light .logo:hover .logo-mark {
+  filter: drop-shadow(0 0 8px rgba(0,112,242,0.35));
+}
+/* Header underline accent loses contrast on light — boost it slightly */
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.18) 20%, rgba(0,112,242,0.18) 80%, transparent);
+}
+
+/* ── Status bar — SAP blue brand rail ──
+   Uses the existing --status-bar-from/--status-bar-to vars (already
+   theme-tuned in :root and body.light). Slightly calmer than the
+   original loud gradient: dimmer accent line on top, no oversaturated
+   highlights, all text/links white-on-blue at calibrated opacities. */
+.status-bar {
+  background: linear-gradient(90deg, var(--status-bar-from), var(--status-bar-to)) !important;
+  border-top: 1px solid rgba(0,0,0,0.18);
+  color: rgba(255,255,255,0.85);
+  position: relative;
+}
+.status-bar::before {
+  content: ""; position: absolute;
+  left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg,
+    transparent, rgba(255,255,255,0.25) 30%, rgba(255,255,255,0.25) 70%, transparent);
+  pointer-events: none;
+}
+.status-bar .stat,
+.status-bar .stat-cursor {
+  color: rgba(255,255,255,0.85);
+}
+.status-bar .stat-link {
+  color: rgba(255,255,255,0.75);
+  opacity: 1;
+}
+.status-bar .stat-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+.status-bar .stat-divider { color: rgba(255,255,255,0.4); opacity: 1; }
+.status-bar .saved-indicator { color: #a7f3d0; }
+.status-bar .stat-dot.ok   { background: #a7f3d0; box-shadow: 0 0 6px rgba(167,243,208,0.5); }
+.status-bar .stat-dot.busy { background: var(--sap-gold); }
+.status-bar .stat-dot.err  { background: #fca5a5; }
+/* Mode pill — readable on blue in both themes */
+.status-bar .mode-pill.mode-xslt {
+  background: rgba(255,255,255,0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.status-bar .mode-pill.mode-xpath {
+  background: rgba(245,165,36,0.30);
+  color: #ffffff;
+  border: 1px solid rgba(245,165,36,0.55);
+}
+/* No light/dark overrides needed — the blue gradient vars already adapt. */
+
+/* ════════════════════════════════════════════════════════════════════════
+   LIGHT THEME — BLUE BRAND ATMOSPHERE
+   Adds visual rhythm to break the "sea of white" feel: ambient blue/gold
+   radial washes behind the workspace, blue-tinted glass header, subtle
+   color-accent top stripes on each column, and stronger panel borders
+   so editor surfaces feel like distinct cards on a tinted canvas.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Stronger radial washes in light mode — the dark-theme :before/:after
+   washes are too subtle on white. Boost opacity and slightly shift hues
+   so the blue brand color suffuses the workspace edges. */
+body.light::before {
+  background: radial-gradient(circle, rgba(0,112,242,0.10) 0%, transparent 60%);
+}
+body.light::after {
+  background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 60%);
+}
+
+/* Each column gets a faint blue-to-color hairline at the top — picks up the
+   pane indicator dot color and grounds the column visually. Matches the
+   editorial-direction-B numbered chip palette. */
+body.light .col {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  border: 1px solid rgba(0, 64, 140, 0.12);
+  position: relative;
+}
+body.light .col::before {
+  content: ""; position: absolute;
+  left: 0; right: 0; top: 0; height: 2px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+body.light .col:has(.ind-xml)::before,
+body.light .col:has(.ind-xslt)::before,
+body.light .col:has(.ind-out)::before {
+  background: linear-gradient(90deg, transparent, var(--sap-blue) 20%, var(--sap-blue) 80%, transparent);
+}
+body.light .col:focus-within::before { opacity: 1; }
+
+/* Header: blue-tinted glass. The new --bg-header value (rgba(238,244,252,…))
+   already tints it; this rule deepens the bottom-border accent so the header
+   reads as a distinct strip, not bleeding into the workspace. */
+body.light .header {
+  border-bottom: 1px solid rgba(0,112,242,0.18);
+}
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.35) 20%, rgba(0,112,242,0.35) 80%, transparent);
+  opacity: 0.7;
+}
+
+/* Editor wraps: keep pure-white bg for code legibility, but the hairline
+   grid needs a touch more contrast against true white in light mode */
+body.light .editor-wrap {
+  background-image:
+    linear-gradient(rgba(0,64,140,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,64,140,0.045) 1px, transparent 1px);
+}
+
+/* Pane bars: faint blue tint instead of grey-on-white */
+body.light .pane-bar,
+body.light .console-bar,
+body.light .kv-header,
+body.light .xpath-results-bar {
+  background: rgba(0, 64, 140, 0.025);
+}
+body.light .pane-bar-clickable:hover { background: rgba(0, 64, 140, 0.05); }
+
+/* Console body: subtle blue tint, not pure white */
+body.light .console-body {
+  background: rgba(248, 250, 254, 0.95);
+}
+
+/* KV panels: tint the alternating row to a faint blue */
+body.light #hdrRows .kv-row-wrapper .kv-row,
+body.light #propRows .kv-row-wrapper .kv-row,
+body.light #outHdrRows .kv-row-out,
+body.light #outPropRows .kv-row-out {
+  background: rgba(0, 64, 140, 0.025);
+}
+
+/* XPath input row: stronger blue baseline border */
+body.light .xpath-input-row {
+  background: #ffffff;
+  border-bottom: 2px solid var(--sap-blue);
+}
+
+/* Mode-switcher track in light mode — was using --bg-editor (white).
+   Tint it so the switcher reads as a control, not as the page bg. */
+body.light .mode-switcher {
+  background: rgba(0, 64, 140, 0.06);
+  border-color: rgba(0, 64, 140, 0.15);
+}
+
+/* Header buttons: slightly stronger borders so they don't disappear */
+body.light .ex-btn,
+body.light .header-icon-btn {
+  border-color: rgba(0, 64, 140, 0.15);
+}
+body.light .ex-btn:hover,
+body.light .header-icon-btn:hover {
+  border-color: rgba(0, 64, 140, 0.30);
+  background: rgba(0, 64, 140, 0.05);
+}
+
+/* Logo divider hairline */
+body.light .logo::after {
+  background: rgba(0, 64, 140, 0.20);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LIGHT THEME — STRONGER SEMANTIC COLOR
+   Push the brand blue further in the header, make the column stripes
+   bolder so INPUT reads as green, TRANSFORM as blue, OUTPUT as gold at a
+   glance. Add semantic tint to the Headers / Properties section bars.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Header — stronger blue gradient backdrop. The previous tint was almost
+   invisible; this version reads as a clearly-blue strip while still
+   keeping the buttons readable. */
+body.light .header {
+  background: linear-gradient(180deg,
+    rgba(0,112,242,0.22) 0%,
+    rgba(0,112,242,0.14) 100%),
+    rgba(248, 251, 255, 0.96);
+  border-bottom: 1px solid rgba(0,112,242,0.35);
+}
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.75) 18%, rgba(0,112,242,0.75) 82%, transparent);
+  opacity: 0.95;
+  height: 2px;
+}
+/* Header buttons read clearly on the new blue-tinted surface */
+body.light .ex-btn {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,112,242,0.35);
+  color: var(--sap-blue-fg);
+}
+body.light .ex-btn:hover {
+  background: #ffffff;
+  border-color: rgba(0,112,242,0.6);
+  color: var(--text-primary);
+}
+body.light .header-icon-btn {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,112,242,0.35);
+  color: var(--sap-blue-fg);
+}
+body.light .header-icon-btn:hover {
+  background: #ffffff;
+  border-color: rgba(0,112,242,0.6);
+  color: var(--text-primary);
+}
+/* Mode switcher — the unselected text needs to read on the new tinted bg */
+body.light .mode-switcher {
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(0,112,242,0.35);
+}
+body.light .mode-btn { color: var(--sap-blue-fg); }
+body.light .mode-btn.active { color: #ffffff; }
+/* Logo divider hairline reads stronger on the bluer header */
+body.light .logo::after {
+  background: rgba(0, 64, 140, 0.30);
+}
+body.light .logo-name { color: #0b3268; }
+
+/* Column-top accent stripes — unified blue across all three columns to
+   mirror the "02 TRANSFORM" header treatment. INPUT/TRANSFORM/OUTPUT are
+   still differentiated by the indicator dot, lang badge, and pane-num chip. */
+body.light .col::before {
+  height: 3px;
+  opacity: 0.9;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+body.light .col:has(.ind-xml)::before,
+body.light .col:has(.ind-xslt)::before,
+body.light .col:has(.ind-out)::before {
+  background: linear-gradient(90deg,
+    rgba(0,112,242,0.55),
+    var(--sap-blue) 35%,
+    var(--sap-blue) 65%,
+    rgba(0,112,242,0.55));
+}
+body.light .col:focus-within::before { opacity: 1; height: 4px; }
+
+/* Pane bars: unified blue accent across all three columns — mirrors the
+   "02 TRANSFORM" header treatment so INPUT/TRANSFORM/OUTPUT read as one
+   editor surface. Column differentiation still comes from the top stripe,
+   the indicator dot, the lang badge, and the pane-num chip. */
+body.light .col:has(.ind-xml)  .pane-bar,
+body.light .col:has(.ind-xslt) .pane-bar,
+body.light .col:has(.ind-out)  .pane-bar {
+  background: rgba(0,112,242,0.05);
+  border-bottom-color: rgba(0,112,242,0.18);
+}
+
+/* ── Headers / Properties section bars — neutral light grey (per user) ──
+   No semantic tint. The column-top stripe and column's pane-bar already
+   carry the semantic color, so the KV panel bars stay quiet grey strips. */
+body.light #hdrPanel    .kv-header,
+body.light #outHdrPanel .kv-header,
+body.light #propPanel    .kv-header,
+body.light #outPropPanel .kv-header {
+  background: rgba(0, 64, 140, 0.025);
+  border-top: 1px solid rgba(0, 64, 140, 0.10);
+}
+body.light #hdrPanel    .kv-header:hover,
+body.light #outHdrPanel .kv-header:hover,
+body.light #propPanel    .kv-header:hover,
+body.light #outPropPanel .kv-header:hover {
+  background: rgba(0, 64, 140, 0.05);
+}
+
+/* The pane-num chip stays semantic-colored from the editorial block above —
+   no changes needed; it already uses :has(.ind-xml/.ind-xslt/.ind-out). */
+
+/* ════════════════════════════════════════════════════════════════════════
+   SEMANTIC COLOR REINFORCEMENT
+   Tie the .lang-badge in each pane bar to its column's semantic color,
+   and brighten the logo X so it carries on the bluer header.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Lang badges by column — green for INPUT/XML, blue for TRANSFORM/XSLT,
+   gold for OUTPUT. Uses :has() to inherit from the parent column.
+   Both themes — these read clearly on light AND dark surfaces. */
+.col:has(.ind-xml) .lang-badge {
+  background: rgba(63,185,80,0.15);
+  border-color: rgba(63,185,80,0.30);
+  color: var(--success);
+}
+.col:has(.ind-xslt) .lang-badge {
+  background: rgba(0,112,242,0.15);
+  border-color: rgba(0,112,242,0.30);
+  color: var(--sap-blue-fg);
+}
+.col:has(.ind-out) .lang-badge {
+  background: rgba(245,165,36,0.15);
+  border-color: rgba(245,165,36,0.30);
+  color: var(--sap-gold);
+}
+/* Light theme tweak — boost saturation slightly so badges pop on white */
+body.light .col:has(.ind-xml) .lang-badge {
+  background: rgba(26,127,55,0.12);
+  border-color: rgba(26,127,55,0.35);
+  color: #1a7f37;
+}
+body.light .col:has(.ind-xslt) .lang-badge {
+  background: rgba(0,112,242,0.10);
+  border-color: rgba(0,112,242,0.40);
+  color: var(--sap-blue-fg);
+}
+body.light .col:has(.ind-out) .lang-badge {
+  background: rgba(217,119,6,0.12);
+  border-color: rgba(217,119,6,0.40);
+  color: #b45309;
+}
+
+/* ── Logo X — brand mark pop ──
+   The trailing X carries the brand. Bump weight, add a soft glow, tighten
+   tracking so it reads as a deliberate accent rather than just a colored
+   letter. */
+.logo-name-x {
+  color: var(--sap-blue);
+  font-weight: 900;
+  text-shadow: 0 0 12px var(--sap-blue-glow);
+  letter-spacing: -0.5px;
+}
+body.light .logo-name-x {
+  color: #0058c8;
+  text-shadow: 0 0 8px rgba(0,112,242,0.35);
+}
+.logo:hover .logo-name-x {
+  text-shadow: 0 0 16px rgba(0,112,242,0.55);
+}
+
+/* ── Output empty-state hint ──
+   Faded gold caption shown over the Output editor when it's empty.
+   Hidden as soon as Monaco renders content. JS toggles .has-content on
+   #outEdWrap when content is set/cleared. */
+#outEdWrap {
+  position: relative;
+}
+#outEdWrap .empty-output-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 5;
+  color: var(--sap-gold);
+  opacity: 0.45;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: opacity 0.3s ease;
+  background: var(--bg-editor);
+}
+body.light #outEdWrap .empty-output-hint {
+  background: #ffffff;
+}
+#outEdWrap.has-content .empty-output-hint {
+  display: none;
+}
+.empty-output-hint .empty-output-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--sap-gold);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+.empty-output-hint .empty-output-icon svg { opacity: 0.85; }
+.empty-output-hint .empty-output-caption {
+  font-weight: 600;
+  opacity: 0.85;
+}
+.empty-output-hint .empty-output-sub {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  opacity: 0.6;
+  font-weight: 400;
+}
+body.light #outEdWrap .empty-output-hint {
+  color: #b45309;
+  opacity: 0.55;
+}
+body.light .empty-output-hint .empty-output-icon { border-color: #b45309; }
+
+/* ── XPath-mode pane numbers ──
+   The XQuery bar lives inside the left column (which has .ind-xml) but
+   conceptually it's the transform step — give it the blue/xpath chip
+   color. The XPath Results bar lives in the right column (.ind-out) and
+   is correctly gold by inheritance, but we explicit-override here to be
+   resilient against future markup changes. */
+.col .pane-num.pane-num-xpath,
+.col:has(.ind-xml) .pane-num.pane-num-xpath {
+  color: var(--sap-blue-fg);
+  background: rgba(0,112,242,0.10);
+  border-color: rgba(0,112,242,0.22);
+}
+.col .pane-num.pane-num-results,
+.col:has(.ind-out) .pane-num.pane-num-results {
+  color: #f0b95a;
+  background: rgba(245,165,36,0.10);
+  border-color: rgba(245,165,36,0.25);
+}
+/* Light theme pulls the chip into its theme variant */
+body.light .pane-num.pane-num-xpath {
+  color: var(--sap-blue-fg);
+  background: rgba(0,112,242,0.08);
+  border-color: rgba(0,112,242,0.30);
+}
+body.light .pane-num.pane-num-results {
+  color: #b45309;
+  background: rgba(217,119,6,0.10);
+  border-color: rgba(217,119,6,0.30);
+}
+
+/* Vertical alignment inside the XPath Results bar — kv-icon is 14px,
+   pane-num is taller; align baselines */
+.xpath-results-bar .pane-num { line-height: 1; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PANEL HEADER BLUE ACCENT
+   Every secondary panel header (Headers, Properties, Console) gets a thin
+   SAP-blue left rail. The bars themselves stay neutral grey, but the rail
+   ties them to the brand and visually separates each section.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* The rail uses a pseudo-element pinned to the bar's left edge. A 3px-wide
+   gradient strip from sap-blue-from to sap-blue-to picks up the same
+   gradient used on the run button, mode-pill, and logomark. */
+.kv-header,
+.console-bar {
+  position: relative;
+}
+.kv-header::before,
+.console-bar::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--sap-blue-from), var(--sap-blue-to));
+  opacity: 0.85;
+  pointer-events: none;
+}
+/* Subtle glow when the panel is open (not collapsed/minimized) */
+.kv-panel:not(.collapsed) .kv-header::before {
+  box-shadow: 1px 0 6px var(--sap-blue-glow);
+}
+.console-panel:not(.minimized) .console-bar::before {
+  box-shadow: 1px 0 6px var(--sap-blue-glow);
+}
+/* Light theme — the rail glow needs to be readable on pale grey */
+body.light .kv-header::before,
+body.light .console-bar::before {
+  opacity: 0.95;
+}
+body.light .kv-panel:not(.collapsed) .kv-header::before {
+  box-shadow: 1px 0 6px rgba(0,112,242,0.25);
+}
+body.light .console-panel:not(.minimized) .console-bar::before {
+  box-shadow: 1px 0 6px rgba(0,112,242,0.25);
+}
+/* Push interior padding slightly so text doesn't sit on the rail */
+.kv-header { padding-left: 12px; }
+.console-bar { padding-left: 14px; }
+
+/* The xpath results bar gets a gold rail to match its 03/output identity */
+.xpath-results-bar { position: relative; padding-left: 14px; }
+.xpath-results-bar::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--sap-gold), #f0a020);
+  opacity: 0.85;
+  box-shadow: 1px 0 6px rgba(245,165,36,0.30);
+  pointer-events: none;
 }

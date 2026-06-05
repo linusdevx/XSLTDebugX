@@ -79,6 +79,16 @@ require(['vs/editor/editor.main'], () => {
     { ...shared, language: 'xml', value: '', readOnly: true, renderValidationDecorations: 'off' }
   );
 
+  // Editorial direction B: keep the empty-output hint in sync with Monaco's
+  // content state. Listening on the model means we catch every setValue path
+  // (transform results, clears, session restore, programmatic writes) without
+  // having to find each call site.
+  eds.out.onDidChangeModelContent(() => {
+    const wrap = document.getElementById('outEdWrap');
+    if (!wrap) return;
+    wrap.classList.toggle('has-content', eds.out.getValue().length > 0);
+  });
+
   modeManager.initializeModels(xmlModelXslt, xmlModelXpath);
 
   // Ctrl/Cmd+Enter → run XPath in XPath mode, run transform in XSLT mode.

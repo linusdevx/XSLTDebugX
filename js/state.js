@@ -47,6 +47,8 @@ function _resetOutputPane(lang, defaultName) {
   eds.out.updateOptions({ readOnly: false });
   eds.out.setValue('');
   eds.out.updateOptions({ readOnly: true });
+  // Editorial direction B: re-show the empty-state hint after a clear.
+  document.getElementById('outEdWrap')?.classList.remove('has-content');
 }
 
 // Backdrop click-to-close factory shared by three modals.
