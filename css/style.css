@@ -1032,6 +1032,7 @@
     }
     .stat {
       display: flex; align-items: center; gap: 5px;
+      white-space: nowrap;
       font-family: var(--font-mono);
       font-size: 11px; color: rgba(255,255,255,0.75);
     }
