@@ -1,12 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Background plate gradient — same SAP-blue family used by the header logo,
+         kept brighter at the bottom so the icon reads at 16×16 against light tabs. -->
+    <linearGradient id="xd-fav-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0060d0"/>
       <stop offset="100%" stop-color="#00a0ff"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="7" fill="url(#g)"/>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central"
-    font-family="'JetBrains Mono', 'Courier New', monospace"
-    font-weight="700" font-size="15" fill="#ffffff">XD</text>
+  <!-- Rounded plate — gives the icon presence in the tab strip regardless of theme. -->
+  <rect width="32" height="32" rx="7" fill="url(#xd-fav-bg)"/>
+  <!-- Bracket-arrow-bracket mark, mirroring the header logo geometry.
+       Strokes are heavier than the header version (3.2 / 2.6 vs 2.6 / 2.2)
+       so the glyph stays legible at 16×16 favicon size. -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- left bracket -->
+    <path d="M11 8 L5 16 L11 24" stroke-width="3.2"/>
+    <!-- right bracket -->
+    <path d="M21 8 L27 16 L21 24" stroke-width="3.2"/>
+    <!-- forward-flow arrow in the middle -->
+    <path d="M13 16 L19 16 M16.5 13 L19 16 L16.5 19" stroke-width="2.6"/>
+  </g>
 </svg>
