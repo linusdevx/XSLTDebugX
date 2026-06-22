@@ -4,7 +4,7 @@
 
 XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the complete user workflows without mocking any backend systems.
 
-**Status**: ✅ 87 tests passing (smoke + 8 workflow specs)
+**Status**: ✅ 98 tests passing (smoke + 9 workflow specs)
 
 ---
 
@@ -27,6 +27,7 @@ XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the co
             ├── xpath-evaluation.spec.js     #  7 tests: XPath expression evaluation
             ├── xslt-transform.spec.js       #  8 tests: XSLT transformations
             ├── cpi-simulation.spec.js       # 12 tests: CPI headers/properties, interceptors
+            ├── cpi-validation.spec.js       # 11 tests: CPI pre-flight validation (unknown fns, arity, line mapping)
             ├── examples-library.spec.js     # 14 tests: Examples modal, search, categories
             ├── share-url.spec.js            #  9 tests: URL encoding, session sharing
             └── kv-search.spec.js            # 12 tests: KV header/property search filter
@@ -159,7 +160,23 @@ Tests SAP CPI (Cloud Integration) simulation features - 12 tests (11 real + 1 SU
 
 **Run**: `npx playwright test tests/e2e/workflows/cpi-simulation.spec.js`
 
-### 7. Examples Library (`workflows/examples-library.spec.js`)
+### 7. CPI Validation (`workflows/cpi-validation.spec.js`)
+Tests CPI pre-flight validation: catches unknown `cpi:` functions, wrong arity, missing `xmlns:cpi`, missing `<xsl:param name="exchange"/>`, and accurate line mapping - 11 tests:
+- ✅ unknown cpi function (cpi:setHeaders typo) is rejected with clear message
+- ✅ cpi:getHeader is rejected (does not exist in real CPI)
+- ✅ cpi:setHeader with 2 args is rejected with arity message
+- ✅ missing xmlns:cpi is detected
+- ✅ wrong xmlns:cpi URI is rejected as a hard error
+- ✅ missing `<xsl:param name="exchange"/>` is detected
+- ✅ first arg not $exchange is detected
+- ✅ valid minimal CPI XSLT passes pre-flight and produces output
+- ✅ exclude-result-prefixes="#all" covers cpi — no false-positive warning
+- ✅ whitespace-rich XPath expression resolves to correct source line
+- ✅ bundled "CPI Headers & Properties" example still runs end-to-end
+
+**Run**: `npx playwright test tests/e2e/workflows/cpi-validation.spec.js`
+
+### 8. Examples Library (`workflows/examples-library.spec.js`)
 Tests example modal, search, filtering, and loading - 14 tests (13 real + 1 SUMMARY):
 - ✅ should open examples modal and render sidebar categories
 - ✅ should close modal on backdrop click
@@ -177,7 +194,7 @@ Tests example modal, search, filtering, and loading - 14 tests (13 real + 1 SUMM
 
 **Run**: `npx playwright test tests/e2e/workflows/examples-library.spec.js`
 
-### 8. Share URL (`workflows/share-url.spec.js`)
+### 9. Share URL (`workflows/share-url.spec.js`)
 Tests session sharing via encoded URLs - 9 tests (8 real + 1 SUMMARY):
 - ✅ should generate a share URL from current editor state
 - ✅ should include headers in share URL and decode correctly
@@ -190,7 +207,7 @@ Tests session sharing via encoded URLs - 9 tests (8 real + 1 SUMMARY):
 
 **Run**: `npx playwright test tests/e2e/workflows/share-url.spec.js`
 
-### 9. KV Search (`workflows/kv-search.spec.js`)
+### 10. KV Search (`workflows/kv-search.spec.js`)
 Tests substring filter on Headers / Properties / output KV panels - 12 tests:
 - ✅ toggles the search bar open and closed
 - ✅ filters rows by substring match against the name column
@@ -411,15 +428,16 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 
 ## Current Status
 
-✅ **87 tests passing** (across 9 spec files)
+✅ **98 tests passing** (across 10 spec files)
 - Smoke tests: 4/4
 - Mode switching: 13/13
 - Session management: 8/8
 - XPath evaluation: 7/7
 - XSLT transforms: 8/8
 - CPI simulation: 12/12
+- CPI validation: 11/11
 - Examples library: 14/14
 - Share URL: 9/9
 - KV search: 12/12
 
-Last updated: June 1, 2026
+Last updated: June 22, 2026

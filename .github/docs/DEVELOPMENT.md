@@ -330,7 +330,7 @@ Before committing or submitting a PR, verify:
 
 ### ✅ Examples Library
 
-- [ ] All ~60+ examples load without errors (current count is in `js/examples-data.js`)
+- [ ] All 61 examples load without errors (current count is in `js/examples-data.js`)
 - [ ] Example icons, labels, descriptions are correct
 - [ ] Categories filter correctly in modal
 - [ ] XPath hints display when loading XPath examples

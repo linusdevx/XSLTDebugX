@@ -24,12 +24,12 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        index.html                             │
-│  (loads CSS + 12 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
+│  (loads CSS + 13 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
 └──────────────────────────────────────────────────────────────┘
                               ↓
               ┌─────────────────────────────────┐
               │   Vanilla ES6+ JavaScript       │
-              │   (12 modules)
+              │   (13 modules)
               └─────────────────────────────────┘
                               ↓
         ┌─────────────────────────────────────────────┐
@@ -62,7 +62,7 @@ Concatenated in strict load order → content-hashed → dist/app.{hash}.js
 Vite — processes css/style.css → dist/app.{hash}.css
     ↓
 index.html rewritten:
-  - 12 <script src="js/..."> tags stripped
+  - Every <script src="js/..."> tag stripped
   - Single <script src="app.{hash}.js"> injected
   - CSS link replaced with hashed filename
     ↓
@@ -77,7 +77,7 @@ dist/lib/SaxonJS2.js, _headers, _redirects, favicon.svg copied as-is
 ```
 dist/
 ├── index.html           # Rewritten HTML
-├── app.{hash}.js        # All 12 modules, minified + concatenated
+├── app.{hash}.js        # All 13 modules, minified + concatenated
 ├── app.{hash}.css       # Minified CSS
 ├── favicon.svg
 ├── _headers             # Cloudflare cache rules
@@ -97,13 +97,14 @@ dist/
 | **validate.js** | XML/XSLT validation, Monaco error markers, Saxon error parsing | `validateXML()`, `markErrorLine()`, `preflight()`, `parseSaxonErrorLine()` |
 | **panes.js** | Word wrap, copy/clear/format, XML tokenizer | `toggleWordWrap()`, `copyPane()`, `fmtEditor()`, `prettyXML()`, `_tokenizeXML()`, `_indentTokens()` |
 | **transform.js** | XSLT execution, CPI simulation, output rendering | `runTransform()`, `rewriteCPICalls()`, `buildParamsXPath()`, `renderOutputKV()` |
-| **examples-data.js** | ~62 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
+| **examples-data.js** | 61 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
 | **modal.js** | Examples library UI, filtering, loading | `openExModal()`, `loadExample()`, `renderExGrid()`, `filterExamples()` |
 | **files.js** | File upload/download, drag-and-drop | `triggerUpload()`, `handleUpload()`, `downloadPane()`, `setupDragDrop()` |
 | **ui.js** | Console state, theme toggle, help modal, column collapse | `setConsoleState()`, `toggleTheme()`, `applyConsoleSearch()`, `setConsoleFilter()` |
 | **share.js** | URL encoding/decoding of session state | `buildSharePayload()`, `generateShareUrl()`, `loadFromShareHash()` |
 | **xpath.js** | XPath mode UI, expression evaluation, node highlighting, syntax coloring | `runXPath()`, `toggleXPath()`, `_highlightXPath()`, `_highlightMatchedNodes()` |
-| **editor.js** | Monaco initialization, themes, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `_toggleXmlComment()` |
+| **themes.js** | Monaco theme definitions (light + dark palettes) | `MONACO_THEME_DARK`, `MONACO_THEME_LIGHT` |
+| **editor.js** | Monaco initialization, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `_toggleXmlComment()` |
 
 ---
 
@@ -136,6 +137,8 @@ share.js (uses state, transform)                                │
     ↓ (provides generateShareUrl)                               │
 xpath.js (uses state, validate, mode-manager)                   │
     ↓ (provides runXPath, toggleXPath, node highlighting)       │
+themes.js                                                       │
+    ↓ (provides MONACO_THEME_DARK / MONACO_THEME_LIGHT)          │
 editor.js (uses state, all above) ←────────────────────────────┘
     ↓ (provides eds, Monaco init, keyboard shortcuts)
 [All modules must load before first user interaction]
@@ -541,6 +544,7 @@ The order in [../../index.html](../../index.html) is **critical**:
 <script src="js/ui.js"></script>         <!-- UI state, uses state -->
 <script src="js/share.js"></script>      <!-- URL sharing, uses state, transform -->
 <script src="js/xpath.js"></script>      <!-- XPath mode, uses validate, mode-manager -->
+<script src="js/themes.js"></script>     <!-- Monaco theme definitions -->
 <script src="js/editor.js"></script>     <!-- Monaco setup, uses all above (last) -->
 ```
 
