@@ -1,6 +1,6 @@
 # XSLTDebugX — SAP Cloud Integration XSLT IDE
 
-![XSLT 3.0](https://img.shields.io/badge/XSLT-3.0-blue?logo=w3c) ![XPath 3.1](https://img.shields.io/badge/XPath-3.1-blue) ![Saxon-JS](https://img.shields.io/badge/Saxon--JS-2.x-green) [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE) [![CI](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml) ![Built with Vite](https://img.shields.io/badge/built%20with-vite-646cff?logo=vite&logoColor=white) ![Deployed on Cloudflare Pages](https://img.shields.io/badge/deployed%20on-Cloudflare%20Pages-f38020?logo=cloudflare&logoColor=white) ![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
+![XSLT 3.0](https://img.shields.io/badge/XSLT-3.0-blue?logo=w3c) ![XPath 3.1](https://img.shields.io/badge/XPath-3.1-blue) ![Saxon-JS](https://img.shields.io/badge/Saxon--JS-2.x-green) [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE) [![CI](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml) [![CodeQL](https://github.com/linusdevx/XSLTDebugX/actions/workflows/codeql.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/linusdevx/XSLTDebugX/badge)](https://scorecard.dev/viewer/?uri=github.com/linusdevx/XSLTDebugX) [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025e8c?logo=dependabot&logoColor=white)](.github/dependabot.yml) ![Built with Vite](https://img.shields.io/badge/built%20with-vite-646cff?logo=vite&logoColor=white) ![Deployed on Cloudflare Pages](https://img.shields.io/badge/deployed%20on-Cloudflare%20Pages-f38020?logo=cloudflare&logoColor=white) ![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen) [![No Telemetry](https://img.shields.io/badge/telemetry-none-brightgreen)](SECURITY.md)
 
 > A browser-based XSLT 3.0 IDE and XPath evaluator built specifically for SAP Cloud Integration (CPI) developers. Test and debug XSLT mappings and XPath expressions locally — with full CPI runtime simulation — before ever deploying to your tenant.
 
@@ -209,11 +209,21 @@ Hosted on **Cloudflare Pages**, auto-deploys from `main`. CI (GitHub Actions) ru
 
 ---
 
+## Security
+
+- **No backend, no telemetry** — the app is static HTML + JS. Your XML, XSLT, headers, properties, and XPath expressions never leave your browser. The deployed site uses anonymous, cookie-less GoatCounter pageview pings only.
+- **Zero runtime npm dependencies** — Monaco / Lucide / pako load from CDN at pinned versions; Saxon-JS is bundled locally. Dev tools (Playwright, Vite, http-server) never ship.
+- **Continuous scanning** — every push and PR is analysed by [CodeQL](https://github.com/linusdevx/XSLTDebugX/actions/workflows/codeql.yml) (`security-and-quality` query suite); [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/linusdevx/XSLTDebugX) scores repo practices weekly; Dependabot tracks dev-deps and GitHub Actions.
+- **Auditable** — full source under AGPL-3.0; the deployed bundle is reproducible from this repo via `npm run build`.
+- **Reporting** — see [SECURITY.md](SECURITY.md) for the policy, or open a private [GitHub Security Advisory](https://github.com/linusdevx/XSLTDebugX/security/advisories/new).
+
+---
+
 ## Support
 
 - **Bugs and feature requests** — [GitHub Issues](https://github.com/linusdevx/XSLTDebugX/issues)
 - **Questions** — start by checking the [FAQ](#faq) or [.github/docs/DEVELOPMENT.md](.github/docs/DEVELOPMENT.md)
-- **Security** — for sensitive reports, please use [GitHub Security Advisories](https://github.com/linusdevx/XSLTDebugX/security/advisories) instead of public issues
+- **Security** — see [Security](#security) above or [SECURITY.md](SECURITY.md) for the full policy
 
 ---
 
