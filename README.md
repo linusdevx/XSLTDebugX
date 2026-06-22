@@ -195,7 +195,7 @@ For more recipes (XPath empty results, lost session, console filtering), see **[
 
 ## Architecture & Dependencies (at a glance)
 
-Vanilla JavaScript, 12 modules, no module system, **no npm runtime dependencies**. Monaco Editor and pako load from CDN; Saxon-JS is bundled locally in `lib/`.
+Vanilla JavaScript, 13 modules, no module system, **no npm runtime dependencies**. Monaco Editor and pako load from CDN; Saxon-JS is bundled locally in `lib/`.
 
 | Component | Type | Purpose |
 |---|---|---|
