@@ -424,6 +424,9 @@ function runTransform() {
   btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">⌘↵</span>`;
   setStatus('Transforming…', 'busy');
   _triggerRunParticles();
+  // Editorial direction B: drives the inter-column data-flow line animation
+  // and the logomark arrow pulse. Cleared in the outer finally below.
+  document.body.classList.add('running');
 
   try {
     const xmlSrc = eds.xml?.getValue()?.trim();
@@ -535,6 +538,8 @@ function runTransform() {
       eds.out.updateOptions({ readOnly: false });
       eds.out.setValue(_outValue);
       eds.out.updateOptions({ readOnly: true });
+      // Editorial direction B: hide the empty-state hint once Output has content.
+      document.getElementById('outEdWrap')?.classList.toggle('has-content', !!_outValue);
 
       // CPI-captured values (dynamic + static) take priority, then pass-through inputs.
       const outHdrs  = { ...cpiCaptured.headers };
@@ -638,5 +643,6 @@ function runTransform() {
   } finally {
     // Always re-enable Run button — even if preflight or param building throws.
     resetBtn();
+    document.body.classList.remove('running');
   }
 }

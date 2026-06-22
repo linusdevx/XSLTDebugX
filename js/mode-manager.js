@@ -154,6 +154,10 @@ class ModeManager {
     if (hdrPanel) hdrPanel.style.display = visibility;
     if (propPanel) propPanel.style.display = visibility;
     if (outSection) outSection.style.display = visibility;
+    // XPath Results panel: persistent in XPath mode (empty-state until first run),
+    // hidden in XSLT mode. Mirror of outputSection gating.
+    const xpathPanel = document.getElementById('xpathResultsPanel');
+    if (xpathPanel) xpathPanel.style.display = this.isXpath ? 'flex' : 'none';
     if (shareBtn) {
       shareBtn.disabled = this.isXpath;
       shareBtn.title = this.isXpath ? 'Sharing is only available in XSLT mode' : '';
@@ -170,6 +174,15 @@ class ModeManager {
 
     if (xmlPaneTitle) xmlPaneTitle.textContent = newTitle;
     if (xmlColTabLabel) xmlColTabLabel.textContent = newTitle;
+
+    // Editorial direction B: pane numbers flip with the mode so the 01→02→03
+    // sequence reads naturally top-to-bottom in either layout.
+    //   XSLT mode:  XML=01   (Transform=02 in center col, Output=03 in right col)
+    //   XPath mode: XQuery=01 (XML=02 below it,           Results=03 in right col)
+    const xmlPaneNum  = document.getElementById('xmlPaneNum');
+    const xpathPaneNum = document.getElementById('xpathPaneNum');
+    if (xmlPaneNum)   xmlPaneNum.textContent   = this.isXpath ? '02' : '01';
+    if (xpathPaneNum) xpathPaneNum.textContent = '01';
 
     const consoleTitle = document.querySelector('.console-title');
     if (consoleTitle) {

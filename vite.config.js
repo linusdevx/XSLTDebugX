@@ -16,6 +16,21 @@ function resolveLastModified() {
   }
 }
 
+// Build-info chip shown in the bottom status bar: "YYYY-MM-DD (shortSHA)".
+// Same git-or-fallback pattern as resolveLastModified — keeps source-tarball
+// builds and detached-HEAD CI runs working. Two separate git calls because
+// passing a multi-token --format string through execSync treats whitespace as
+// argv separation on some shells.
+function resolveBuildInfo() {
+  try {
+    const date = execSync('git log -1 --format=%cs', { encoding: 'utf8' }).trim();
+    const sha = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+    return `${date} (${sha})`;
+  } catch {
+    return `${new Date().toISOString().slice(0, 10)} (unknown)`;
+  }
+}
+
 // Exact load order from index.html — critical for global namespace correctness
 const JS_MODULES = [
   'js/state.js',
@@ -139,6 +154,12 @@ export default defineConfig({
         html = html.replace('</body>', `  <script src="${jsFilename}"></script>\n</body>`);
         // Refresh JSON-LD dateModified — keeps SEO signals current without manual edits
         html = html.replace(/"dateModified":\s*"[^"]*"/, `"dateModified": "${lastModified}"`);
+        // Inject build-info chip ("YYYY-MM-DD (shortSHA)") replacing the __BUILD_INFO__
+        // placeholder. Also flip data-placeholder="true" to "false" so the runtime
+        // local-dev fallback (in the inline DOMContentLoaded script) leaves it alone.
+        const buildInfo = resolveBuildInfo();
+        html = html.replace('__BUILD_INFO__', buildInfo);
+        html = html.replace('data-placeholder="true"', 'data-placeholder="false"');
 
         writeFileSync('dist/index.html', html);
       },

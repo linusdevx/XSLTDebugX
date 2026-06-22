@@ -1,22 +1,27 @@
 :root {
-      --bg-base:        #080c12;
-      --bg-panel:       #0d1420;
-      --bg-header:      #0a0f1a;
-      --bg-console:     #05080e;
-      --bg-editor:      #0a1018;
-      --border:         #182030;
-      --border-bright:  #1e3050;
+      --bg-base:        #06080d;
+      --bg-panel:       rgba(13, 20, 32, 0.65);
+      --bg-header:      rgba(10, 15, 26, 0.85);
+      --bg-console:     rgba(5, 8, 14, 0.9);
+      --bg-editor:      #080c14;
+      --bg-modal:       #0e1626;
+      --panel-blur:     blur(16px);
+      --border:         rgba(255, 255, 255, 0.08);
+      --border-bright:  rgba(255, 255, 255, 0.15);
       --sap-blue:       #0070f2;
       --sap-blue-glow:  rgba(0,112,242,0.25);
+      --sap-blue-from:  #0068e0;
+      --sap-blue-to:    #0098f0;
+      --sap-blue-fg:    #60a0f8;
       --sap-gold:       #f5a524;
-      --text-primary:   #c8d8e8;
-      --text-secondary: #6888a8;
-      --text-dim:       #384858;
+      --text-primary:   #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-dim:       #475569;
       --success:        #3fb950;
       --error:          #f85149;
       --warning:        #f5a524;
-      --scrollbar:      #182030;
-      --kv-row-alt:     rgba(255,255,255,0.025);
+      --scrollbar:      rgba(255, 255, 255, 0.1);
+      --kv-row-alt:     rgba(255, 255, 255, 0.02);
       --status-bar-from: #004eb8;
       --status-bar-to:   #0068e0;
       /* XPath tokenizer colors — dark */
@@ -26,21 +31,57 @@
       --xpt-num:   #e8c56d;
       --xpt-op:    #f472b6;
       --xpt-node:  #56b6c2;
-      --xpt-pred:  #0070f2;
-      --xpt-sep:   #384858;
+      --xpt-pred:  #3b82f6;
+      --xpt-sep:   #475569;
+      --fs-9:   9px;
+      --fs-10:  10px;
+      --fs-11:  11px;
+      --fs-12:  12px;
+      --fs-13:  13px;
+      --fs-15:  15px;
+      --fs-17:  17px;
+      --r-xs:   4px;
+      --r-sm:   6px;
+      --r-md:   8px;
+      --r-lg:   12px;
+      --r-xl:   14px;
+      --r-pill: 999px;
+      --font-mono: 'JetBrains Mono', monospace;
+      --t-fast: 0.15s;
+      --t-med:  0.25s;
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --hover-bg:        rgba(255,255,255,0.04);
+      --hover-bg-strong: rgba(255,255,255,0.08);
+      --bar-h: 32px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     .hidden { display: none !important; }
 
     body {
-      font-family: 'Syne', sans-serif;
+      font-family: var(--font-mono);
       background: var(--bg-base);
       color: var(--text-primary);
       height: 100vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
+      z-index: 0;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      top: -25%; left: -15%; width: 50vw; height: 50vw;
+      background: radial-gradient(circle, var(--sap-blue-glow) 0%, transparent 60%);
+      z-index: -1; pointer-events: none;
+    }
+    body::after {
+      content: "";
+      position: absolute;
+      bottom: -25%; right: -15%; width: 60vw; height: 60vw;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
+      z-index: -1; pointer-events: none;
     }
 
     /* ── REDUCED MOTION ── */
@@ -52,17 +93,32 @@
       }
     }
 
-    /* ── LOADING ── */
+    /* ── SLEEK SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar);
+      border-radius: var(--r-lg);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(128, 128, 128, 0.4);
+    }
+
+    /* ── LOADING SKELETON ── */
     #loadingOverlay {
       position: fixed; inset: 0;
       background: var(--bg-base);
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px; z-index: 9999;
+      padding: 16px; gap: 16px; z-index: 9999;
       transition: opacity 0.5s ease;
     }
     #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
-
+    
     .load-bg-grid {
       position: absolute; inset: 0;
       background-image:
@@ -71,35 +127,45 @@
       background-size: 40px 40px;
       animation: grid-pulse 3s ease-in-out infinite;
     }
-
-    .load-logo {
-      font-size: 32px; font-weight: 800; letter-spacing: -1.5px;
-      color: var(--text-primary); position: relative; z-index: 1;
-    }
-    .load-logo span { color: var(--sap-blue); }
-
-    .load-logo-shimmer {
-      width: 120px; height: 2px; border-radius: 1px;
-      background: linear-gradient(90deg, transparent, var(--sap-blue), transparent);
-      animation: logo-shimmer 2s ease-in-out infinite;
+    
+    .skeleton-header {
+      height: 50px; border-radius: var(--r-lg);
+      background: var(--bg-panel);
+      animation: skeleton-pulse 1.5s infinite;
       position: relative; z-index: 1;
     }
-
-    .load-dots {
-      display: flex; gap: 6px; position: relative; z-index: 1;
-    }
-    .load-dots span {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--sap-blue); opacity: 0.3;
-      animation: dot-bounce 1.2s ease-in-out infinite;
-    }
-    .load-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .load-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-    .load-text {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px;
+    .skeleton-workspace {
+      display: flex; flex: 1; gap: 16px;
       position: relative; z-index: 1;
+    }
+    .skeleton-col {
+      flex: 1; border-radius: var(--r-lg);
+      background: var(--bg-panel);
+      animation: skeleton-pulse 1.5s infinite;
+    }
+    .skeleton-center { flex: 1.2; }
+    
+    .skeleton-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      color: var(--text-dim); font-family: var(--font-mono);
+      font-size: 13px; font-weight: 500;
+      z-index: 2;
+    }
+    .spinner {
+      width: 24px; height: 24px;
+      border: 3px solid rgba(0,112,242,0.2);
+      border-top-color: var(--sap-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes skeleton-pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 0.3; }
+      100% { opacity: 0.6; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* ── KEYFRAMES ── */
@@ -144,30 +210,59 @@
       transform: scale(0); animation: ripple 0.6s ease-out forwards;
       pointer-events: none;
     }
+
+    /* ── BUTTON BASE ──
+       Zero-specificity defaults via :where() so every -btn class can override
+       freely. Provides the common reset so individual rules can focus on
+       size, color, and behavior. */
+    :where(
+      .run-btn, .ex-btn, .header-icon-btn, .pane-icon-btn, .collapse-btn,
+      .kv-add-btn, .kv-del-btn, .console-filter-btn, .console-text-btn,
+      .mode-btn, .ex-cat-btn, .share-copy-btn, .ex-modal-close,
+      .help-tab, .console-chevron, .xpath-hints-toggle
+    ) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      color: inherit;
+      font-family: var(--font-mono);
+      transition: all var(--t-fast);
+    }
+    :where(
+      .run-btn, .ex-btn, .header-icon-btn, .pane-icon-btn, .collapse-btn,
+      .kv-add-btn, .kv-del-btn, .console-filter-btn, .console-text-btn,
+      .mode-btn, .ex-cat-btn, .share-copy-btn
+    ):disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
     .run-particle {
       position: absolute; width: 6px; height: 6px; border-radius: 50%;
       top: 50%; left: 50%; pointer-events: none;
-      animation: particle-burst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: particle-burst 0.6s var(--ease-spring) forwards;
     }
-    .pane-success { animation: success-glow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .pane-success { animation: success-glow 0.6s var(--ease-spring); }
     .pane-error { animation: error-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
 
 
     /* ── THEME TOGGLE ICONS ── */
     .theme-toggle { position: relative; }
     .theme-toggle svg {
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.4s var(--ease-spring);
     }
     body.light .theme-icon-sun { display: none; }
     body:not(.light) .theme-icon-moon { display: none; }
 
-    /* ── MODE SWITCH PILL ── */
     .mode-switcher .mode-pill {
       position: absolute; top: 2px; left: 2px; bottom: 2px;
-      width: calc(50% - 2px); border-radius: 6px;
-      background: linear-gradient(135deg, #0068e0, #0098f0);
+      width: calc(50% - 2px); border-radius: var(--r-sm);
+      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
       box-shadow: 0 0 14px rgba(0,112,242,0.4);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: transform 0.35s var(--ease-spring);
       z-index: 0;
     }
     .mode-switcher.xpath-mode .mode-pill { transform: translateX(100%); }
@@ -180,8 +275,8 @@
       background: var(--success);
       color: white;
       padding: 12px 16px;
-      border-radius: 6px;
-      font-family: 'JetBrains Mono', monospace;
+      border-radius: var(--r-sm);
+      font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 500;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -196,14 +291,27 @@
       transform: translateY(0);
     }
 
-    /* ── HEADER ── */
+    /* ── HEADER — Linear/Raycast-style command bar ──
+       Hairline dividers between groups, square buttons, monospace 12px,
+       no glows, no rounded pills. The header is chrome — it should sit
+       quietly so the editors and flow-line carry the visual weight. */
     .header {
       background: var(--bg-header);
+      backdrop-filter: var(--panel-blur);
+      -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 50px;
+      height: 46px;
       display: flex; align-items: center;
-      padding: 0 14px; gap: 12px;
+      padding: 0 10px; gap: 6px;
       flex-shrink: 0;
+      position: relative;
+    }
+    /* Subtle hairline accent under the bar to separate from workspace */
+    .header::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+      height: 1px; background: linear-gradient(90deg,
+        transparent, var(--sap-blue-glow) 20%, var(--sap-blue-glow) 80%, transparent);
+      opacity: 0.5; pointer-events: none;
     }
     .header nav { display: contents; }
     /* Visually hidden but kept in the DOM and a11y tree.
@@ -221,79 +329,121 @@
     }
 
     .logo {
-      display: flex; align-items: center; gap: 9px; text-decoration: none;
-      margin: 0; font-size: inherit; font-weight: inherit;
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      margin: 0; padding: 0 6px 0 4px;
+      font-size: inherit; font-weight: inherit;
       overflow: visible;
+      position: relative;
+    }
+    /* Hairline divider after the logomark — separates brand from command groups */
+    .logo::after {
+      content: ""; position: absolute; right: -3px; top: 50%;
+      width: 1px; height: 20px; transform: translateY(-50%);
+      background: var(--border-bright); opacity: 0.6;
     }
     .logo-mark {
-      width: 30px; height: 30px;
-      background: linear-gradient(135deg, #0060d0, #00a0ff);
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700; font-size: 12px; color: #fff;
-      box-shadow: 0 0 14px rgba(0,112,242,0.4);
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 6px var(--sap-blue-glow));
+      transition: filter 0.3s ease, transform 0.3s var(--ease-spring);
+    }
+    .logo:hover .logo-mark {
+      transform: rotate(-6deg) scale(1.05);
+      filter: drop-shadow(0 0 10px rgba(0,112,242,0.45));
+    }
+    /* Pulse the central arrow on Run — JS toggles .running on body */
+    body.running .logo-mark .logo-mark-arrow {
+      animation: logo-arrow-pulse 1s ease-in-out infinite;
+      transform-origin: center;
+    }
+    @keyframes logo-arrow-pulse {
+      0%, 100% { opacity: 0.7; transform: translateX(0); }
+      50%      { opacity: 1;   transform: translateX(1.5px); }
     }
     .logo-name {
-      font-size: 17px; font-weight: 800; letter-spacing: -0.5px;
+      font-size: 14px; font-weight: 700; letter-spacing: -0.2px;
       color: var(--text-primary);
       line-height: 1.3;
       padding-bottom: 1px;
+      font-family: var(--font-mono);
     }
+    /* Trailing "X" picks up the brand blue and follows the theme. */
+    .logo-name-x { color: var(--sap-blue); font-weight: 800; }
     .logo-tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 500;
-      padding: 2px 8px; border-radius: 20px;
+      padding: 2px 8px; border-radius: var(--r-pill);
       background: rgba(0,112,242,0.12);
       border: 1px solid rgba(0,112,242,0.28);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       letter-spacing: 0.6px;
     }
     .logo-tag-ide {
       background: rgba(63,185,80,0.1);
       border-color: rgba(63,185,80,0.28);
-      color: #3fb950;
+      color: var(--success);
+    }
+    /* Amber/gold pill — mirrors the XPath-mode accent used by .ind-out,
+       .xf-xpath-match-glyph, and .mode-pill.mode-xpath in the status bar. */
+    .logo-tag-xpath {
+      background: rgba(245,165,36,0.1);
+      border-color: rgba(245,165,36,0.28);
+      color: var(--sap-gold);
     }
     .h-spacer { flex: 1; }
     .run-btn {
       display: flex; align-items: center; gap: 7px;
-      padding: 7px 0;
-      min-width: 148px; width: 148px; justify-content: center;
-      background: linear-gradient(135deg, #0068e0, #0098f0);
-      border: none; border-radius: 7px;
-      color: #fff; cursor: pointer;
-      font-family: 'Syne', sans-serif;
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.1px;
-      box-shadow: 0 0 22px rgba(0,112,242,0.35);
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      padding: 6px 14px;
+      min-width: 110px; height: 32px; justify-content: center;
+      background: linear-gradient(135deg, var(--sap-blue-from), var(--sap-blue-to));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-sm);
+      color: #fff;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(0,112,242,0.32), inset 0 1px 0 rgba(255,255,255,0.12);
+      transition: all 0.2s var(--ease-spring);
       position: relative; overflow: hidden;
     }
-    .run-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 6px 28px rgba(0,112,242,0.45); }
+    .run-btn:hover { transform: translateY(-1px); box-shadow: 0 0 18px rgba(0,112,242,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
     .run-btn:active { transform: translateY(0) scale(0.97); }
     .run-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-    .run-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .run-btn .spinner { animation: xd-spin 0.7s linear infinite; transform-origin: center; }
-    @keyframes xd-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .run-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .run-btn .spinner { animation: spin 0.7s linear infinite; transform-origin: center; }
 
     /* keyboard shortcut hint */
     .kbd {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; color: rgba(255,255,255,0.5);
       background: rgba(255,255,255,0.1);
-      padding: 1px 5px; border-radius: 3px;
+      padding: 1px 5px; border-radius: var(--r-xs);
     }
 
     /* ── WORKSPACE: 3-column ── */
     .workspace {
       display: flex; flex: 1; overflow: hidden; min-height: 0;
+      padding: 6px;
+      gap: 6px;
     }
 
     /* Side cols (Input / Output) are narrower than centre */
-    .col { display: flex; flex-direction: column; overflow: hidden; transition: flex 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), min-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), max-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
-    .col-side   { flex: 1; min-width: 0; border-right: 1px solid var(--border); }
-    .col-side:last-child { border-right: none; border-left: 1px solid var(--border); }
-    .col-center { flex: 1.2; min-width: 0; border-right: 1px solid var(--border); }
+    .col { 
+      display: flex; flex-direction: column; overflow: hidden; 
+      border-radius: var(--r-lg);
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+      transition: flex 0.35s var(--ease-spring), min-width 0.35s var(--ease-spring), max-width 0.35s var(--ease-spring), opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; 
+    }
+    .col:focus-within {
+      border-color: var(--sap-blue-glow);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--sap-blue-glow);
+    }
+    .col-side   { flex: 1; min-width: 0; }
+    .col-side:last-child { }
+    .col-center { flex: 1.2; min-width: 0; }
     .col-center.collapsed { display: none; }
 
     /* Collapsed side column — slim vertical tab */
@@ -318,14 +468,16 @@
       gap: 12px;
       cursor: pointer;
       background: var(--bg-panel);
+      backdrop-filter: var(--panel-blur);
+      -webkit-backdrop-filter: var(--panel-blur);
       flex: 1;
     }
-    .col-tab:hover { background: rgba(128,128,128,0.08); }
+    .col-tab:hover { background: var(--hover-bg-strong); }
     .col-tab-label {
       writing-mode: vertical-rl;
       text-orientation: mixed;
       transform: rotate(180deg);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
@@ -338,13 +490,13 @@
     /* Collapse toggle button in pane-bar */
     .collapse-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px;
+      width: 24px; height: 24px;
       background: transparent;
-      border: 1px solid transparent; border-radius: 4px;
+      border: 1px solid transparent; border-radius: var(--r-xs);
       color: var(--text-dim); cursor: pointer;
-      transition: all 0.15s; flex-shrink: 0;
+      transition: all var(--t-fast); flex-shrink: 0;
     }
-    .collapse-btn:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
+    .collapse-btn:hover { color: var(--text-primary); border-color: var(--border); background: var(--hover-bg-strong); }
     .collapse-btn svg { width: 12px; height: 12px; }
 
     /* Editor fills the available vertical space in its column */
@@ -361,30 +513,40 @@
     /* ── PANE BAR ── */
     .pane-bar {
       background: var(--bg-panel);
+      backdrop-filter: var(--panel-blur);
+      -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 36px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 12px; gap: 8px;
     }
+    /* Clickable bar — XML / Output pane bars toggle their side-column collapse on
+       click (matches console-bar and kv-header UX). Buttons inside .pane-actions
+       and the validation badge stop propagation. */
+    .pane-bar-clickable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .pane-bar-clickable:hover { background: var(--hover-bg); }
     .pane-indicator {
       width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
     }
-    .ind-xml   { background: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.5); }
+    .ind-xml   { background: var(--success); box-shadow: 0 0 8px rgba(63,185,80,0.5); }
     .ind-xslt  { background: var(--sap-blue); box-shadow: 0 0 8px var(--sap-blue-glow); }
     .ind-out   { background: var(--sap-gold); box-shadow: 0 0 8px rgba(245,165,36,0.4); }
     .pane-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
     }
     .lang-badge {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
-      padding: 1px 6px; border-radius: 3px;
+      padding: 1px 6px; border-radius: var(--r-xs);
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.25);
-      color: #60a0f8; letter-spacing: 0.5px;
+      color: var(--sap-blue-fg); letter-spacing: 0.5px;
     }
     .pane-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 
@@ -394,8 +556,8 @@
       align-items: center;
       gap: 4px;
       padding: 2px 8px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      border-radius: var(--r-xs);
+      font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 600;
       letter-spacing: 0.5px;
@@ -432,13 +594,13 @@
 
     .pane-icon-btn {
       display: flex; align-items: center; justify-content: center;
-      width: 26px; height: 22px;
+      width: 24px; height: 24px;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       color: var(--text-dim);
       cursor: pointer;
-      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.18s var(--ease-spring);
       flex-shrink: 0;
     }
     .pane-icon-btn:hover {
@@ -463,37 +625,39 @@
       flex-shrink: 0;
       border-top: 1px solid var(--border);
       background: var(--bg-panel);
+      backdrop-filter: var(--panel-blur);
+      -webkit-backdrop-filter: var(--panel-blur);
       display: flex; flex-direction: column;
       max-height: 200px;
       transition: max-height 0.2s ease;
     }
-    .kv-panel.collapsed { max-height: 31px; overflow: hidden; }
+    .kv-panel.collapsed { max-height: var(--bar-h); overflow: hidden; }
     .kv-header {
-      height: 30px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 10px; gap: 6px;
       cursor: pointer;
       user-select: none;
       border-bottom: 1px solid var(--border);
     }
-    .kv-header:hover { background: rgba(255,255,255,0.02); }
+    .kv-header:hover { background: var(--hover-bg); }
     .kv-icon {
       font-size: 11px; color: var(--sap-blue); font-weight: 700;
       width: 14px; text-align: center;
     }
     .kv-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
     }
     .kv-count {
       margin-left: auto;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       background: rgba(0,112,242,0.2);
-      color: #60a0f8;
-      padding: 0 5px; border-radius: 8px;
+      color: var(--sap-blue-fg);
+      padding: 0 5px; border-radius: var(--r-md);
       min-width: 18px; text-align: center;
     }
     /* count starts the right-aligned cluster; give the search input breathing room after it */
@@ -502,20 +666,20 @@
       width: 18px; height: 18px;
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.3);
-      border-radius: 4px;
-      color: #60a0f8; font-size: 14px; line-height: 1;
+      border-radius: var(--r-xs);
+      color: var(--sap-blue-fg); font-size: 14px; line-height: 1;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       flex-shrink: 0;
     }
     .kv-add-btn:hover { background: rgba(0,112,242,0.3); }
     /* Inline search input in KV panel header — mirrors .console-search */
     .kv-search {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       background: transparent;
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       color: var(--text-secondary);
       padding: 2px 6px;
       width: 90px;
@@ -532,7 +696,7 @@
     .kv-search.kv-search-active {
       border-color: rgba(0,112,242,0.5);
       background: rgba(0,112,242,0.06);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     /* Spacing rules — keep search flush against add-btn / chevron */
     .kv-search + .kv-add-btn { margin-left: 4px; }
@@ -543,7 +707,11 @@
       transition: transform 0.2s;
       flex-shrink: 0;
     }
-    .kv-panel.collapsed .kv-chevron { transform: rotate(-90deg); }
+    /* Rotate up (180°) when collapsed — matches .console-chevron so both
+       section toggles share the same metaphor: chevron points down when open
+       (body drops downward from the header), points up when collapsed (click
+       to drop it back down). */
+    .kv-panel.collapsed .kv-chevron { transform: rotate(180deg); }
     /* add-btn followed by chevron — 6px gap */
     .kv-add-btn + .kv-chevron { margin-left: 6px; }
 
@@ -552,12 +720,12 @@
       padding: 0;
     }
     .kv-body::-webkit-scrollbar { width: 4px; }
-    .kv-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 2px; }
+    .kv-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-xs); }
 
     .kv-table-head {
       display: grid; grid-template-columns: 1fr 1fr 24px;
       padding: 3px 10px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 600;
       letter-spacing: 0.8px; text-transform: uppercase;
       color: var(--text-dim);
@@ -598,7 +766,7 @@
     .kv-row input {
       background: transparent;
       border: none; outline: none;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px; color: var(--text-primary);
       padding: 4px 10px; width: 100%;
     }
@@ -611,7 +779,7 @@
       color: var(--text-dim); cursor: pointer;
       font-size: 13px; display: flex;
       align-items: center; justify-content: center;
-      transition: color 0.15s;
+      transition: color var(--t-fast);
     }
     .kv-del-btn:hover { color: var(--error); }
 
@@ -633,7 +801,7 @@
       padding: 4px 10px;
       border-bottom: 1px solid var(--border);
       display: none;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
     }
     .kv-row-wrapper:last-child .kv-error-msg {
       border-bottom: none;
@@ -646,7 +814,7 @@
       align-items: center;
     }
     .kv-row-out span {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px; padding: 4px 10px;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
@@ -657,7 +825,7 @@
        same look as the existing "Click + to add" / "— none —" empty state. */
     .kv-empty,
     .kv-no-matches {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; color: var(--text-dim);
       padding: 8px 10px; font-style: italic;
     }
@@ -669,11 +837,11 @@
       display: flex; flex-direction: column;
       height: 160px;
       position: relative;
-      transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: height 0.35s var(--ease-spring);
       overflow: hidden;
     }
     .console-panel.dragging { transition: none; }
-    .console-panel.minimized { height: 31px !important; }
+    .console-panel.minimized { height: var(--bar-h) !important; }
 
     .console-resize-handle {
       position: absolute;
@@ -682,7 +850,7 @@
       cursor: ns-resize;
       background: transparent;
       z-index: 2;
-      transition: background 0.15s;
+      transition: background var(--t-fast);
     }
     .console-resize-handle:hover,
     .console-panel.dragging .console-resize-handle {
@@ -692,15 +860,17 @@
 
     .console-bar {
       background: var(--bg-panel);
+      backdrop-filter: var(--panel-blur);
+      -webkit-backdrop-filter: var(--panel-blur);
       border-bottom: 1px solid var(--border);
-      height: 30px; flex-shrink: 0;
+      height: var(--bar-h); flex-shrink: 0;
       display: flex; align-items: center;
       padding: 0 10px; gap: 6px;
       cursor: pointer; user-select: none;
     }
-    .console-bar:hover { background: rgba(255,255,255,0.02); }
+    .console-bar:hover { background: var(--hover-bg); }
     .console-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
@@ -710,9 +880,9 @@
       display: none;
       background: var(--error);
       color: #fff;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
-      padding: 1px 5px; border-radius: 8px;
+      padding: 1px 5px; border-radius: var(--r-md);
       min-width: 16px; text-align: center;
     }
     .console-err-badge.visible { display: inline-block; }
@@ -723,11 +893,11 @@
       display: flex; align-items: center; gap: 2px;
     }
     .console-search {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       background: transparent;
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       color: var(--text-secondary);
       padding: 2px 7px;
       width: 110px;
@@ -741,12 +911,12 @@
     }
     /* Text-label toolbar buttons in console bar (Copy / Clear) — readable at a glance */
     .console-text-btn {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: 0.5px;
       background: transparent;
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       color: var(--text-secondary);
       padding: 2px 8px;
       cursor: pointer;
@@ -756,7 +926,7 @@
     .console-text-btn:hover {
       color: var(--text-primary);
       border-color: var(--border-bright);
-      background: rgba(255,255,255,0.04);
+      background: var(--hover-bg);
     }
     body.light .console-text-btn:hover {
       background: rgba(0,112,242,0.06);
@@ -764,14 +934,14 @@
     .console-filter-btn {
       display: flex; align-items: center; justify-content: center;
       width: 20px; height: 20px;
-      padding: 0; border-radius: 4px;
+      padding: 0; border-radius: var(--r-xs);
       border: 1px solid transparent;
       background: transparent;
       cursor: pointer;
       transition: color 0.15s, background 0.15s, border-color 0.15s;
       flex-shrink: 0;
     }
-    .console-filter-btn:hover { background: rgba(255,255,255,0.05); }
+    .console-filter-btn:hover { background: var(--hover-bg); }
     /* Inactive — each dot has its own muted color so they're distinguishable */
     .console-filter-btn[data-filter="all"]   { color: #4a6080; }
     .console-filter-btn[data-filter="info"]  { color: #2a5a9a; }
@@ -781,7 +951,7 @@
     .console-filter-btn.active[data-filter="all"] {
       color: var(--text-secondary);
       border-color: var(--border-bright);
-      background: rgba(255,255,255,0.06);
+      background: var(--hover-bg-strong);
     }
     .console-filter-btn.active[data-filter="info"] {
       color: var(--sap-blue);
@@ -810,12 +980,12 @@
       margin-left: 4px;
       padding: 4px;
       box-sizing: border-box;
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       cursor: pointer;
     }
     .console-chevron:hover {
       color: var(--text-secondary);
-      background: rgba(255,255,255,0.06);
+      background: var(--hover-bg-strong);
     }
     body.light .console-chevron:hover {
       background: rgba(0,0,0,0.06);
@@ -825,13 +995,13 @@
       flex: 1; overflow-y: auto;
       padding: 4px 14px;
       background: var(--bg-console);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-11);
     }
     .console-panel.minimized .console-body { display: none; }
     .console-body::-webkit-scrollbar { width: 5px; }
     .console-body::-webkit-scrollbar-track { background: transparent; }
-    .console-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+    .console-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-xs); }
     .log-line { line-height: 1.7; }
     .log-line .ts { color: var(--text-dim); margin-right: 8px; }
     .log-line.info .msg    { color: var(--text-secondary); }
@@ -846,12 +1016,12 @@
 
     /* Error line highlight (glyph margin decoration) */
     .xf-error-line-bg  { background: rgba(248,81,73,0.10); }
-    .xf-error-glyph    { background: #f85149; border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
+    .xf-error-glyph    { background: var(--error); border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
 
     /* XPath match highlight decorations — amber/gold to match XML pane indicator */
     .xf-xpath-match-bg       { background: rgba(245,165,36,0.13); border-left: 2px solid rgba(245,165,36,0.6); }
-    .xf-xpath-match-glyph    { background: #f5a524; border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
-    .xf-xpath-match-inline   { background: rgba(245,165,36,0.20); border-radius: 2px; }
+    .xf-xpath-match-glyph    { background: var(--sap-gold); border-radius: 50%; width: 8px !important; height: 8px !important; margin-top: 7px; margin-left: 4px; }
+    .xf-xpath-match-inline   { background: rgba(245,165,36,0.20); border-radius: var(--r-xs); }
 
     /* ── STATUS BAR ── */
     .status-bar {
@@ -862,48 +1032,44 @@
     }
     .stat {
       display: flex; align-items: center; gap: 5px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px; color: rgba(255,255,255,0.75);
     }
     .stat-dot {
       width: 5px; height: 5px; border-radius: 50%;
       background: rgba(255,255,255,0.5);
     }
-    .stat-dot.ok   { background: #3fb950; }
+    .stat-dot.ok   { background: var(--success); }
     .stat-dot.busy { background: var(--sap-gold); animation: pulse 1s infinite; }
     .stat-dot.err  { background: var(--error); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .stat-spacer { flex: 1; }
-    .stat-cursor {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px; color: var(--text-dim);
-      white-space: nowrap; padding: 0 6px;
-    }
+    .stat-cursor {font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,0.75); white-space: nowrap; padding: 0 6px;}
     .xpath-header-count {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
-      padding: 1px 6px; border-radius: 10px;
+      padding: 1px 6px; border-radius: var(--r-lg);
       background: rgba(0,112,242,0.18);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
       border: 1px solid rgba(0,112,242,0.3);
       letter-spacing: 0.3px;
     }
     .xpath-header-count.has-results {
       background: rgba(63,185,80,0.15);
-      color: #3fb950;
+      color: var(--success);
       border-color: rgba(63,185,80,0.3);
     }
     .xpath-header-count.has-error {
       background: rgba(248,81,73,0.15);
-      color: #f85149;
+      color: var(--error);
       border-color: rgba(248,81,73,0.3);
     }
     .stat-mode { display: flex; align-items: center; }
     .mode-pill {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
       letter-spacing: 0.8px; text-transform: uppercase;
-      padding: 2px 7px; border-radius: 3px;
+      padding: 2px 7px; border-radius: var(--r-xs);
     }
     .mode-pill.mode-xslt {
       background: rgba(0,112,242,0.2);
@@ -920,37 +1086,45 @@
     body.light {
       --status-bar-from: #0058c8;
       --status-bar-to:   #0070f2;
-      --bg-console:     #f8fafc;
-      --bg-base:        #f0f4f8;
-      --bg-panel:       #e4eaf2;
-      --bg-header:      #ffffff;
+      --bg-console:     rgba(248, 250, 252, 0.95);
+      /* Cool blue-tinted background — barely-blue slate that gives the
+         workspace SAP-brand atmosphere without sacrificing readability */
+      --bg-base:        #e8eef7;
+      --bg-panel:       rgba(255, 255, 255, 0.78);
+      --bg-header:      rgba(238, 244, 252, 0.92);
       --bg-editor:      #ffffff;
-      --border:         #d0dae8;
-      --border-bright:  #a8bcd4;
+      --bg-modal:       #ffffff;
+      --panel-blur:     blur(16px);
+      --border:         rgba(0, 64, 140, 0.10);
+      --border-bright:  rgba(0, 64, 140, 0.20);
       --sap-blue:       #0070f2;
-      --sap-blue-glow:  rgba(0,112,242,0.15);
-      --sap-gold:       #c87800;
-      --text-primary:   #1a2535;
-      --text-secondary: #4a6080;
-      --text-dim:       #8aa0b8;
+      --sap-blue-glow:  rgba(0,112,242,0.18);
+      --sap-blue-from:  #0058c8;
+      --sap-blue-to:    #0085ff;
+      --sap-blue-fg:    #0550ae;
+      --sap-gold:       #d97706;
+      --text-primary:   #0f172a;
+      --text-secondary: #475569;
+      --text-dim:       #94a3b8;
       --success:        #1a7f37;
       --error:          #cf222e;
-      --warning:        #c87800;
-      --scrollbar:      #c0cfe0;
-      --kv-row-alt:     #f4f7fb;
+      --warning:        #d97706;
+      --scrollbar:      rgba(0, 64, 140, 0.18);
+      --kv-row-alt:     rgba(0, 64, 140, 0.025);
+      --hover-bg:        rgba(0, 64, 140, 0.05);
+      --hover-bg-strong: rgba(0, 64, 140, 0.10);
       /* XPath tokenizer colors — light */
-      --xpt-attr:  #116329;
-      --xpt-str:   #0a3069;
-      --xpt-fn:    #c87800;
-      --xpt-num:   #b5521a;
-      --xpt-op:    #a626a4;
-      --xpt-node:  #0550ae;
-      --xpt-pred:  #0070f2;
-      --xpt-sep:   #8aa0b8;
+      --xpt-attr:  #166534;
+      --xpt-str:   #1e3a8a;
+      --xpt-fn:    #d97706;
+      --xpt-num:   #9a3412;
+      --xpt-op:    #86198f;
+      --xpt-node:  #1d4ed8;
+      --xpt-pred:  #2563eb;
+      --xpt-sep:   #94a3b8;
     }
 
     /* ── LIGHT THEME: console filter buttons ── */
-    body.light .console-filter-btn:hover { background: rgba(0,0,0,0.05); }
     body.light .console-filter-btn[data-filter="all"]   { color: #8090a8; }
     body.light .console-filter-btn[data-filter="info"]  { color: #5a8ac0; }
     body.light .console-filter-btn[data-filter="warn"]  { color: #c89030; }
@@ -964,7 +1138,7 @@
     body.light .ripple-circle { background: rgba(0,112,242,0.2); }
     body.light .pane-icon-btn:hover { background: rgba(0,112,242,0.06); }
     body.light .header-icon-btn:hover { box-shadow: 0 0 12px rgba(0,112,242,0.12); }
-    body.light .run-btn:hover { box-shadow: 0 6px 24px rgba(0,112,242,0.25); }
+    body.light .run-btn:hover { box-shadow: 0 0 36px rgba(0,112,242,0.45); }
     body.light .mode-switcher .mode-pill { box-shadow: 0 0 10px rgba(0,112,242,0.25); }
     body.light .load-bg-grid {
       background-image:
@@ -986,13 +1160,13 @@
     .xpath-input-row {
       display: flex; align-items: flex-start; gap: 8px;
       padding: 7px 12px;
-      min-height: 34px;
+      min-height: var(--bar-h);
       background: var(--bg-editor);
       border-bottom: 2px solid var(--sap-blue);
       flex-shrink: 0;
     }
     .xpath-icon {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 13px; font-weight: 700;
       color: var(--sap-blue);
       flex-shrink: 0;
@@ -1003,18 +1177,20 @@
       display: flex;
       position: relative;
       overflow: hidden;
-      background: var(--bg-panel);
+      background: var(--hover-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--r-sm);
       padding: 2px;
       gap: 0;
+      height: 32px;
     }
     .mode-btn {
       display: flex; align-items: center; gap: 5px;
-      padding: 6px 14px;
-      border: none; border-radius: 6px;
-      font-family: 'Syne', sans-serif;
-      font-size: 12px; font-weight: 600;
+      padding: 4px 12px;
+      border: none; border-radius: var(--r-xs);
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
       background: transparent;
       color: var(--text-dim);
@@ -1033,7 +1209,7 @@
     }
     .xpath-input {
       flex: 1; min-width: 0;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       background: transparent;
       border: none; outline: none;
@@ -1059,7 +1235,7 @@
       top: 1px; left: 0; right: 0;
       pointer-events: none;
       z-index: 0;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       line-height: 20px;
       word-break: break-all;
@@ -1105,7 +1281,7 @@
       align-items: center;
       justify-content: center;
       border: 1px solid var(--border-bright);
-      border-radius: 3px;
+      border-radius: var(--r-xs);
       background: transparent;
       color: var(--text-dim);
       cursor: pointer;
@@ -1126,7 +1302,7 @@
       white-space: nowrap;
       flex-shrink: 0;
       align-self: flex-start;
-      font-family: 'Syne', sans-serif;
+      font-family: var(--font-mono);
       letter-spacing: 0.4px;
       text-transform: uppercase;
       padding-right: 3px;
@@ -1136,11 +1312,11 @@
       display: inline-flex;
       align-items: center;
       padding: 2px 8px;
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       border: 1px solid var(--border-bright);
       background: rgba(0,112,242,0.07);
       color: var(--sap-blue);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       white-space: nowrap;
       cursor: pointer;
@@ -1158,7 +1334,10 @@
       background: rgba(0,112,242,0.28);
     }
 
-    /* Results panel */
+    /* Results panel — visible in XPath mode (gated by mode-manager.js, which
+       sets inline display:flex in XPath mode and display:none otherwise, mirroring
+       how it hides #outputSection). The pane bar is persistent; the body shows
+       an empty-state overlay (.xpath-empty-hint) until the first run. */
     .xpath-results-panel {
       display: none;
       flex-direction: column;
@@ -1166,30 +1345,33 @@
       border-bottom: 1px solid var(--border);
       background: var(--bg-base);
     }
-    .xpath-results-panel.visible {
+    .xpath-results-body-wrap {
+      flex: 1; min-height: 0;
       display: flex;
+      flex-direction: column;
+      background: var(--bg-editor);
     }
     .xpath-results-bar {
       flex-shrink: 0;
-      height: 36px;
+      height: var(--bar-h);
       display: flex; align-items: center; gap: 6px;
       padding: 0 12px;
       background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
     }
     .xpath-results-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
       letter-spacing: 1px; text-transform: uppercase;
       color: var(--text-secondary);
     }
     .xpath-match-count {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 700;
-      padding: 1px 8px; border-radius: 10px;
+      padding: 1px 8px; border-radius: var(--r-lg);
       background: rgba(0,112,242,0.15);
       border: 1px solid rgba(0,112,242,0.3);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     .xpath-match-count.has-results {
       background: rgba(63,185,80,0.12);
@@ -1205,13 +1387,13 @@
     .xpath-results-body {
       flex: 1; overflow-y: auto;
       padding: 8px 0;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11.5px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-11);
       background: var(--bg-editor);
     }
     .xpath-results-body::-webkit-scrollbar { width: 5px; }
     .xpath-results-body::-webkit-scrollbar-track { background: transparent; }
-    .xpath-results-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+    .xpath-results-body::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-xs); }
     .xpath-result-item {
       display: flex; gap: 10px;
       padding: 6px 14px;
@@ -1220,7 +1402,7 @@
       background: transparent;
     }
     .xpath-result-item:last-child { border-bottom: none; }
-    .xpath-result-item:hover { background: rgba(255,255,255,0.025); }
+    .xpath-result-item:hover { background: var(--hover-bg); }
     .xpath-result-num {
       flex-shrink: 0;
       font-size: 10px; font-weight: 700;
@@ -1232,8 +1414,8 @@
     .xpath-result-content {
       flex: 1; min-width: 0;
       white-space: pre-wrap; word-break: break-all;
-      font-size: 11.5px;
-      font-family: 'JetBrains Mono', monospace;
+      font-size: var(--fs-11);
+      font-family: var(--font-mono);
       line-height: 1.6;
       margin: 0;
     }
@@ -1241,11 +1423,11 @@
     .xpath-result-type {
       flex-shrink: 0;
       font-size: 9px; font-weight: 700;
-      padding: 1px 5px; border-radius: 3px;
+      padding: 1px 5px; border-radius: var(--r-xs);
       margin-top: 2px;
       text-transform: uppercase; letter-spacing: 0.4px;
     }
-    .xpath-result-type.node  { background: rgba(0,112,242,0.12); color: #60a0f8; border: 1px solid rgba(0,112,242,0.2); }
+    .xpath-result-type.node  { background: rgba(0,112,242,0.12); color: var(--sap-blue-fg); border: 1px solid rgba(0,112,242,0.2); }
     .xpath-result-type.text  { background: rgba(63,185,80,0.12);  color: var(--success); border: 1px solid rgba(63,185,80,0.2); }
     .xpath-result-type.atomic { background: rgba(245,165,36,0.12); color: var(--warning); border: 1px solid rgba(245,165,36,0.2); }
 
@@ -1253,14 +1435,14 @@
     .xpath-no-results {
       padding: 24px 16px;
       color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
       text-align: center;
     }
     .xpath-error {
       padding: 12px 16px;
       color: var(--error);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
       line-height: 1.6;
     }
@@ -1292,7 +1474,6 @@
     /* Light theme overrides */
     body.light #xpathBar .xpath-input-row { background: var(--bg-editor); }
     body.light .xpath-results-body { background: var(--bg-editor); }
-    body.light .xpath-result-item:hover { background: rgba(0,0,0,0.02); }
     body.light .xpath-result-type.node   { color: #0550ae; background: rgba(5,80,174,0.08);  border-color: rgba(5,80,174,0.2);  }
     body.light .xpath-result-type.text   { background: rgba(26,127,55,0.08);  border-color: rgba(26,127,55,0.2);  }
     body.light .xpath-result-type.atomic { background: rgba(200,120,0,0.08);  border-color: rgba(200,120,0,0.2);  }
@@ -1306,19 +1487,22 @@
     /* ── EXAMPLES BUTTON ── */
     .ex-btn {
       display: flex; align-items: center; gap: 6px;
-      padding: 7px 13px;
-      background: var(--bg-panel);
+      padding: 6px 11px;
+      height: 32px;
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: 7px;
+      border-radius: var(--r-sm);
       color: var(--text-secondary);
-      font-family: 'Syne', sans-serif;
-      font-size: 12px; font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.3px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
       white-space: nowrap;
     }
-    .ex-btn:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--bg-header); }
-    .ex-btn svg { width: 12px; height: 12px; }
+    .ex-btn:hover { color: var(--text-primary); border-color: var(--border-bright); background: var(--hover-bg); }
+    .ex-btn svg { width: 12px; height: 12px; opacity: 0.85; }
+    .ex-btn:hover svg { opacity: 1; }
 
     /* ── GROUP 1: unified text+icon secondary buttons (Share, Examples, Clear Session) ── */
     .clear-session-btn:hover {
@@ -1331,23 +1515,21 @@
     .header-icon-btn {
       display: flex; align-items: center; justify-content: center;
       width: 32px; height: 32px;
-      background: var(--bg-panel);
+      background: transparent;
       border: 1px solid var(--border);
-      border-radius: 7px;
+      border-radius: var(--r-sm);
       color: var(--text-secondary);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
       flex-shrink: 0;
     }
     .header-icon-btn:hover {
       color: var(--text-primary);
-      border-color: var(--sap-blue);
-      background: var(--bg-header);
-      transform: scale(1.08);
-      box-shadow: 0 0 14px var(--sap-blue-glow);
+      border-color: var(--border-bright);
+      background: var(--hover-bg);
     }
     .header-icon-btn:active {
-      transform: scale(0.92);
+      transform: scale(0.94);
     }
 
     /* ── EXAMPLES LIBRARY MODAL ── */
@@ -1368,15 +1550,14 @@
     .ex-modal {
       width: min(860px, 94vw);
       height: min(600px, 88vh);
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
-      border-radius: 14px;
+      border-radius: var(--r-xl);
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
       display: flex;
-      animation: modal-spring-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
       flex-direction: column;
       overflow: hidden;
-      animation: modalIn 0.18s ease;
+      animation: modal-spring-in 0.4s var(--ease-spring) both;
     }
     @keyframes modalIn {
       from { opacity: 0; transform: translateY(12px) scale(0.98); }
@@ -1395,21 +1576,21 @@
       color: var(--text-primary);
     }
     .ex-modal-count {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; color: var(--text-dim);
       background: rgba(128,128,128,0.12);
-      padding: 2px 8px; border-radius: 10px;
+      padding: 2px 8px; border-radius: var(--r-lg);
     }
     .ex-modal-search {
       flex: 1;
       background: var(--bg-base);
       border: 1px solid var(--border);
-      border-radius: 7px;
+      border-radius: var(--r-md);
       padding: 6px 12px 6px 32px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 12px; color: var(--text-primary);
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color var(--t-fast);
     }
     .ex-modal-search:focus { border-color: var(--sap-blue); }
     .ex-modal-search::placeholder { color: var(--text-dim); }
@@ -1423,24 +1604,24 @@
       width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center;
       background: transparent; border: 1px solid transparent;
-      border-radius: 6px; color: var(--text-dim);
-      cursor: pointer; font-size: 16px; transition: all 0.15s;
+      border-radius: var(--r-sm); color: var(--text-dim);
+      cursor: pointer; font-size: 16px; transition: all var(--t-fast);
       flex-shrink: 0;
     }
-    .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: rgba(128,128,128,0.1); }
+    .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: var(--hover-bg-strong); }
 
     /* Auto-run checkbox */
     .ex-auto-run-label {
       display: flex; align-items: center; gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px; color: var(--text-dim);
       cursor: pointer; flex-shrink: 0;
       margin-left: auto;
-      padding: 4px 8px; border-radius: 6px;
-      transition: background 0.15s;
+      padding: 4px 8px; border-radius: var(--r-sm);
+      transition: background var(--t-fast);
       user-select: none;
     }
-    .ex-auto-run-label:hover { background: rgba(128,128,128,0.08); }
+    .ex-auto-run-label:hover { background: var(--hover-bg-strong); }
     .ex-auto-run-label input[type="checkbox"] {
       cursor: pointer; width: 14px; height: 14px;
       accent-color: var(--sap-blue);
@@ -1459,7 +1640,7 @@
       overflow-y: auto;
     }
     .ex-sidebar-label {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
       letter-spacing: 1.4px; text-transform: uppercase;
       color: var(--text-dim);
@@ -1470,13 +1651,13 @@
       width: 100%; padding: 7px 14px;
       background: transparent; border: none;
       cursor: pointer; text-align: left;
-      font-family: 'Syne', sans-serif;
+      font-family: var(--font-mono);
       font-size: 12px; font-weight: 600;
       color: var(--text-secondary);
       transition: all 0.12s;
       border-left: 2px solid transparent;
     }
-    .ex-cat-btn:hover { color: var(--text-primary); background: rgba(128,128,128,0.07); }
+    .ex-cat-btn:hover { color: var(--text-primary); background: var(--hover-bg-strong); }
     .ex-cat-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
     .ex-cat-btn.active {
       color: var(--sap-blue);
@@ -1485,11 +1666,11 @@
     }
     .ex-cat-count {
       margin-left: auto;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
       background: rgba(128,128,128,0.12);
       color: var(--text-dim);
-      padding: 0 5px; border-radius: 8px;
+      padding: 0 5px; border-radius: var(--r-md);
       min-width: 18px; text-align: center;
     }
 
@@ -1498,10 +1679,10 @@
       flex: 1; overflow-y: auto; padding: 16px;
     }
     .ex-grid-wrap::-webkit-scrollbar { width: 5px; }
-    .ex-grid-wrap::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+    .ex-grid-wrap::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: var(--r-xs); }
 
     .ex-grid-section-label {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
       letter-spacing: 1.4px; text-transform: uppercase;
       color: var(--sap-blue);
@@ -1516,10 +1697,10 @@
     .ex-card {
       background: var(--bg-base);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--r-lg);
       padding: 14px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       display: flex; flex-direction: column; gap: 8px;
       position: relative; overflow: hidden;
     }
@@ -1527,7 +1708,7 @@
       content: '';
       position: absolute; top: 0; left: 0; right: 0; height: 2px;
       background: var(--card-accent, var(--sap-blue));
-      opacity: 0; transition: opacity 0.15s;
+      opacity: 0; transition: opacity var(--t-fast);
     }
     .ex-card:hover {
       border-color: var(--border-bright);
@@ -1543,7 +1724,7 @@
       color: var(--text-primary); line-height: 1.3;
     }
     .ex-card-desc {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; color: var(--text-dim);
       line-height: 1.5;
     }
@@ -1551,34 +1732,34 @@
       display: flex; align-items: center; gap: 6px; margin-top: auto;
     }
     .ex-card-tag {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 600;
-      padding: 2px 6px; border-radius: 4px;
+      padding: 2px 6px; border-radius: var(--r-xs);
       background: rgba(0,112,242,0.1);
       border: 1px solid rgba(0,112,242,0.2);
-      color: #60a0f8;
+      color: var(--sap-blue-fg);
     }
     .ex-card-load {
       margin-left: auto;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
-      padding: 3px 10px; border-radius: 5px;
+      padding: 3px 10px; border-radius: var(--r-sm);
       background: var(--sap-blue); color: #fff;
-      opacity: 0; transition: opacity 0.15s;
+      opacity: 0; transition: opacity var(--t-fast);
       pointer-events: none;
     }
     .ex-card:hover .ex-card-load { opacity: 1; }
 
     /* ── SHARE BUTTON ── */
     .xf-session-share {
-      color: #60a0f8;
-      border-color: rgba(0,112,242,0.3);
-      background: rgba(0,112,242,0.08);
+      color: var(--sap-blue-fg);
+      border-color: rgba(0,112,242,0.25);
+      background: rgba(0,112,242,0.05);
     }
     .xf-session-share:hover {
-      color: #fff;
-      border-color: rgba(0,112,242,0.6);
-      background: rgba(0,112,242,0.18);
+      color: var(--text-primary);
+      border-color: rgba(0,112,242,0.5);
+      background: rgba(0,112,242,0.12);
     }
     .xf-session-share:disabled,
     .xf-session-share[disabled] {
@@ -1587,17 +1768,17 @@
     }
     .xf-session-share:disabled:hover,
     .xf-session-share[disabled]:hover {
-      color: #60a0f8;
-      border-color: rgba(0,112,242,0.3);
-      background: rgba(0,112,242,0.08);
+      color: var(--sap-blue-fg);
+      border-color: rgba(0,112,242,0.25);
+      background: rgba(0,112,242,0.05);
     }
 
     /* ── SHARE MODAL ── */
     .share-modal {
       width: min(500px, 92vw);
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
-      border-radius: 14px;
+      border-radius: var(--r-xl);
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
       display: flex;
       flex-direction: column;
@@ -1627,9 +1808,9 @@
       flex: 1;
       background: var(--bg-base);
       border: 1px solid var(--border);
-      border-radius: 7px;
+      border-radius: var(--r-md);
       padding: 8px 12px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px; color: var(--text-secondary);
       outline: none;
       cursor: text;
@@ -1641,17 +1822,17 @@
       flex-shrink: 0;
       padding: 8px 16px;
       background: var(--sap-blue);
-      border: none; border-radius: 7px;
+      border: none; border-radius: var(--r-md);
       color: #fff; cursor: pointer;
-      font-family: 'Syne', sans-serif;
+      font-family: var(--font-mono);
       font-size: 12px; font-weight: 700;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
       white-space: nowrap;
     }
     .share-copy-btn:hover { background: #0085ff; }
     .share-copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .share-hint {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; color: var(--text-dim);
       line-height: 1.5;
     }
@@ -1660,9 +1841,9 @@
     .help-modal {
       width: min(620px, 94vw);
       max-height: 80vh;
-      background: var(--bg-panel);
+      background: var(--bg-modal);
       border: 1px solid var(--border-bright);
-      border-radius: 14px;
+      border-radius: var(--r-xl);
       box-shadow: 0 32px 80px rgba(0,0,0,0.35);
       display: flex;
       flex-direction: column;
@@ -1686,16 +1867,16 @@
       flex: 1;
     }
     .help-tab {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-      padding: 4px 12px; border-radius: 6px;
+      padding: 4px 12px; border-radius: var(--r-sm);
       border: 1px solid transparent;
       background: transparent;
       color: var(--text-dim);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all var(--t-fast);
     }
-    .help-tab:hover { color: var(--text-secondary); background: rgba(255,255,255,0.05); }
+    .help-tab:hover { color: var(--text-secondary); background: var(--hover-bg); }
     .help-tab.active {
       color: var(--sap-blue);
       border-color: rgba(0,112,242,0.3);
@@ -1713,7 +1894,7 @@
     }
     .help-section:last-child { border-bottom: none; }
     .help-section-title {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 600; letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--sap-blue);
@@ -1722,21 +1903,21 @@
     .help-row {
       display: flex; align-items: baseline; gap: 12px;
       padding: 4px 0;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
       color: var(--text-secondary);
       line-height: 1.5;
     }
     .help-row span:last-child { flex: 1; color: var(--text-dim); }
     .help-row code {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px;
-      background: rgba(255,255,255,0.06);
-      padding: 1px 5px; border-radius: 3px;
+      background: var(--hover-bg-strong);
+      padding: 1px 5px; border-radius: var(--r-xs);
       color: var(--text-secondary);
     }
     .help-key {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 700;
       color: var(--text-secondary);
       white-space: nowrap;
@@ -1744,11 +1925,11 @@
       flex-shrink: 0;
     }
     .help-row kbd {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 700;
       background: var(--bg-base);
       border: 1px solid var(--border-bright);
-      border-radius: 4px;
+      border-radius: var(--r-xs);
       padding: 2px 7px;
       color: var(--text-secondary);
       white-space: nowrap;
@@ -1757,9 +1938,9 @@
       display: inline-block;
     }
     .help-badge {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: var(--font-mono);
       font-size: 9px; font-weight: 700;
-      padding: 2px 8px; border-radius: 4px;
+      padding: 2px 8px; border-radius: var(--r-xs);
       white-space: nowrap;
       min-width: 90px;
       flex-shrink: 0;
@@ -1786,6 +1967,9 @@
   white-space: nowrap;
   color: rgba(255,255,255,0.55);
 }
+.build-info {
+  color: rgba(255,255,255,0.7);
+}
 .stat-link,
 .stat-link:visited,
 .stat-link:active {
@@ -1794,14 +1978,14 @@
   gap: 3px;
   color: rgba(255,255,255,0.55);
   text-decoration: none;
-  transition: color 0.15s;
+  transition: color var(--t-fast);
 }
 .stat-link:hover { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
 .stat-divider { opacity: 0.5; }
 .saved-indicator {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
-  color: #3fb950;
+  color: var(--success);
   opacity: 0;
   transition: opacity 0.4s ease;
   display: flex;
@@ -1813,7 +1997,7 @@
 .help-row.help-row-feature {
   background: rgba(34, 139, 230, 0.1);
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   margin: 8px 0;
   border-left: 3px solid #228be6;
 }
@@ -1828,7 +2012,8 @@
 
 @media (max-width: 1100px) {
   .header .logo-tag,
-  .header .logo-tag-ide {
+  .header .logo-tag-ide,
+  .header .logo-tag-xpath {
     display: none;
   }
   .header .run-btn .kbd {
@@ -1839,4 +2024,633 @@
 body.theme-switching,
 body.theme-switching * {
   transition: none !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   EDITORIAL / IDE-LUXE — Direction B
+   Numbered pane labels · inter-column data-flow line · hairline editor grid.
+   These rules sit at the end of the file so they predictably override
+   earlier definitions where needed (pane-bar gap, .col-side flex math).
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Numbered pane labels (01 / INPUT, 02 / TRANSFORM, 03 / OUTPUT) ──
+   The .pane-num chip is a tiny tabular-figures monospace tag.
+   Title typography is tightened to read as an editorial caption. */
+.pane-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--sap-blue-fg);
+  background: rgba(0, 112, 242, 0.10);
+  border: 1px solid rgba(0, 112, 242, 0.22);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  user-select: none;
+  line-height: 1;
+}
+/* Color-tune the chip to match the pane indicator dot — semantic continuity */
+.col:has(.ind-xml)   .pane-num { color: #5fd07a; background: rgba(63,185,80,0.10); border-color: rgba(63,185,80,0.25); }
+.col:has(.ind-xslt)  .pane-num { color: var(--sap-blue-fg); background: rgba(0,112,242,0.10); border-color: rgba(0,112,242,0.22); }
+.col:has(.ind-out)   .pane-num { color: #f0b95a; background: rgba(245,165,36,0.10); border-color: rgba(245,165,36,0.25); }
+/* Slash separator after the chip — pure CSS, no extra DOM */
+.pane-num::after {
+  content: " /";
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+/* Soften the existing pane-title now that it has a numbered prefix */
+.pane-bar .pane-title,
+.xpath-results-bar .xpath-results-title,
+.console-bar .console-title,
+.kv-header .kv-title {
+  letter-spacing: 1.4px;
+  font-weight: 600;
+}
+
+/* ── Inter-column data-flow line ──
+   Two thin horizontal segments rendered absolutely over the workspace gutters.
+   Each segment is a faint base track with a brighter dot that animates
+   left→right when body has the .running class (set by transform.js around
+   the Saxon call). Hidden in collapsed-column states. */
+.workspace { position: relative; }
+.flow-line {
+  position: absolute;
+  top: 50%;
+  height: 1px;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+.flow-line-track {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--sap-blue-glow) 15%,
+    var(--sap-blue-glow) 85%,
+    transparent 100%);
+}
+.flow-line-dot {
+  position: absolute;
+  top: 50%; left: 0;
+  width: 6px; height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--sap-blue);
+  box-shadow: 0 0 8px var(--sap-blue), 0 0 16px var(--sap-blue-glow);
+  opacity: 0;
+  transform: translateX(0);
+}
+/* Position the two flow segments using calc() against the column ratios.
+   Side cols flex:1, center flex:1.2 → total parts = 3.2.
+   Workspace padding 6px, gap 6px. Segments span the gap zone roughly. */
+.flow-line-1 { left: calc((100% - 24px) * (1 / 3.2) + 6px); width: 6px; }
+.flow-line-2 { left: calc((100% - 24px) * (2.2 / 3.2) + 12px); width: 6px; }
+/* Hide flow line when adjacent column is collapsed — checked via :has() */
+.workspace:has(#colLeft.collapsed)  .flow-line-1,
+.workspace:has(#colRight.collapsed) .flow-line-2 { opacity: 0; }
+/* Running animation — dot sweeps across the segment, repeats while running */
+body.running .flow-line { opacity: 1; }
+body.running .flow-line-dot {
+  animation: flow-dot-sweep 1.4s var(--ease-spring) infinite;
+}
+body.running .flow-line-2 .flow-line-dot { animation-delay: 0.7s; }
+@keyframes flow-dot-sweep {
+  0%   { left: 0;            opacity: 0; transform: scale(0.6); }
+  20%  {                     opacity: 1; transform: scale(1); }
+  80%  {                     opacity: 1; transform: scale(1); }
+  100% { left: calc(100% - 6px); opacity: 0; transform: scale(0.6); }
+}
+
+/* ── Hairline grid backdrop behind Monaco editors ──
+   24px grid at very low opacity. Sits on .editor-wrap (Monaco renders into
+   the absolutely-positioned child div above it). Light theme uses darker
+   strokes; dark theme uses subtle white. */
+.editor-wrap {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 0;
+}
+body.light .editor-wrap {
+  background-image:
+    linear-gradient(rgba(0,40,90,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,40,90,0.035) 1px, transparent 1px);
+}
+
+/* ── Light-theme shadow tuning ──
+   The dark-mode glows on columns and Run hover translate to muddy haloes
+   on white. Calm them. */
+body.light .col {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+body.light .col:focus-within {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--sap-blue-glow);
+}
+body.light .run-btn {
+  box-shadow: 0 1px 0 rgba(0,40,90,0.12), 0 0 10px rgba(0,112,242,0.18), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+body.light .run-btn:hover {
+  box-shadow: 0 2px 0 rgba(0,40,90,0.14), 0 0 16px rgba(0,112,242,0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+body.light .logo-mark {
+  filter: drop-shadow(0 0 4px rgba(0,112,242,0.25));
+}
+body.light .logo:hover .logo-mark {
+  filter: drop-shadow(0 0 8px rgba(0,112,242,0.35));
+}
+/* Header underline accent loses contrast on light — boost it slightly */
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.18) 20%, rgba(0,112,242,0.18) 80%, transparent);
+}
+
+/* ── Status bar — SAP blue brand rail ──
+   Uses the existing --status-bar-from/--status-bar-to vars (already
+   theme-tuned in :root and body.light). Slightly calmer than the
+   original loud gradient: dimmer accent line on top, no oversaturated
+   highlights, all text/links white-on-blue at calibrated opacities. */
+.status-bar {
+  background: linear-gradient(90deg, var(--status-bar-from), var(--status-bar-to)) !important;
+  border-top: 1px solid rgba(0,0,0,0.18);
+  color: rgba(255,255,255,0.85);
+  position: relative;
+}
+.status-bar::before {
+  content: ""; position: absolute;
+  left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg,
+    transparent, rgba(255,255,255,0.25) 30%, rgba(255,255,255,0.25) 70%, transparent);
+  pointer-events: none;
+}
+.status-bar .stat,
+.status-bar .stat-cursor {
+  color: rgba(255,255,255,0.85);
+}
+.status-bar .stat-link {
+  color: rgba(255,255,255,0.75);
+  opacity: 1;
+}
+.status-bar .stat-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+.status-bar .stat-divider { color: rgba(255,255,255,0.4); opacity: 1; }
+.status-bar .saved-indicator { color: #a7f3d0; }
+.status-bar .stat-dot.ok   { background: #a7f3d0; box-shadow: 0 0 6px rgba(167,243,208,0.5); }
+.status-bar .stat-dot.busy { background: var(--sap-gold); }
+.status-bar .stat-dot.err  { background: #fca5a5; }
+/* Mode pill — readable on blue in both themes */
+.status-bar .mode-pill.mode-xslt {
+  background: rgba(255,255,255,0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.status-bar .mode-pill.mode-xpath {
+  background: rgba(245,165,36,0.30);
+  color: #ffffff;
+  border: 1px solid rgba(245,165,36,0.55);
+}
+/* No light/dark overrides needed — the blue gradient vars already adapt. */
+
+/* ════════════════════════════════════════════════════════════════════════
+   LIGHT THEME — BLUE BRAND ATMOSPHERE
+   Adds visual rhythm to break the "sea of white" feel: ambient blue/gold
+   radial washes behind the workspace, blue-tinted glass header, subtle
+   color-accent top stripes on each column, and stronger panel borders
+   so editor surfaces feel like distinct cards on a tinted canvas.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Stronger radial washes in light mode — the dark-theme :before/:after
+   washes are too subtle on white. Boost opacity and slightly shift hues
+   so the blue brand color suffuses the workspace edges. */
+body.light::before {
+  background: radial-gradient(circle, rgba(0,112,242,0.10) 0%, transparent 60%);
+}
+body.light::after {
+  background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 60%);
+}
+
+/* Each column gets a faint blue-to-color hairline at the top — picks up the
+   pane indicator dot color and grounds the column visually. Matches the
+   editorial-direction-B numbered chip palette. */
+body.light .col {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+  border: 1px solid rgba(0, 64, 140, 0.12);
+  position: relative;
+}
+body.light .col::before {
+  content: ""; position: absolute;
+  left: 0; right: 0; top: 0; height: 2px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+body.light .col:has(.ind-xml)::before,
+body.light .col:has(.ind-xslt)::before,
+body.light .col:has(.ind-out)::before {
+  background: linear-gradient(90deg, transparent, var(--sap-blue) 20%, var(--sap-blue) 80%, transparent);
+}
+body.light .col:focus-within::before { opacity: 1; }
+
+/* Header: blue-tinted glass. The new --bg-header value (rgba(238,244,252,…))
+   already tints it; this rule deepens the bottom-border accent so the header
+   reads as a distinct strip, not bleeding into the workspace. */
+body.light .header {
+  border-bottom: 1px solid rgba(0,112,242,0.18);
+}
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.35) 20%, rgba(0,112,242,0.35) 80%, transparent);
+  opacity: 0.7;
+}
+
+/* Editor wraps: keep pure-white bg for code legibility, but the hairline
+   grid needs a touch more contrast against true white in light mode */
+body.light .editor-wrap {
+  background-image:
+    linear-gradient(rgba(0,64,140,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,64,140,0.045) 1px, transparent 1px);
+}
+
+/* Pane bars: faint blue tint instead of grey-on-white */
+body.light .pane-bar,
+body.light .console-bar,
+body.light .kv-header,
+body.light .xpath-results-bar {
+  background: rgba(0, 64, 140, 0.025);
+}
+body.light .pane-bar-clickable:hover { background: rgba(0, 64, 140, 0.05); }
+
+/* Console body: subtle blue tint, not pure white */
+body.light .console-body {
+  background: rgba(248, 250, 254, 0.95);
+}
+
+/* KV panels: tint the alternating row to a faint blue */
+body.light #hdrRows .kv-row-wrapper .kv-row,
+body.light #propRows .kv-row-wrapper .kv-row,
+body.light #outHdrRows .kv-row-out,
+body.light #outPropRows .kv-row-out {
+  background: rgba(0, 64, 140, 0.025);
+}
+
+/* XPath input row: stronger blue baseline border */
+body.light .xpath-input-row {
+  background: #ffffff;
+  border-bottom: 2px solid var(--sap-blue);
+}
+
+/* Mode-switcher track in light mode — was using --bg-editor (white).
+   Tint it so the switcher reads as a control, not as the page bg. */
+body.light .mode-switcher {
+  background: rgba(0, 64, 140, 0.06);
+  border-color: rgba(0, 64, 140, 0.15);
+}
+
+/* Header buttons: slightly stronger borders so they don't disappear */
+body.light .ex-btn,
+body.light .header-icon-btn {
+  border-color: rgba(0, 64, 140, 0.15);
+}
+body.light .ex-btn:hover,
+body.light .header-icon-btn:hover {
+  border-color: rgba(0, 64, 140, 0.30);
+  background: rgba(0, 64, 140, 0.05);
+}
+
+/* Logo divider hairline */
+body.light .logo::after {
+  background: rgba(0, 64, 140, 0.20);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LIGHT THEME — STRONGER SEMANTIC COLOR
+   Push the brand blue further in the header, make the column stripes
+   bolder so INPUT reads as green, TRANSFORM as blue, OUTPUT as gold at a
+   glance. Add semantic tint to the Headers / Properties section bars.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Header — stronger blue gradient backdrop. The previous tint was almost
+   invisible; this version reads as a clearly-blue strip while still
+   keeping the buttons readable. */
+body.light .header {
+  background: linear-gradient(180deg,
+    rgba(0,112,242,0.22) 0%,
+    rgba(0,112,242,0.14) 100%),
+    rgba(248, 251, 255, 0.96);
+  border-bottom: 1px solid rgba(0,112,242,0.35);
+}
+body.light .header::after {
+  background: linear-gradient(90deg,
+    transparent, rgba(0,112,242,0.75) 18%, rgba(0,112,242,0.75) 82%, transparent);
+  opacity: 0.95;
+  height: 2px;
+}
+/* Header buttons read clearly on the new blue-tinted surface */
+body.light .ex-btn {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,112,242,0.35);
+  color: var(--sap-blue-fg);
+}
+body.light .ex-btn:hover {
+  background: #ffffff;
+  border-color: rgba(0,112,242,0.6);
+  color: var(--text-primary);
+}
+body.light .header-icon-btn {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,112,242,0.35);
+  color: var(--sap-blue-fg);
+}
+body.light .header-icon-btn:hover {
+  background: #ffffff;
+  border-color: rgba(0,112,242,0.6);
+  color: var(--text-primary);
+}
+/* Mode switcher — the unselected text needs to read on the new tinted bg */
+body.light .mode-switcher {
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(0,112,242,0.35);
+}
+body.light .mode-btn { color: var(--sap-blue-fg); }
+body.light .mode-btn.active { color: #ffffff; }
+/* Logo divider hairline reads stronger on the bluer header */
+body.light .logo::after {
+  background: rgba(0, 64, 140, 0.30);
+}
+body.light .logo-name { color: #0b3268; }
+
+/* Column-top accent stripes — unified blue across all three columns to
+   mirror the "02 TRANSFORM" header treatment. INPUT/TRANSFORM/OUTPUT are
+   still differentiated by the indicator dot, lang badge, and pane-num chip. */
+body.light .col::before {
+  height: 3px;
+  opacity: 0.9;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+body.light .col:has(.ind-xml)::before,
+body.light .col:has(.ind-xslt)::before,
+body.light .col:has(.ind-out)::before {
+  background: linear-gradient(90deg,
+    rgba(0,112,242,0.55),
+    var(--sap-blue) 35%,
+    var(--sap-blue) 65%,
+    rgba(0,112,242,0.55));
+}
+body.light .col:focus-within::before { opacity: 1; height: 4px; }
+
+/* Pane bars: unified blue accent across all three columns — mirrors the
+   "02 TRANSFORM" header treatment so INPUT/TRANSFORM/OUTPUT read as one
+   editor surface. Column differentiation still comes from the top stripe,
+   the indicator dot, the lang badge, and the pane-num chip. */
+body.light .col:has(.ind-xml)  .pane-bar,
+body.light .col:has(.ind-xslt) .pane-bar,
+body.light .col:has(.ind-out)  .pane-bar {
+  background: rgba(0,112,242,0.05);
+  border-bottom-color: rgba(0,112,242,0.18);
+}
+
+/* ── Headers / Properties section bars — neutral light grey (per user) ──
+   No semantic tint. The column-top stripe and column's pane-bar already
+   carry the semantic color, so the KV panel bars stay quiet grey strips. */
+body.light #hdrPanel    .kv-header,
+body.light #outHdrPanel .kv-header,
+body.light #propPanel    .kv-header,
+body.light #outPropPanel .kv-header {
+  background: rgba(0, 64, 140, 0.025);
+  border-top: 1px solid rgba(0, 64, 140, 0.10);
+}
+body.light #hdrPanel    .kv-header:hover,
+body.light #outHdrPanel .kv-header:hover,
+body.light #propPanel    .kv-header:hover,
+body.light #outPropPanel .kv-header:hover {
+  background: rgba(0, 64, 140, 0.05);
+}
+
+/* The pane-num chip stays semantic-colored from the editorial block above —
+   no changes needed; it already uses :has(.ind-xml/.ind-xslt/.ind-out). */
+
+/* ════════════════════════════════════════════════════════════════════════
+   SEMANTIC COLOR REINFORCEMENT
+   Tie the .lang-badge in each pane bar to its column's semantic color,
+   and brighten the logo X so it carries on the bluer header.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Lang badges by column — green for INPUT/XML, blue for TRANSFORM/XSLT,
+   gold for OUTPUT. Uses :has() to inherit from the parent column.
+   Both themes — these read clearly on light AND dark surfaces. */
+.col:has(.ind-xml) .lang-badge {
+  background: rgba(63,185,80,0.15);
+  border-color: rgba(63,185,80,0.30);
+  color: var(--success);
+}
+.col:has(.ind-xslt) .lang-badge {
+  background: rgba(0,112,242,0.15);
+  border-color: rgba(0,112,242,0.30);
+  color: var(--sap-blue-fg);
+}
+.col:has(.ind-out) .lang-badge {
+  background: rgba(245,165,36,0.15);
+  border-color: rgba(245,165,36,0.30);
+  color: var(--sap-gold);
+}
+/* Light theme tweak — boost saturation slightly so badges pop on white */
+body.light .col:has(.ind-xml) .lang-badge {
+  background: rgba(26,127,55,0.12);
+  border-color: rgba(26,127,55,0.35);
+  color: #1a7f37;
+}
+body.light .col:has(.ind-xslt) .lang-badge {
+  background: rgba(0,112,242,0.10);
+  border-color: rgba(0,112,242,0.40);
+  color: var(--sap-blue-fg);
+}
+body.light .col:has(.ind-out) .lang-badge {
+  background: rgba(217,119,6,0.12);
+  border-color: rgba(217,119,6,0.40);
+  color: #b45309;
+}
+
+/* ── Logo X — brand mark pop ──
+   The trailing X carries the brand. Bump weight, add a soft glow, tighten
+   tracking so it reads as a deliberate accent rather than just a colored
+   letter. */
+.logo-name-x {
+  color: var(--sap-blue);
+  font-weight: 900;
+  text-shadow: 0 0 12px var(--sap-blue-glow);
+  letter-spacing: -0.5px;
+}
+body.light .logo-name-x {
+  color: #0058c8;
+  text-shadow: 0 0 8px rgba(0,112,242,0.35);
+}
+.logo:hover .logo-name-x {
+  text-shadow: 0 0 16px rgba(0,112,242,0.55);
+}
+
+/* ── Output empty-state hint ──
+   Faded gold caption shown over the Output editor (XSLT mode) and the XPath
+   Results body (XPath mode) when they're empty. Same visual language across both.
+   Hidden as soon as content is rendered. JS toggles .has-content on the wrap
+   (#outEdWrap for XSLT, #xpathResultsBodyWrap for XPath). */
+#outEdWrap,
+.xpath-results-body-wrap {
+  position: relative;
+}
+#outEdWrap .empty-output-hint,
+.xpath-results-body-wrap .empty-output-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  z-index: 5;
+  color: var(--sap-gold);
+  opacity: 0.45;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: opacity 0.3s ease;
+  background: var(--bg-editor);
+}
+body.light #outEdWrap .empty-output-hint,
+body.light .xpath-results-body-wrap .empty-output-hint {
+  background: #ffffff;
+}
+#outEdWrap.has-content .empty-output-hint,
+.xpath-results-body-wrap.has-content .empty-output-hint {
+  display: none;
+}
+.empty-output-hint .empty-output-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--sap-gold);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+.empty-output-hint .empty-output-icon svg { opacity: 0.85; }
+.empty-output-hint .empty-output-caption {
+  font-weight: 600;
+  opacity: 0.85;
+}
+.empty-output-hint .empty-output-sub {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  opacity: 0.6;
+  font-weight: 400;
+}
+body.light #outEdWrap .empty-output-hint,
+body.light .xpath-results-body-wrap .empty-output-hint {
+  color: #b45309;
+  opacity: 0.55;
+}
+body.light #outEdWrap .empty-output-hint .empty-output-icon,
+body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { border-color: #b45309; }
+
+/* ── XPath-mode pane numbers ──
+   The XQuery bar lives inside the left column (which has .ind-xml) but
+   conceptually it's the transform step — give it the blue/xpath chip
+   color. The XPath Results bar lives in the right column (.ind-out) and
+   is correctly gold by inheritance, but we explicit-override here to be
+   resilient against future markup changes. */
+.col .pane-num.pane-num-xpath,
+.col:has(.ind-xml) .pane-num.pane-num-xpath {
+  color: var(--sap-blue-fg);
+  background: rgba(0,112,242,0.10);
+  border-color: rgba(0,112,242,0.22);
+}
+.col .pane-num.pane-num-results,
+.col:has(.ind-out) .pane-num.pane-num-results {
+  color: #f0b95a;
+  background: rgba(245,165,36,0.10);
+  border-color: rgba(245,165,36,0.25);
+}
+/* Light theme pulls the chip into its theme variant */
+body.light .pane-num.pane-num-xpath {
+  color: var(--sap-blue-fg);
+  background: rgba(0,112,242,0.08);
+  border-color: rgba(0,112,242,0.30);
+}
+body.light .pane-num.pane-num-results {
+  color: #b45309;
+  background: rgba(217,119,6,0.10);
+  border-color: rgba(217,119,6,0.30);
+}
+
+/* Vertical alignment inside the XPath Results bar — kv-icon is 14px,
+   pane-num is taller; align baselines */
+.xpath-results-bar .pane-num { line-height: 1; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PANEL HEADER BLUE ACCENT
+   Every secondary panel header (Headers, Properties, Console) gets a thin
+   SAP-blue left rail. The bars themselves stay neutral grey, but the rail
+   ties them to the brand and visually separates each section.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* The rail uses a pseudo-element pinned to the bar's left edge. A 3px-wide
+   gradient strip from sap-blue-from to sap-blue-to picks up the same
+   gradient used on the run button, mode-pill, and logomark. */
+.kv-header,
+.console-bar {
+  position: relative;
+}
+.kv-header::before,
+.console-bar::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--sap-blue-from), var(--sap-blue-to));
+  opacity: 0.85;
+  pointer-events: none;
+}
+/* Subtle glow when the panel is open (not collapsed/minimized) */
+.kv-panel:not(.collapsed) .kv-header::before {
+  box-shadow: 1px 0 6px var(--sap-blue-glow);
+}
+.console-panel:not(.minimized) .console-bar::before {
+  box-shadow: 1px 0 6px var(--sap-blue-glow);
+}
+/* Light theme — the rail glow needs to be readable on pale grey */
+body.light .kv-header::before,
+body.light .console-bar::before {
+  opacity: 0.95;
+}
+body.light .kv-panel:not(.collapsed) .kv-header::before {
+  box-shadow: 1px 0 6px rgba(0,112,242,0.25);
+}
+body.light .console-panel:not(.minimized) .console-bar::before {
+  box-shadow: 1px 0 6px rgba(0,112,242,0.25);
+}
+/* Push interior padding slightly so text doesn't sit on the rail */
+.kv-header { padding-left: 12px; }
+.console-bar { padding-left: 14px; }
+
+/* The xpath results bar gets a gold rail to match its 03/output identity */
+.xpath-results-bar { position: relative; padding-left: 14px; }
+.xpath-results-bar::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--sap-gold), #f0a020);
+  opacity: 0.85;
+  box-shadow: 1px 0 6px rgba(245,165,36,0.30);
+  pointer-events: none;
 }

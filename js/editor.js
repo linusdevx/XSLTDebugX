@@ -29,9 +29,9 @@ require(['vs/editor/editor.main'], () => {
     fontSize: 13,
     lineHeight: 22,
     minimap: { enabled: false },
-    glyphMargin: true,
-    lineNumbersMinChars: 2,
-    lineDecorationsWidth: 6,
+    glyphMargin: false,
+    lineNumbersMinChars: 1,
+    lineDecorationsWidth: 0,
     scrollBeyondLastLine: false,
     automaticLayout: true,
     folding: true,
@@ -45,6 +45,10 @@ require(['vs/editor/editor.main'], () => {
     wordWrap: 'off',
     suggest: { showWords: false },
     'semanticHighlighting.enabled': true,
+    scrollbar: {
+      verticalScrollbarSize: 4,
+      horizontalScrollbarSize: 4,
+    }
   };
 
   // Skip session restore when a share link is pending — applyShareData handles init.
@@ -74,6 +78,16 @@ require(['vs/editor/editor.main'], () => {
     document.getElementById('outEd'),
     { ...shared, language: 'xml', value: '', readOnly: true, renderValidationDecorations: 'off' }
   );
+
+  // Editorial direction B: keep the empty-output hint in sync with Monaco's
+  // content state. Listening on the model means we catch every setValue path
+  // (transform results, clears, session restore, programmatic writes) without
+  // having to find each call site.
+  eds.out.onDidChangeModelContent(() => {
+    const wrap = document.getElementById('outEdWrap');
+    if (!wrap) return;
+    wrap.classList.toggle('has-content', eds.out.getValue().length > 0);
+  });
 
   modeManager.initializeModels(xmlModelXslt, xmlModelXpath);
 
@@ -717,7 +731,7 @@ require(['vs/editor/editor.main'], () => {
     monaco.editor.setModelMarkers(eds.xml.getModel(), 'xsltdebugx', []);
     if (xmlDecorations) { xmlDecorations.clear(); xmlDecorations = null; }
     if (typeof clearXPathHighlights === 'function') clearXPathHighlights();
-    document.getElementById('xpathResultsPanel')?.classList.remove('visible');
+    if (typeof clearXPathResults === 'function') clearXPathResults();
     if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
     clearTimeout(xmlDebounce);
     xmlDebounce = setTimeout(runXmlValidation, 800);
