@@ -566,11 +566,12 @@ async function _showXPathResults(items, errorMsg, isError) {
   // attach decorations to the wrong document.
   const xmlModelAtStart = eds.xml?.getModel?.() ?? null;
   _lastXPathRenderArgs = { items, errorMsg, isError };
-  const panel   = document.getElementById('xpathResultsPanel');
+  const bodyWrap = document.getElementById('xpathResultsBodyWrap');
   const body    = document.getElementById('xpathResultsBody');
   const countEl = document.getElementById('xpathMatchCount');
 
-  panel.classList.add('visible');
+  // Reveal real content (hides the empty-state overlay).
+  bodyWrap?.classList.add('has-content');
   // Only minimise output section if visible (it's hidden in XPath mode).
   const outSec = document.getElementById('outputSection');
   if (outSec && outSec.style.display !== 'none') {
@@ -640,7 +641,12 @@ async function _showXPathResults(items, errorMsg, isError) {
 function clearXPathResults() {
   clearXPathHighlights();
   _lastXPathRenderArgs = null;
-  document.getElementById('xpathResultsPanel')?.classList.remove('visible');
+  // Restore empty-state overlay (hides rendered results without removing the panel).
+  document.getElementById('xpathResultsBodyWrap')?.classList.remove('has-content');
+  const body = document.getElementById('xpathResultsBody');
+  if (body) body.innerHTML = '';
+  const countEl = document.getElementById('xpathMatchCount');
+  if (countEl) { countEl.textContent = '0 matches'; countEl.className = 'xpath-match-count'; }
   document.getElementById('outputSection')?.classList.remove('xpath-minimized');
   const headerCount = document.getElementById('xpathHeaderCount');
   if (headerCount) { headerCount.style.display = 'none'; headerCount.textContent = ''; }
@@ -650,8 +656,8 @@ function clearXPathResults() {
 // monaco.editor.colorize() bakes theme-specific mtk* palette indices into the HTML.
 // On theme change those palette entries remap, leaving stale HTML with wrong colours.
 function refreshXPathColors() {
-  const panel = document.getElementById('xpathResultsPanel');
-  if (!panel?.classList.contains('visible') || !_lastXPathRenderArgs) return;
+  const bodyWrap = document.getElementById('xpathResultsBodyWrap');
+  if (!bodyWrap?.classList.contains('has-content') || !_lastXPathRenderArgs) return;
   const { items, errorMsg, isError } = _lastXPathRenderArgs;
   _showXPathResults(items, errorMsg, isError);
 }
@@ -659,7 +665,7 @@ function refreshXPathColors() {
 function restoreOutputSection() {
   document.getElementById('outputSection')?.classList.remove('xpath-minimized');
   // Mirror the minimisation done during XPath run.
-  document.getElementById('xpathResultsPanel')?.classList.remove('visible');
+  document.getElementById('xpathResultsBodyWrap')?.classList.remove('has-content');
   clearXPathHighlights();
 }
 

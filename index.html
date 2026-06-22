@@ -338,18 +338,20 @@
     <div class="col-inner">
       <!-- ── XQuery section (shown in XPath mode only) ── -->
       <div id="xpathBar" style="display:none">
-        <div class="pane-bar">
+        <div class="pane-bar pane-bar-clickable" onclick="toggleSideCol('left')" title="Click to collapse / restore the input panel">
           <div class="pane-indicator ind-xpath"></div>
           <span class="pane-num pane-num-xpath" id="xpathPaneNum">01</span>
           <span class="pane-title">XQuery</span>
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
-          <div class="pane-actions">
+          <div class="pane-actions" onclick="event.stopPropagation()">
             <span class="lang-badge">XQuery</span>
             <button class="pane-icon-btn" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
             <button class="pane-icon-btn" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
             <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" title="Next expression (↓)"><i data-lucide="chevron-down" width="14" height="14"></i></button>
+            <div class="pane-divider"></div>
+            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-input-row">
@@ -487,19 +489,36 @@
     <!-- Normal content -->
     <div class="col-inner">
 
-      <!-- ── XPath Results Panel (hidden until first run) ── -->
+      <!-- ── XPath Results Panel ──
+           Persistent in XPath mode: bar always visible, body shows empty-state
+           overlay until the first run, then real results (mirrors XSLT Output). -->
       <div class="xpath-results-panel" id="xpathResultsPanel">
-        <div class="xpath-results-bar">
-          <span class="kv-icon"><i data-lucide="braces" width="12" height="12"></i></span>
+        <div class="xpath-results-bar pane-bar-clickable" onclick="toggleSideCol('right')" title="Click to collapse / restore the results panel">
+          <div class="pane-indicator ind-out"></div>
           <span class="pane-num pane-num-results">03</span>
           <span class="xpath-results-title">XPath Results</span>
           <span class="xpath-match-count" id="xpathMatchCount">0 matches</span>
-          <div class="xpath-results-actions">
+          <div class="xpath-results-actions" onclick="event.stopPropagation()">
             <button class="pane-icon-btn" onclick="copyXPathResults()" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" onclick="clearXPathResults()" title="Close results panel"><i data-lucide="eraser" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="clearXPathResults()" title="Clear results"><i data-lucide="eraser" width="14" height="14"></i></button>
+            <div class="pane-divider"></div>
+            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
           </div>
         </div>
-        <div class="xpath-results-body" id="xpathResultsBody"></div>
+        <div class="xpath-results-body-wrap" id="xpathResultsBodyWrap">
+          <div class="xpath-results-body" id="xpathResultsBody"></div>
+          <!-- Empty-state hint shown over the results body until the first run.
+               Hidden via CSS when #xpathResultsBodyWrap.has-content is set by xpath.js. -->
+          <div class="empty-output-hint xpath-empty-hint" aria-hidden="true">
+            <div class="empty-output-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+            </div>
+            <div class="empty-output-caption">Matches appear here</div>
+            <div class="empty-output-sub">Run an XPath expression to see results</div>
+          </div>
+        </div>
       </div>
 
       <!-- ── Output Section (minimises to header when XPath results open) ── -->

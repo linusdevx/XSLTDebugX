@@ -154,6 +154,10 @@ class ModeManager {
     if (hdrPanel) hdrPanel.style.display = visibility;
     if (propPanel) propPanel.style.display = visibility;
     if (outSection) outSection.style.display = visibility;
+    // XPath Results panel: persistent in XPath mode (empty-state until first run),
+    // hidden in XSLT mode. Mirror of outputSection gating.
+    const xpathPanel = document.getElementById('xpathResultsPanel');
+    if (xpathPanel) xpathPanel.style.display = this.isXpath ? 'flex' : 'none';
     if (shareBtn) {
       shareBtn.disabled = this.isXpath;
       shareBtn.title = this.isXpath ? 'Sharing is only available in XSLT mode' : '';

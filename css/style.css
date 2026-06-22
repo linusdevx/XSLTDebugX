@@ -707,7 +707,11 @@
       transition: transform 0.2s;
       flex-shrink: 0;
     }
-    .kv-panel.collapsed .kv-chevron { transform: rotate(-90deg); }
+    /* Rotate up (180°) when collapsed — matches .console-chevron so both
+       section toggles share the same metaphor: chevron points down when open
+       (body drops downward from the header), points up when collapsed (click
+       to drop it back down). */
+    .kv-panel.collapsed .kv-chevron { transform: rotate(180deg); }
     /* add-btn followed by chevron — 6px gap */
     .kv-add-btn + .kv-chevron { margin-left: 6px; }
 
@@ -1330,7 +1334,10 @@
       background: rgba(0,112,242,0.28);
     }
 
-    /* Results panel */
+    /* Results panel — visible in XPath mode (gated by mode-manager.js, which
+       sets inline display:flex in XPath mode and display:none otherwise, mirroring
+       how it hides #outputSection). The pane bar is persistent; the body shows
+       an empty-state overlay (.xpath-empty-hint) until the first run. */
     .xpath-results-panel {
       display: none;
       flex-direction: column;
@@ -1338,8 +1345,11 @@
       border-bottom: 1px solid var(--border);
       background: var(--bg-base);
     }
-    .xpath-results-panel.visible {
+    .xpath-results-body-wrap {
+      flex: 1; min-height: 0;
       display: flex;
+      flex-direction: column;
+      background: var(--bg-editor);
     }
     .xpath-results-bar {
       flex-shrink: 0;
@@ -2489,13 +2499,16 @@ body.light .logo-name-x {
 }
 
 /* ── Output empty-state hint ──
-   Faded gold caption shown over the Output editor when it's empty.
-   Hidden as soon as Monaco renders content. JS toggles .has-content on
-   #outEdWrap when content is set/cleared. */
-#outEdWrap {
+   Faded gold caption shown over the Output editor (XSLT mode) and the XPath
+   Results body (XPath mode) when they're empty. Same visual language across both.
+   Hidden as soon as content is rendered. JS toggles .has-content on the wrap
+   (#outEdWrap for XSLT, #xpathResultsBodyWrap for XPath). */
+#outEdWrap,
+.xpath-results-body-wrap {
   position: relative;
 }
-#outEdWrap .empty-output-hint {
+#outEdWrap .empty-output-hint,
+.xpath-results-body-wrap .empty-output-hint {
   position: absolute;
   inset: 0;
   display: flex;
@@ -2515,10 +2528,12 @@ body.light .logo-name-x {
   transition: opacity 0.3s ease;
   background: var(--bg-editor);
 }
-body.light #outEdWrap .empty-output-hint {
+body.light #outEdWrap .empty-output-hint,
+body.light .xpath-results-body-wrap .empty-output-hint {
   background: #ffffff;
 }
-#outEdWrap.has-content .empty-output-hint {
+#outEdWrap.has-content .empty-output-hint,
+.xpath-results-body-wrap.has-content .empty-output-hint {
   display: none;
 }
 .empty-output-hint .empty-output-icon {
@@ -2539,11 +2554,13 @@ body.light #outEdWrap .empty-output-hint {
   opacity: 0.6;
   font-weight: 400;
 }
-body.light #outEdWrap .empty-output-hint {
+body.light #outEdWrap .empty-output-hint,
+body.light .xpath-results-body-wrap .empty-output-hint {
   color: #b45309;
   opacity: 0.55;
 }
-body.light .empty-output-hint .empty-output-icon { border-color: #b45309; }
+body.light #outEdWrap .empty-output-hint .empty-output-icon,
+body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { border-color: #b45309; }
 
 /* ── XPath-mode pane numbers ──
    The XQuery bar lives inside the left column (which has .ind-xml) but

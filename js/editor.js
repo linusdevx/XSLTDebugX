@@ -731,7 +731,7 @@ require(['vs/editor/editor.main'], () => {
     monaco.editor.setModelMarkers(eds.xml.getModel(), 'xsltdebugx', []);
     if (xmlDecorations) { xmlDecorations.clear(); xmlDecorations = null; }
     if (typeof clearXPathHighlights === 'function') clearXPathHighlights();
-    document.getElementById('xpathResultsPanel')?.classList.remove('visible');
+    if (typeof clearXPathResults === 'function') clearXPathResults();
     if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
     clearTimeout(xmlDebounce);
     xmlDebounce = setTimeout(runXmlValidation, 800);
