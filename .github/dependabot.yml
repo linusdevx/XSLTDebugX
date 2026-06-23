@@ -2,8 +2,10 @@ version: 2
 updates:
   # Dev dependencies — Playwright, Vite, http-server, esbuild.
   # No runtime npm deps ship to users, so these are dev-tool hygiene only.
+  # PRs target `dev` so they flow through the normal dev → main review cycle.
   - package-ecosystem: npm
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
       day: monday
@@ -17,10 +19,17 @@ updates:
         update-types:
           - minor
           - patch
+    # Major bumps are reviewed by a human as needed (vite, playwright, etc.).
+    # Security advisories still open PRs regardless of these ignore rules.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   # GitHub Actions used by our workflows (checkout, setup-node, codeql, scorecard, ...).
   - package-ecosystem: github-actions
     directory: /
+    target-branch: dev
     schedule:
       interval: weekly
       day: monday
@@ -33,3 +42,7 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
