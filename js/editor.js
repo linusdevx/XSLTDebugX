@@ -270,7 +270,8 @@ require(['vs/editor/editor.main'], () => {
     if (allCommented) {
       for (let i = startLine; i <= endLine; i++) {
         const line = model.getLineContent(i);
-        const stripped = line.replace(/^(\s*)<!--\s?/, '$1').replace(/\s?-->(\s*)$/, '$1');
+        // --!?> matches both --> and --!>; the latter is rare but legal per the HTML spec.
+        const stripped = line.replace(/^(\s*)<!--\s?/, '$1').replace(/\s?--!?>(\s*)$/, '$1');
         edits.push({ range: new monaco.Range(i, 1, i, line.length + 1), text: stripped });
       }
     } else {
