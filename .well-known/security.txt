@@ -1,0 +1,9 @@
+# XSLTDebugX security contact (RFC 9116)
+# See SECURITY.md for full security posture and disclosure policy.
+
+Contact: https://github.com/linusdevx/XSLTDebugX/security/advisories/new
+Expires: 2027-06-25T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://xsltdebugx.pages.dev/.well-known/security.txt
+Policy: https://github.com/linusdevx/XSLTDebugX/blob/main/SECURITY.md
+Acknowledgments: https://github.com/linusdevx/XSLTDebugX/security/advisories

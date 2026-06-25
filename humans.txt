@@ -1,0 +1,20 @@
+/* TEAM */
+Creator: Sunil Pharswan
+Contact: github.com/linusdevx
+LinkedIn: linkedin.com/in/sunilph/
+From: India
+
+/* THANKS */
+Saxon-JS team — Saxonica, for the XSLT 3.0 / XPath 3.1 engine that powers this tool
+Monaco Editor — Microsoft, for the embedded code editor
+Lucide — for the icon set
+SAP Community — for years of CPI knowledge that shaped what this tool needed to do
+
+/* SITE */
+Site: XSLTDebugX
+URL: https://xsltdebugx.pages.dev/
+Last update: 2026-06-25
+Standards: HTML5, CSS3, ES2020, XSLT 3.0, XPath 3.1
+Components: Saxon-JS 2, Monaco Editor 0.44, Lucide Icons, pako
+Software: hand-written vanilla JS, Vite + esbuild build, Cloudflare Pages
+License: AGPL-3.0

@@ -1,0 +1,26 @@
+# XSLTDebugX
+
+> Browser-based IDE for XSLT 3.0 and XPath 3.1, designed for SAP Cloud
+> Integration (CPI) developers. Simulates the CPI runtime (headers, properties,
+> cpi:setHeader / cpi:setProperty extension functions) so transformations can be
+> tested locally before deploying to an iFlow. Runs entirely client-side using
+> Monaco Editor and Saxon-JS 2. No installation. No account. No data leaves the
+> browser. Free and open source (AGPL-3.0).
+
+## Core
+- [Live app](https://xsltdebugx.pages.dev/): the IDE — XSLT mode and XPath mode share a workspace; press Ctrl+Enter to run.
+- [GitHub repository](https://github.com/linusdevx/XSLTDebugX): source, issues, releases.
+- [README](https://github.com/linusdevx/XSLTDebugX#readme): features, screenshots, quick start.
+
+## Documentation
+- [Architecture](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/ARCHITECTURE.md): module layout, build pipeline, critical constraints.
+- [CPI simulation deep-dive](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/TRANSFORM.md): how the cpi: namespace is rewritten to js: at runtime for Saxon-JS interception.
+- [Features reference](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/reference/features.md): 200+ features with file locations.
+- [Examples catalog](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/reference/examples-data.md): 61 built-in examples across 6 categories.
+- [Development guide](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/DEVELOPMENT.md): local setup, browser debugging.
+- [Testing guide](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/TESTING.md): Playwright E2E patterns.
+
+## Optional
+- [Contributing](https://github.com/linusdevx/XSLTDebugX/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/linusdevx/XSLTDebugX/blob/main/SECURITY.md)
+- [License (AGPL-3.0)](https://github.com/linusdevx/XSLTDebugX/blob/main/LICENSE)

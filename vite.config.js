@@ -128,6 +128,13 @@ export default defineConfig({
         if (existsSync('favicon-192.png')) copyFileSync('favicon-192.png', 'dist/favicon-192.png');
         if (existsSync('site.webmanifest')) copyFileSync('site.webmanifest', 'dist/site.webmanifest');
         if (existsSync('robots.txt')) copyFileSync('robots.txt', 'dist/robots.txt');
+        if (existsSync('llms.txt')) copyFileSync('llms.txt', 'dist/llms.txt');
+        if (existsSync('humans.txt')) copyFileSync('humans.txt', 'dist/humans.txt');
+        // RFC 9116 security.txt — must be served from /.well-known/
+        if (existsSync('.well-known/security.txt')) {
+          mkdirSync('dist/.well-known', { recursive: true });
+          copyFileSync('.well-known/security.txt', 'dist/.well-known/security.txt');
+        }
         if (existsSync('og-image.png')) copyFileSync('og-image.png', 'dist/og-image.png');
         if (existsSync('screenshot.png')) copyFileSync('screenshot.png', 'dist/screenshot.png');
 
