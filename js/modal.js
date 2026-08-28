@@ -26,6 +26,7 @@ function renderExSidebar() {
 
 function openExModal() {
   document.getElementById('exModalBackdrop').classList.add('open');
+  document.body.classList.add('modal-open');
   document.getElementById('exModalSearch').value = '';
   const savedAutoRun = localStorage.getItem('xdebugx-auto-run-examples') === 'true';
   exAutoRunChecked = savedAutoRun;
@@ -41,6 +42,7 @@ function openExModal() {
 
 function closeExModal() {
   document.getElementById('exModalBackdrop').classList.remove('open');
+  document.body.classList.remove('modal-open');
 }
 
 // `var` keeps it on window so inline onclick="handleModalBackdropClick(event)" resolves at top level.
@@ -208,11 +210,11 @@ function loadExample(key) {
   try {
     const targetXmlModel = modeManager.isXpath ? xmlModelXpath : xmlModelXslt;
     if (targetXmlModel) {
-      targetXmlModel.setValue(ex.xml);
+      _withSuppress(['validation', 'save'], () => targetXmlModel.setValue(ex.xml));
     }
 
     if (!modeManager.isXpath && ex.xslt && eds.xslt) {
-      _withSuppress(['validation'], () => eds.xslt.setValue(ex.xslt));
+      _withSuppress(['validation', 'save'], () => eds.xslt.setValue(ex.xslt));
     }
   } catch (e) {
     logError('loadExample setValue', e);

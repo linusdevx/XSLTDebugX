@@ -90,16 +90,6 @@ class ModeManager {
 
     this.restoreColumnState();
 
-    if (this.isXpath) {
-      const xpathInput = document.getElementById('xpathInput');
-      if (xpathInput && typeof _savedSession !== 'undefined' && _savedSession?.xpathExpr) {
-        if (typeof _syncXPathInput === 'function') {
-          _syncXPathInput(_savedSession.xpathExpr);
-        } else {
-          xpathInput.value = _savedSession.xpathExpr;
-        }
-      }
-    }
   }
 
   saveColumnState() {
@@ -263,14 +253,12 @@ class ModeManager {
   }
 
   restoreFromSession(savedSession) {
-    if (savedSession && savedSession.xpathEnabled === true) {
-      this.setMode('XPATH');
-    } else {
-      this.setMode('XSLT');
-    }
-    // setMode is a no-op if already in the target mode, but panel visibility
-    // must still be applied on initial load.
-    this.updatePanelVisibility();
+    const targetMode = savedSession?.xpathEnabled === true ? 'XPATH' : 'XSLT';
+    const wasAlreadyInMode = this.mode === targetMode;
+    this.setMode(targetMode);
+    // setMode is a no-op if already in the target mode, so updateUI (and its
+    // updatePanelVisibility call) is skipped — apply it explicitly for initial load.
+    if (wasAlreadyInMode) this.updatePanelVisibility();
   }
 
   toJSON() {

@@ -106,16 +106,19 @@ function clog(msg, type = 'info') {
   line.className = `log-line ${type}`;
   line.dataset.type = type;
   const ts = new Date().toLocaleTimeString('en-GB', { hour12: false });
-  line.innerHTML = `<span class="ts">${ts}</span><span class="msg">${escHtml(msg)}</span>`;
+  const _LOG_ICON = { error: 'x-circle', warn: 'alert-triangle', success: 'check-circle', info: 'info' };
+  const iconName = _LOG_ICON[type] || 'info';
+  line.innerHTML = `<span class="ts">${ts}</span><i data-lucide="${iconName}" width="11" height="11" class="log-type-icon"></i><span class="msg">${escHtml(msg)}</span>`;
+  if (typeof lucide !== 'undefined') lucide.createIcons({ root: line });
   const term = search?.value.trim().toLowerCase() ?? '';
   const typeFilter = consoleFilter || 'all';
   const matchesType = typeFilter === 'all' || type === typeFilter || (typeFilter === 'info' && type === 'success');
   const matchesText = !term || msg.toLowerCase().includes(term);
   if (!matchesType || !matchesText) line.style.display = 'none';
   body.appendChild(line);
-  // Cap visible console at 500 lines; keep consoleErrCount in sync when an error scrolls off.
+  // Cap visible console at 200 lines; keep consoleErrCount in sync when an error scrolls off.
   const errCountBefore = consoleErrCount;
-  while (body.childElementCount > 500) {
+  while (body.childElementCount > 200) {
     const evicted = body.firstElementChild;
     const t = evicted.dataset.type;
     if (t === 'error') consoleErrCount = Math.max(0, consoleErrCount - 1);
@@ -134,7 +137,7 @@ function clog(msg, type = 'info') {
 
 function escHtml(s) {
   return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function clearConsole() {

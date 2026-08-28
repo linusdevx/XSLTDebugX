@@ -88,6 +88,7 @@ function _indentTokens(tokens) {
 
     const isClose     = tok.startsWith('</');
     const isSelfClose = !isClose && tok.endsWith('/>');
+    // PI, comments, CDATA — all start with '<!' or '<?'
     const isPI        = tok.startsWith('<?') || tok.startsWith('<!--') || tok.startsWith('<!');
 
     if (isClose) {
@@ -96,25 +97,64 @@ function _indentTokens(tokens) {
     } else if (isSelfClose || isPI) {
       out += INDENT.repeat(depth) + tok + '\n';
     } else if (!tok.startsWith('<')) {
+      // Text node not already consumed inline — render at current depth.
       out += INDENT.repeat(depth) + tok.trim() + '\n';
     } else {
+      // Open tag — look ahead to decide inline vs block formatting.
       const nextTok  = tokens[i + 1];
       const afterTok = tokens[i + 2];
 
       if (nextTok && nextTok.startsWith('</')) {
+        // <tag></tag> — inline empty element
         out += INDENT.repeat(depth) + tok + nextTok + '\n';
         i += 1;
       } else if (nextTok && !nextTok.startsWith('<') && afterTok && afterTok.startsWith('</')) {
+        // <tag>text</tag> — inline single text child
         out += INDENT.repeat(depth) + tok + nextTok.trim() + afterTok + '\n';
         i += 2;
-      } else if (nextTok && !nextTok.startsWith('<')) {
-        const trimmed = nextTok.trim();
-        out += INDENT.repeat(depth) + tok + (trimmed ? trimmed + ' ' : '') + '\n';
-        depth++;
-        i += 1;
+      } else if (nextTok && (nextTok.startsWith('<![CDATA[') || nextTok.startsWith('<!--')) && afterTok && afterTok.startsWith('</')) {
+        // <tag><![CDATA[...]]></tag> or <tag><!--...--></tag> — keep inline
+        out += INDENT.repeat(depth) + tok + nextTok + afterTok + '\n';
+        i += 2;
       } else {
-        out += INDENT.repeat(depth) + tok + '\n';
-        depth++;
+        // Check if this is a mixed-content element (text + child elements at
+        // the IMMEDIATE child level only — depth 1 relative to current open tag).
+        let scanDepth = 1;
+        let j = i + 1;
+        let hasText = false;
+        let hasChildren = false;
+        while (j < tokens.length && scanDepth > 0) {
+          const t = tokens[j];
+          if (t.startsWith('</')) {
+            scanDepth--;
+            if (scanDepth === 0) break;
+          } else if (t.startsWith('<') && !t.endsWith('/>') && !t.startsWith('<?') && !t.startsWith('<!--') && !t.startsWith('<!')) {
+            if (scanDepth === 1) hasChildren = true;
+            scanDepth++;
+          } else if (!t.startsWith('<') && t.trim() && scanDepth === 1) {
+            hasText = true;
+          }
+          j++;
+        }
+        const hasMixed = hasText && hasChildren;
+        if (hasMixed) {
+          // Mixed content — render entire element on one line
+          let line = INDENT.repeat(depth) + tok;
+          for (let k = i + 1; k <= j; k++) {
+            line += tokens[k] ?? '';
+          }
+          out += line + '\n';
+          i = j;
+        } else if (nextTok && !nextTok.startsWith('<')) {
+          // Open tag followed by text, then more children — render text inline with tag
+          const trimmed = nextTok.trim();
+          out += INDENT.repeat(depth) + tok + (trimmed ? trimmed + ' ' : '') + '\n';
+          depth++;
+          i += 1;
+        } else {
+          out += INDENT.repeat(depth) + tok + '\n';
+          depth++;
+        }
       }
     }
   }

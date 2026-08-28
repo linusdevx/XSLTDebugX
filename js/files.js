@@ -10,9 +10,9 @@ function _applyFileContent(text, file, pane, verb) {
   if (pane === 'xml') {
     const targetModel = modeManager.currentModel;
     if (!targetModel) { clog('Editor not ready — cannot upload file', 'error'); return; }
-    targetModel.setValue(text);
+    _withSuppress(['save', 'validation'], () => targetModel.setValue(text));
   } else if (eds.xslt) {
-    eds.xslt.setValue(text);
+    _withSuppress(['save', 'validation'], () => eds.xslt.setValue(text));
   } else {
     clog('Editor not ready — cannot upload file', 'error');
     return;
@@ -62,7 +62,6 @@ function setupDragDrop(editorWrapId, pane) {
     if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over');
   });
   el.addEventListener('dragend', () => el.classList.remove('drag-over'));
-  document.addEventListener('dragend', () => el.classList.remove('drag-over'));
   el.addEventListener('drop', e => {
     e.preventDefault();
     el.classList.remove('drag-over');

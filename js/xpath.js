@@ -387,6 +387,7 @@ function runXPath() {
   const expr  = input?.value?.trim();
   if (!expr) {
     clog('ƒx  Expression is empty — type an XPath expression and press Run', 'warn');
+    document.body.classList.remove('running');
     return;
   }
 
@@ -403,6 +404,7 @@ function runXPath() {
   if (!xmlSrc) {
     clog('ƒx  XML Source is empty — add XML input first', 'warn');
     _showXPathResults([], 'XML Source is empty — add XML input first', true);
+    document.body.classList.remove('running');
     return;
   }
 
@@ -411,6 +413,7 @@ function runXPath() {
     const xmlErr = `XML error at line ${xmlCheck.line}: ${xmlCheck.message}`;
     clog(`ƒx  ${xmlErr}`, 'error');
     _showXPathResults([], xmlErr, true);
+    document.body.classList.remove('running');
     return;
   }
 
@@ -425,7 +428,7 @@ function runXPath() {
   const _MIN_SPINNER_MS = 300;
   if (_btn) {
     _btn.disabled = true;
-    _btn.innerHTML = `${typeof _RUN_BTN_SPINNER !== 'undefined' ? _RUN_BTN_SPINNER : ''} Running… <span class="kbd">⌘↵</span>`;
+    _btn.innerHTML = `${typeof _RUN_BTN_SPINNER !== 'undefined' ? _RUN_BTN_SPINNER : ''} Running… <span class="kbd">${_KBD_RUN}</span>`;
   }
 
   const _resetXPathBtn = () => {

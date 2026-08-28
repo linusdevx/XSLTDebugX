@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>XSLTDebugX — Online XSLT 3.0 Debugger & IDE for SAP Cloud Integration</title>
   <meta name="description" content="Free online XSLT 3.0 debugger and XPath 3.1 IDE for SAP Cloud Integration (CPI). Debug and test XSLT transformations with headers, properties, and extension functions — no deployment needed.">
-  <meta name="keywords" content="XSLT debugger, XPath tester, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT IDE">
+  <meta name="keywords" content="XSLT debugger, XPath tester, SAP CPI, SAP Cloud Integration, XSLT 3.0, XPath 3.1, online XSLT IDE, XSLT transformation online, SAP integration developer tools, XSLT 3.0 playground, XPath evaluator, online XML editor">
   <meta name="author" content="XSLTDebugX">
   <meta name="google-site-verification" content="2FIJQa0iXMS64h8tWPm5lUdskRuBHUzKXt8RxuyUlis">
   <meta name="robots" content="index, follow">
@@ -50,9 +50,9 @@
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" integrity="sha384-rNlaE5fs9dGIjmxWDALQh/RBAaGRYT5ChrzHo6tRfgrZ36iRFAiquP5g41Jsv+0j" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@1.14.0/dist/umd/lucide.min.js" integrity="sha384-jB6ZXxyEV94yzTxgLMvrwwNbn/pTTqwrMDI+v8FV5o5FnId/yn3DJwSdrDujU9A7" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js" integrity="sha384-xgEbYcV8275+SHiNp4AAv+asZ3e4k7NaDCajMhLZ0SwIeDHKG1huHcccDfFQW5KQ" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.2.0/pako.min.js" integrity="sha384-vH04Z+zI3w7R5bYp/CyMXrqL2G1nakpI6Sa1+0jVZGPBz42IYZJbJRRm9phihVLH" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@1.34.0/dist/umd/lucide.min.js" integrity="sha384-TkyaYJPudUfB9a60ZTQjPXXxBGDxeXJy48PDE1DeZnOdKs/QdAs3pP/B9ApNJIH8" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js" integrity="sha384-tSPY4oVmbJKVAvy9W7NTVMqSrS/gYyJLECoFWtQ10h4qIDQTg1h3DSfF0eV2Bbbz" crossorigin="anonymous"></script>
   <script src="./lib/SaxonJS2.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -77,7 +77,7 @@
     "browserRequirements": "Requires a modern browser with ES2020 and WebAssembly support (Chrome, Firefox, Safari, Edge).",
     "softwareRequirements": "Saxon-JS 2 (bundled), Monaco Editor (bundled). No installation required.",
     "softwareVersion": "1.0",
-    "datePublished": "2025-01-01",
+    "datePublished": "2026-03-04",
     "dateModified": "2026-06-03",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": {
@@ -271,7 +271,7 @@
 
   <nav aria-label="Main actions">
   <button class="ex-btn xf-session-share" id="shareBtn" onclick="openShareModal()">
-    <i data-lucide="share-2" width="14" height="14"></i>
+    <i data-lucide="share2" width="14" height="14"></i>
     Share
   </button>
 
@@ -282,35 +282,35 @@
 
   <div class="mode-switcher" id="modeSwitcher">
     <div class="mode-pill"></div>
-    <button class="mode-btn mode-btn-xslt active" id="modeBtnXslt" onclick="if(modeManager.isXpath)toggleXPath()" title="XSLT Transform mode">
-      <i data-lucide="file-code" width="12" height="12"></i>
+    <button class="mode-btn mode-btn-xslt active" id="modeBtnXslt" onclick="if(modeManager.isXpath)toggleXPath()" aria-label="XSLT Transform mode" title="XSLT Transform mode">
+      <i data-lucide="code-xml" width="12" height="12"></i>
       XSLT
     </button>
-    <button class="mode-btn mode-btn-xpath" id="modeBtnXpath" onclick="if(!modeManager.isXpath)toggleXPath()" title="XPath evaluator mode">
+    <button class="mode-btn mode-btn-xpath" id="modeBtnXpath" onclick="if(!modeManager.isXpath)toggleXPath()" aria-label="XPath evaluator mode" title="XPath evaluator mode">
       <i data-lucide="braces" width="12" height="12"></i>
       XPath
     </button>
   </div>
 
-  <button class="header-icon-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme">
+  <button class="header-icon-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light / dark theme" title="Toggle light / dark theme">
     <i data-lucide="sun" width="15" height="15" class="theme-icon-sun"></i>
     <i data-lucide="moon" width="15" height="15" class="theme-icon-moon"></i>
   </button>
 
-  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" title="Clear saved session">
-    <i data-lucide="trash-2" width="14" height="14"></i>
+  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" aria-label="Clear saved session" title="Clear saved session">
+    <i data-lucide="trash2" width="14" height="14"></i>
     Clear
   </button>
 
-  <button class="ex-btn help-btn" id="helpBtn" onclick="openHelpModal()" title="Help — features & shortcuts">
+  <button class="ex-btn help-btn" id="helpBtn" onclick="openHelpModal()" aria-label="Help — features & shortcuts" title="Help — features & shortcuts">
     <i data-lucide="circle-help" width="14" height="14"></i>
     Help
   </button>
 
   <button class="run-btn" id="runBtn" onclick="createRipple(event); runTransform()">
-    <i data-lucide="play" width="14" height="14"></i>
+    <i data-lucide="zap" width="14" height="14"></i>
     Run
-    <span class="kbd">⌘↵</span>
+    <span class="kbd">Ctrl+↵</span>
   </button>
   </nav>
 </header>
@@ -348,13 +348,13 @@
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
           <div class="pane-actions" onclick="event.stopPropagation()">
             <span class="lang-badge">XQuery</span>
-            <button class="pane-icon-btn" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Copy XPath expression" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Clear XPath expression" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" title="Next expression (↓)"><i data-lucide="chevron-down" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" aria-label="Previous expression (↑)" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('down', document.getElementById('xpathInput'))" aria-label="Next expression (↓)" title="Next expression (↓)"><i data-lucide="chevron-down" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
+            <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-input-row">
@@ -383,15 +383,15 @@
         </span>
         <div class="pane-actions" onclick="event.stopPropagation()">
           <span class="lang-badge">XML</span>
-          <button class="pane-icon-btn" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" title="Clear XML" onclick="clearPane('xml')"><i data-lucide="eraser" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Format XML" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Copy XML" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Clear XML" title="Clear XML" onclick="clearPane('xml')"><i data-lucide="eraser" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
-          <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" title="Upload XML file" onclick="triggerUpload('xml')"><i data-lucide="upload" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" title="Download XML file" onclick="downloadPane('xml','input.xml')"><i data-lucide="download" width="14" height="14"></i></button>
+          <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Upload XML file" title="Upload XML file" onclick="triggerUpload('xml')"><i data-lucide="upload" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Download XML file" title="Download XML file" onclick="downloadPane('xml','input.xml')"><i data-lucide="download" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
-          <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
+          <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('left')"><i data-lucide="chevron-left" width="14" height="14"></i></button>
         </div>
         <input type="file" class="file-input-hidden" id="uploadXml" accept=".xml,.xsl,.xslt,.txt" aria-label="Upload XML file" onchange="handleUpload(event,'xml')">
       </div>
@@ -442,13 +442,13 @@
       <span class="pane-title">Transform</span>
       <div class="pane-actions">
         <span class="lang-badge">XSLT</span>
-        <button class="pane-icon-btn" title="Format XSLT" onclick="fmtEditor('xslt')"><i data-lucide="align-left" width="14" height="14"></i></button>
-        <button class="pane-icon-btn" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="clipboard" width="14" height="14"></i></button>
-        <button class="pane-icon-btn" title="Clear XSLT" onclick="clearPane('xslt')"><i data-lucide="eraser" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Format XSLT" title="Format XSLT" onclick="fmtEditor('xslt')"><i data-lucide="align-left" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Copy XSLT" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Clear XSLT" title="Clear XSLT" onclick="clearPane('xslt')"><i data-lucide="eraser" width="14" height="14"></i></button>
         <div class="pane-divider"></div>
-        <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
-        <button class="pane-icon-btn" title="Upload XSLT file" onclick="triggerUpload('xslt')"><i data-lucide="upload" width="14" height="14"></i></button>
-        <button class="pane-icon-btn" title="Download XSLT file" onclick="downloadPane('xslt','stylesheet.xslt')"><i data-lucide="download" width="14" height="14"></i></button>
+        <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Upload XSLT file" title="Upload XSLT file" onclick="triggerUpload('xslt')"><i data-lucide="upload" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Download XSLT file" title="Download XSLT file" onclick="downloadPane('xslt','stylesheet.xslt')"><i data-lucide="download" width="14" height="14"></i></button>
       </div>
       <input type="file" class="file-input-hidden" id="uploadXslt" accept=".xsl,.xslt,.xml,.txt" aria-label="Upload XSLT file" onchange="handleUpload(event,'xslt')">
     </div>
@@ -460,21 +460,21 @@
     <div class="console-panel" id="consolePanel">
       <div class="console-resize-handle" onpointerdown="startConsoleResize(event)" title="Drag to resize console"></div>
       <div class="console-bar" onclick="handleConsoleBarClick(event)">
-        <span class="kv-icon"><i data-lucide="square-terminal" width="12" height="12"></i></span>
+        <span class="kv-icon"><i data-lucide="terminal" width="12" height="12"></i></span>
         <span class="console-title">Console</span>
         <span class="console-err-badge" id="consoleErrBadge">0</span>
         <div class="console-bar-actions" onclick="event.stopPropagation()">
           <div class="console-filters">
-            <button class="console-filter-btn active" data-filter="all"   onclick="setConsoleFilter('all')"   title="Show all messages"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg></button>
-            <button class="console-filter-btn"         data-filter="info"  onclick="setConsoleFilter('info')"  title="Info only"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg></button>
-            <button class="console-filter-btn"         data-filter="warn"  onclick="setConsoleFilter('warn')"  title="Warnings only"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg></button>
-            <button class="console-filter-btn"         data-filter="error" onclick="setConsoleFilter('error')" title="Errors only"><svg viewBox="0 0 10 10" width="10" height="10"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg></button>
+            <button class="console-filter-btn active" data-filter="all"   onclick="setConsoleFilter('all')"   aria-label="Show all messages" title="Show all messages"><i data-lucide="list-filter" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="info"  onclick="setConsoleFilter('info')"  aria-label="Info only" title="Info only"><i data-lucide="info" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="warn"  onclick="setConsoleFilter('warn')"  aria-label="Warnings only" title="Warnings only"><i data-lucide="alert-triangle" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="error" onclick="setConsoleFilter('error')" aria-label="Errors only" title="Errors only"><i data-lucide="x-circle" width="11" height="11"></i></button>
           </div>
           <div class="pane-divider"></div>
           <input class="console-search" id="consoleSearch" type="text" placeholder="search…" aria-label="Search console output" oninput="applyConsoleSearch(this.value)" title="Filter console by text"/>
           <div class="pane-divider"></div>
-          <button class="console-text-btn" id="consoleCopyBtn" title="Copy console output" onclick="copyConsole()">Copy</button>
-          <button class="console-text-btn" id="consoleClearBtn" title="Clear console" onclick="clearConsole()">Clear</button>
+          <button class="console-text-btn" id="consoleCopyBtn" aria-label="Copy console output" title="Copy console output" onclick="copyConsole()">Copy</button>
+          <button class="console-text-btn" id="consoleClearBtn" aria-label="Clear console" title="Clear console" onclick="clearConsole()">Clear</button>
         </div>
         <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" onclick="event.stopPropagation(); handleConsoleBarClick(event)" title="Minimize / restore console"></i>
       </div>
@@ -502,10 +502,10 @@
           <span class="xpath-results-title">XPath Results</span>
           <span class="xpath-match-count" id="xpathMatchCount">0 matches</span>
           <div class="xpath-results-actions" onclick="event.stopPropagation()">
-            <button class="pane-icon-btn" onclick="copyXPathResults()" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" onclick="clearXPathResults()" title="Clear results"><i data-lucide="eraser" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="copyXPathResults()" aria-label="Copy all results" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="clearXPathResults()" aria-label="Clear results" title="Clear results"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
+            <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="xpath-results-body-wrap" id="xpathResultsBodyWrap">
@@ -531,14 +531,14 @@
           <span class="pane-num">03</span>
           <span class="pane-title">Output</span>
           <div class="pane-actions" onclick="event.stopPropagation()">
-            <button class="collapse-btn" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
+            <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <span class="lang-badge" id="outLangBadge">XML</span>
-            <button class="pane-icon-btn" title="Copy output" onclick="copyPane('out')"><i data-lucide="clipboard" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" title="Clear output" onclick="clearPane('out')"><i data-lucide="eraser" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Copy output" title="Copy output" onclick="copyPane('out')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Clear output" title="Clear output" onclick="clearPane('out')"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
-            <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" title="Toggle word wrap" onclick="toggleWordWrap('out')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
-            <button class="pane-icon-btn" id="outDownloadBtn" title="Download output as XML" onclick="downloadPane('out','output.xml')"><i data-lucide="download" width="14" height="14"></i></button>
+            <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('out')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" id="outDownloadBtn" aria-label="Download output as XML" title="Download output as XML" onclick="downloadPane('out','output.xml')"><i data-lucide="download" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="editor-wrap" id="outEdWrap">
@@ -596,9 +596,9 @@
 <div class="ex-modal-backdrop" id="shareModalBackdrop" onclick="handleShareBackdropClick(event)">
   <div class="share-modal">
     <div class="share-modal-header">
-      <i data-lucide="share-2" width="16" height="16"></i>
+      <i data-lucide="share2" width="16" height="16"></i>
       <span class="share-modal-title">Share Session</span>
-      <button class="ex-modal-close" onclick="closeShareModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
+      <button class="ex-modal-close" onclick="closeShareModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
     </div>
 
     <div class="share-modal-body">
@@ -612,10 +612,10 @@
 </div>
 
 <!-- Examples Library Modal -->
-<div class="ex-modal-backdrop" id="exModalBackdrop" onclick="handleModalBackdropClick(event)">
+<div class="ex-modal-backdrop" id="exModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="exModalTitle" onclick="handleModalBackdropClick(event)">
   <div class="ex-modal">
     <div class="ex-modal-header">
-      <span class="ex-modal-title">Example Library</span>
+      <span class="ex-modal-title" id="exModalTitle">Example Library</span>
       <span class="ex-modal-count" id="exModalCount"></span>
       <div class="ex-search-wrap">
         <i data-lucide="search" width="14" height="14" class="ex-search-icon"></i>
@@ -625,7 +625,7 @@
         <input type="checkbox" id="exAutoRunCheckbox" aria-label="Auto-run loaded examples" onchange="exAutoRunChecked = this.checked; localStorage.setItem('xdebugx-auto-run-examples', this.checked)">
         Auto-run
       </label>
-      <button class="ex-modal-close" onclick="closeExModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
+      <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
     </div>
     <div class="ex-modal-body">
       <div class="ex-sidebar" id="exSidebar">
@@ -681,7 +681,7 @@
         <button class="help-tab active" data-tab="features" onclick="switchHelpTab('features')">Features</button>
         <button class="help-tab" data-tab="shortcuts" onclick="switchHelpTab('shortcuts')">Shortcuts</button>
       </div>
-      <button class="ex-modal-close" onclick="closeHelpModal()" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
+      <button class="ex-modal-close" onclick="closeHelpModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
     </div>
 
     <!-- Features Tab -->
