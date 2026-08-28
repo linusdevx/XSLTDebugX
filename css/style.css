@@ -1,18 +1,3 @@
-/* Fallback font with adjusted metrics to approximate JetBrains Mono dimensions.
-   Prevents layout shift (CLS) while the Google Fonts version loads — the browser
-   uses Courier New scaled to match JetBrains Mono's metrics instead of a visually
-   jarring fallback. The Google Fonts @font-face (loaded after this stylesheet)
-   overrides this declaration once the real font is available. */
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: local('Courier New'), local('Courier');
-  size-adjust: 105%;
-  ascent-override: 83%;
-  descent-override: 20%;
-  line-gap-override: 0%;
-  font-display: swap;
-}
-
 :root {
       --bg-base:        #06080d;
       --bg-panel:       rgba(13, 20, 32, 0.65);
