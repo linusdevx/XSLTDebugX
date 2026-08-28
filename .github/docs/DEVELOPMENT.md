@@ -180,8 +180,8 @@ Check that vendor libraries load correctly:
 | `css/style.css` | Local file | No cache |
 | `js/*.js` | Local files | No cache |
 | `pako.min.js` | `cdnjs.cloudflare.com` (gzip for share-URL payloads) | CDN cache |
-| Monaco loader (`vs/loader.js`) + worker chunks | `cdn.jsdelivr.net/npm/monaco-editor@…` | CDN cache |
-| Lucide icons | `cdn.jsdelivr.net/npm/lucide@…` | CDN cache |
+| Monaco loader (`vs/loader.js`) + worker chunks | `cdn.jsdelivr.net/npm/monaco-editor@0.52.0/…` | CDN cache |
+| Lucide icons | `cdn.jsdelivr.net/npm/lucide@1.34.0/…` | CDN cache |
 
 **Under Cloudflare Pages** (production deployment):
 - App code (`/js/*`, `/css/*`) — `Cache-Control: no-store`
