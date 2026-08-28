@@ -181,6 +181,13 @@ function applyConsoleSearch(query) {
   });
 }
 
+// Patch Run button kbd label for non-Mac platforms — ⌘ is Mac-only.
+(function () {
+  if (/Mac|iPhone|iPad|iPod/.test(navigator.platform)) return;
+  const kbd = document.querySelector('#runBtn .kbd');
+  if (kbd) kbd.textContent = 'Ctrl+↵';
+})();
+
 function toggleTheme() {
   document.body.classList.add('theme-switching');
 
@@ -217,3 +224,27 @@ function switchHelpTab(tab) {
   document.getElementById('helpTabFeatures').classList.toggle('active', tab === 'features');
   document.getElementById('helpTabShortcuts').classList.toggle('active', tab === 'shortcuts');
 }
+
+(function _initMobileBanner() {
+  const DISMISSED_KEY = 'xdebugx-mobile-notice-dismissed';
+  // Only show on actual mobile/tablet: small screen AND touch device.
+  // Avoids false positives on touch-enabled laptops or narrow browser windows.
+  const isSmallScreen = window.screen.width < 1024 || window.screen.height < 700;
+  const isTouch = navigator.maxTouchPoints > 1;
+  if (!(isSmallScreen && isTouch) || localStorage.getItem(DISMISSED_KEY)) return;
+
+  const banner = document.createElement('div');
+  banner.className = 'mobile-banner';
+  const msg = document.createElement('span');
+  msg.textContent = '💡 XSLTDebugX works best on a desktop browser — Monaco editor and 3-column layout need more space.';
+  const btn = document.createElement('button');
+  btn.textContent = 'Got it';
+  btn.addEventListener('click', () => {
+    banner.remove();
+    localStorage.setItem(DISMISSED_KEY, '1');
+  });
+  banner.appendChild(msg);
+  banner.appendChild(btn);
+  document.body.appendChild(banner);
+  requestAnimationFrame(() => banner.classList.add('visible'));
+}());

@@ -1,10 +1,11 @@
 // Spinner for the Run button's running state.
 const _RUN_BTN_SPINNER = `<svg class="spinner" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="8" cy="8" r="6" stroke-opacity="0.3"/><path d="M8 2a6 6 0 0 1 6 6" stroke-linecap="round"/></svg>`;
+const _KBD_RUN = navigator.userAgent.includes('Mac') ? '⌘↵' : 'Ctrl+↵';
 
 // Single source of truth for Run button markup — keeps icon, label, and shortcut in sync.
 function _runBtnHtml(mode) {
   const label = mode === 'XPATH' ? 'Run XPath' : 'Run XSLT';
-  return `<i data-lucide="play" width="14" height="14"></i> ${label} <span class="kbd">⌘↵</span>`;
+  return `<i data-lucide="zap" width="14" height="14"></i> ${label} <span class="kbd">${_KBD_RUN}</span>`;
 }
 
 function _triggerRunParticles() {
@@ -374,9 +375,9 @@ function renderKV(type) {
     : rows.map(r => `
         <div class="kv-row-wrapper">
           <div class="kv-row">
-            <input value="${escHtml(r.name)}" placeholder="name"
+            <input value="${escHtml(r.name)}" placeholder="name" aria-label="${isHdr ? 'Header' : 'Property'} name"
               oninput="updateKV('${type}',${r.id},'name',this.value)"/>
-            <input value="${escHtml(r.value)}" placeholder="value"
+            <input value="${escHtml(r.value)}" placeholder="value" aria-label="${isHdr ? 'Header' : 'Property'} value"
               oninput="updateKV('${type}',${r.id},'value',this.value)"/>
             <button class="kv-del-btn" onclick="deleteKVRow('${type}',${r.id})">×</button>
           </div>
@@ -421,7 +422,7 @@ function runTransform() {
   }
 
   btn.disabled = true;
-  btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">⌘↵</span>`;
+  btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">${_KBD_RUN}</span>`;
   setStatus('Transforming…', 'busy');
   _triggerRunParticles();
   // Editorial direction B: drives the inter-column data-flow line animation

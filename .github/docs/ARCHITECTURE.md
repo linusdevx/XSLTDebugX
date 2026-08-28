@@ -528,9 +528,9 @@ The order in [../../index.html](../../index.html) is **critical**:
 <link rel="stylesheet" href="css/style.css">
 
 <!-- 2. Vendor libs (Monaco, Saxon-JS, pako) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/..."></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/..."></script>
 <script src="lib/SaxonJS2.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/..."></script>  <!-- used by share.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.2.0/..."></script>  <!-- used by share.js -->
 
 <!-- 3. JS modules in dependency order -->
 <script src="js/state.js"></script>      <!-- Global state, clog -->

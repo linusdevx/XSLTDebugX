@@ -1,5 +1,5 @@
 require.config({
-  paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' }
+  paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' }
 });
 
 document.getElementById('loadTxt').textContent = 'Loading Monaco Editor…';
@@ -26,10 +26,11 @@ require(['vs/editor/editor.main'], () => {
   const shared = {
     theme: document.body.classList.contains('light') ? 'xdebugx-light' : 'xdebugx',
     fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+    fontLigatures: false,
     fontSize: 13,
     lineHeight: 22,
     minimap: { enabled: false },
-    glyphMargin: false,
+    glyphMargin: true,
     lineNumbersMinChars: 1,
     lineDecorationsWidth: 0,
     scrollBeyondLastLine: false,
@@ -90,6 +91,9 @@ require(['vs/editor/editor.main'], () => {
   });
 
   modeManager.initializeModels(xmlModelXslt, xmlModelXpath);
+
+  // Remeasure fonts after load to fix cursor offset when JetBrains Mono loads async.
+  document.fonts.ready.then(() => monaco.editor.remeasureFonts());
 
   // Ctrl/Cmd+Enter → run XPath in XPath mode, run transform in XSLT mode.
   [eds.xml, eds.xslt].forEach(ed => {
@@ -780,7 +784,7 @@ require(['vs/editor/editor.main'], () => {
       reinitIcons();
       hideLoader();
       clog('Saxon-JS 2.x loaded · XSLT 3.0 engine ready ✓', 'success');
-      clog('Ctrl+Enter runs XSLT transform in XSLT mode · runs XPath in XPath mode', 'info');
+      clog(`${_KBD_RUN} runs XSLT transform in XSLT mode · runs XPath in XPath mode`, 'info');
 
       // Share link takes priority over saved session.
       if (window._pendingShareData) {

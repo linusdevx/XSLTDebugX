@@ -20,6 +20,13 @@
 - [Development guide](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/DEVELOPMENT.md): local setup, browser debugging.
 - [Testing guide](https://github.com/linusdevx/XSLTDebugX/blob/main/.github/docs/TESTING.md): Playwright E2E patterns.
 
+## Limitations
+- XSLT 1.0 and 2.0 are not supported — Saxon-JS 2 targets XSLT 3.0 only.
+- No server-side execution — everything runs in the browser; large documents may be slow.
+- CPI simulation covers `cpi:setHeader` and `cpi:setProperty` only; `getHeader`/`getProperty` are not extension functions (use `xsl:param` binding instead).
+- Share URL encodes the full session; very large stylesheets may exceed browser URL limits (~2 KB).
+- No file-system persistence — work is saved to `localStorage` only; clearing browser storage loses the session.
+
 ## Optional
 - [Contributing](https://github.com/linusdevx/XSLTDebugX/blob/main/CONTRIBUTING.md)
 - [Security policy](https://github.com/linusdevx/XSLTDebugX/blob/main/SECURITY.md)
