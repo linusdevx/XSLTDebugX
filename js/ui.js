@@ -218,7 +218,9 @@ function setConsoleFilter(filter) {
   consoleFilter = filter;
 
   document.querySelectorAll('.console-filter-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.filter === filter);
+    const active = btn.dataset.filter === filter;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
   });
 
   // Delegate all filtering (type + text) to applyConsoleSearch.
