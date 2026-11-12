@@ -9,12 +9,10 @@ function setRuntimeProfile(profile, options = {}) {
   const next = profile === 'standard' ? 'standard' : 'cpi';
   runtimeProfile = next;
   document.body.dataset.runtimeProfile = next;
-  const select = document.getElementById('runtimeProfileSelect');
-  if (select && select.value !== next) select.value = next;
   const settingsSelect = document.getElementById('settingsRuntimeProfile');
   if (settingsSelect && settingsSelect.value !== next) settingsSelect.value = next;
   const status = document.getElementById('runtimeProfileStatus');
-  if (status) status.textContent = next === 'cpi' ? 'SAP CPI' : 'Standard';
+  if (status) status.textContent = next === 'cpi' ? 'Cloud Integration' : 'Standard';
   modeManager?.updatePanelVisibility();
   if (typeof renderExSidebar === 'function' && document.getElementById('exModalBackdrop')?.classList.contains('open')) {
     _exRendered = false;
@@ -28,5 +26,5 @@ function setRuntimeProfile(profile, options = {}) {
       scheduleSave();
     }
   }
-  if (options.log !== false) clog(`${next === 'cpi' ? 'SAP CPI' : 'Standard XSLT'} runtime profile active`, 'info');
+  if (options.log !== false) clog(`${next === 'cpi' ? 'Cloud Integration' : 'Standard XSLT'} runtime profile active`, 'info');
 }

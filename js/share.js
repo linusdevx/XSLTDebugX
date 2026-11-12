@@ -270,7 +270,10 @@ async function saveSharedCopy() {
 
 var handleIncomingShareBackdropClick = _makeBackdropClose('incomingShareBackdrop', cancelIncomingShare);
 
+let _shareReturnFocus = null;
+
 function openShareModal() {
+  _shareReturnFocus = document.activeElement;
   document.getElementById('shareModalBackdrop').classList.add('open');
   const input = document.getElementById('shareUrlInput');
   const warning = document.getElementById('shareLengthWarning');
@@ -295,6 +298,9 @@ function openShareModal() {
 
 function closeShareModal() {
   document.getElementById('shareModalBackdrop').classList.remove('open');
+  const returnFocus = _shareReturnFocus;
+  _shareReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 // See modal.js for `var` rationale (kept on window for inline onclick=).

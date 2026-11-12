@@ -24,26 +24,28 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        index.html                             │
-│  (loads CSS + 13 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
+│  (loads CSS + 17 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
 └──────────────────────────────────────────────────────────────┘
                               ↓
               ┌─────────────────────────────────┐
               │   Vanilla ES6+ JavaScript       │
-              │   (13 modules)
+              │   (17 modules)                  │
               └─────────────────────────────────┘
                               ↓
         ┌─────────────────────────────────────────────┐
         │  Monaco Editor (XML, XSLT, Output panes)   │
         │  Saxon-JS 2 (XSLT 3.0 + XPath 3.1)         │
         │  pako (deflate/inflate for share URLs)      │
+        │  fflate (ZIP backup compression)            │
         │  Lucide Icons (SVG icon library)             │
         │  CSS (Light & Dark themes)                  │
         └─────────────────────────────────────────────┘
                               ↓
-              ┌──────────────────────────────┐
-              │   Browser localStorage       │
-              │   (xdebugx-session-v1)       │
-              └──────────────────────────────┘
+        ┌─────────────────────────────────────────────┐
+        │  IndexedDB (xdebugx-workspace-v1)           │
+        │  sessions · folders · drafts · settings     │
+        │  + localStorage (quick playground draft)    │
+        └─────────────────────────────────────────────┘
 ```
 
 ---
@@ -77,7 +79,7 @@ dist/lib/SaxonJS2.js, _headers, _redirects, favicon.svg copied as-is
 ```
 dist/
 ├── index.html           # Rewritten HTML
-├── app.{hash}.js        # All 13 modules, minified + concatenated
+├── app.{hash}.js        # All 19 modules, minified + concatenated
 ├── app.{hash}.css       # Minified CSS
 ├── favicon.svg
 ├── _headers             # Cloudflare cache rules
@@ -92,16 +94,22 @@ dist/
 
 | Module | Responsibility | Key Functions |
 |--------|-----------------|----------------|
-| **state.js** | Global state, shared utilities, localStorage persistence, console | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()`, `logError()`, `guardReady()` |
+| **workspace-store.js** | IndexedDB adapter — sessions, folders, drafts, settings, trash, backup ZIP | `init()`, `createSession()`, `updateSession()`, `listSessions()`, `putDraft()`, `getDraft()`, `getSetting()`, `setSetting()`, `getStorageStatus()` |
+| **state.js** | Global state, shared utilities, quick-playground localStorage persistence, console | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()`, `logError()`, `guardReady()` |
 | **mode-manager.js** | Centralized mode management (XSLT vs XPath) | `setMode()`, `isXpath`, `isXslt`, `currentModel` |
+| **runtime-profile.js** | Runtime profile state (`cpi` / `standard`), syncs to Settings modal | `setRuntimeProfile()`, `isCpiRuntimeProfile()` |
+| **session-controller.js** | Active session lifecycle — restore, save, flush, draft management, mode-aware switching | `restoreSession()`, `saveChain()`, `flushActiveSession()`, `restoreModeDraft()`, `beginTemporary()` |
 | **validate.js** | XML/XSLT validation, Monaco error markers, Saxon error parsing | `validateXML()`, `markErrorLine()`, `preflight()`, `parseSaxonErrorLine()` |
 | **panes.js** | Word wrap, copy/clear/format, XML tokenizer | `toggleWordWrap()`, `copyPane()`, `fmtEditor()`, `prettyXML()`, `_tokenizeXML()`, `_indentTokens()` |
 | **transform.js** | XSLT execution, CPI simulation, output rendering | `runTransform()`, `rewriteCPICalls()`, `buildParamsXPath()`, `renderOutputKV()` |
 | **examples-data.js** | 61 built-in XSLT/XPath examples across 6 categories | `CATEGORIES`, `EXAMPLES` (data objects) |
 | **modal.js** | Examples library UI, filtering, loading | `openExModal()`, `loadExample()`, `renderExGrid()`, `filterExamples()` |
 | **files.js** | File upload/download, drag-and-drop | `triggerUpload()`, `handleUpload()`, `downloadPane()`, `setupDragDrop()` |
-| **ui.js** | Console state, theme toggle, help modal, column collapse | `setConsoleState()`, `toggleTheme()`, `applyConsoleSearch()`, `setConsoleFilter()` |
+| **ui.js** | Console state, theme toggle, help modal, toast notifications | `setConsoleState()`, `toggleTheme()`, `showToast()`, `showCopyToast()` |
 | **share.js** | URL encoding/decoding of session state | `buildSharePayload()`, `generateShareUrl()`, `loadFromShareHash()` |
+| **explorer.js** | Workspace Explorer sidebar — file list, create/rename/move/trash, folders, filter tabs | `refreshExplorer()`, `toggleExplorer()`, `openExplorerSession()`, `createExplorerSession()`, `openWorkspaceSettings()` |
+| **pane-layout.js** | Pane resizing, splitter drag, layout persistence | `resetAllPaneLayouts()`, `updatePaneSplitters()`, `restorePaneLayout()` |
+| **backup.js** | Workspace backup ZIP creation and import | `downloadWorkspaceBackup()`, `prepareWorkspaceBackupImport()` |
 | **xpath.js** | XPath mode UI, expression evaluation, node highlighting, syntax coloring | `runXPath()`, `toggleXPath()`, `_highlightXPath()`, `_highlightMatchedNodes()` |
 | **themes.js** | Monaco theme definitions (light + dark palettes) | `MONACO_THEME_DARK`, `MONACO_THEME_LIGHT` |
 | **editor.js** | Monaco initialization, keyboard shortcuts, context menus | `hideLoader()`, `setupAutoClose()`, `_toggleXmlComment()` |
@@ -115,31 +123,43 @@ index.html
     ↓
 [Load order matters — executed in sequence]
     ↓
-state.js ←─────────────────────────────────────────────────────┐
-    ↓ (provides global state, clog, scheduleSave)               │
-mode-manager.js (uses state)                                    │
-    ↓ (provides setMode, isXpath, isXslt, currentModel)         │
-validate.js (uses state)                                        │
-    ↓ (provides validateXML, markErrorLine, preflight)          │
-panes.js (uses state)                                           │
-    ↓ (provides toggleWordWrap, copyPane, fmtEditor)            │
-transform.js (uses state, validate)                             │
-    ↓ (provides runTransform, CPI functions)                    │
-examples-data.js                                                │
-    ↓ (provides CATEGORIES, EXAMPLES)                           │
-modal.js (uses state, examples-data)                            │
-    ↓ (provides openExModal, loadExample)                       │
-files.js (uses state)                                           │
-    ↓ (provides triggerUpload, downloadPane)                    │
-ui.js (uses state)                                              │
-    ↓ (provides toggleTheme, setConsoleState)                   │
-share.js (uses state, transform)                                │
-    ↓ (provides generateShareUrl)                               │
-xpath.js (uses state, validate, mode-manager)                   │
-    ↓ (provides runXPath, toggleXPath, node highlighting)       │
-themes.js                                                       │
-    ↓ (provides MONACO_THEME_DARK / MONACO_THEME_LIGHT)          │
-editor.js (uses state, all above) ←────────────────────────────┘
+workspace-store.js                                              ←─────────────────┐
+    ↓ (provides IndexedDB API: workspaceStore)                                    │
+state.js (uses workspace-store)                                                   │
+    ↓ (provides global state, clog, scheduleSave)                                 │
+mode-manager.js (uses state)                                                      │
+    ↓ (provides setMode, isXpath, isXslt, currentModel)                           │
+runtime-profile.js (uses state, mode-manager)                                     │
+    ↓ (provides runtimeProfile, setRuntimeProfile, isCpiRuntimeProfile)           │
+session-controller.js (uses workspace-store, state, mode-manager, runtime-profile)│
+    ↓ (provides sessionController, restoreSession, saveChain)                     │
+validate.js (uses state)                                                          │
+    ↓ (provides validateXML, markErrorLine, preflight)                            │
+panes.js (uses state)                                                             │
+    ↓ (provides toggleWordWrap, copyPane, fmtEditor)                              │
+transform.js (uses state, validate)                                               │
+    ↓ (provides runTransform, CPI functions)                                      │
+examples-data.js                                                                  │
+    ↓ (provides CATEGORIES, EXAMPLES)                                             │
+modal.js (uses state, examples-data, session-controller)                          │
+    ↓ (provides openExModal, loadExample)                                         │
+files.js (uses state, session-controller)                                         │
+    ↓ (provides triggerUpload, downloadPane)                                      │
+ui.js (uses state)                                                                │
+    ↓ (provides toggleTheme, setConsoleState, showToast)                          │
+share.js (uses state, transform)                                                  │
+    ↓ (provides generateShareUrl)                                                 │
+explorer.js (uses workspace-store, state, session-controller)                     │
+    ↓ (provides refreshExplorer, toggleExplorer, openWorkspaceSettings)           │
+pane-layout.js (uses state)                                                       │
+    ↓ (provides resetAllPaneLayouts, updatePaneSplitters)                         │
+backup.js (uses workspace-store)                                                  │
+    ↓ (provides downloadWorkspaceBackup, prepareWorkspaceBackupImport)            │
+xpath.js (uses state, validate, mode-manager)                                     │
+    ↓ (provides runXPath, toggleXPath, node highlighting)                         │
+themes.js                                                                         │
+    ↓ (provides MONACO_THEME_DARK / MONACO_THEME_LIGHT)                           │
+editor.js (uses state, all above) ←──────────────────────────────────────────────┘
     ↓ (provides eds, Monaco init, keyboard shortcuts)
 [All modules must load before first user interaction]
 ```
@@ -252,31 +272,40 @@ Complete
 
 ```
 On startup:
-    loadSavedState() [state.js] → parse localStorage[xdebugx-session-v1]
+    workspaceStore.init() [workspace-store.js] → open IndexedDB (xdebugx-workspace-v1)
+    ↓
+    sessionController.restoreModeDraft('xslt') [session-controller.js]
+    → reads draft-xslt from IndexedDB
+    → falls back to localStorage[xdebugx-session-v1] for legacy migration
     ↓
     Restore to all editors and panels:
-    - xmlModelXslt.setValue(saved.xmlXslt)
-    - xmlModelXpath.setValue(saved.xmlXpath)
-    - eds.xslt.setValue(saved.xslt)
-    - kvData.headers = saved.headers
-    - kvData.properties = saved.properties
-    - modeManager.restoreFromSession() — applies saved.xpathEnabled
-    - Column collapse states (saved.leftCollapsed, rightCollapsed, centerCollapsed)
-    - XPath expression (saved.xpathExpr)
-    - Last example key (saved.lastExampleKey)
+    - xmlModelXslt.setValue(draft.source.xml)
+    - xmlModelXpath.setValue(draft.source.xml)  (XPath draft has its own xml)
+    - eds.xslt.setValue(draft.source.xslt)
+    - kvData.headers = draft.source.headers
+    - kvData.properties = draft.source.properties
+    - setRuntimeProfile(draft.source.runtimeProfile)
+    - modeManager.setMode(draft.activeMode)
     ↓
-On user edit:
+On user edit (named session active):
     Any change to XML, XSLT, headers, properties, or mode
     ↓
+    sessionController.saveChain() [session-controller.js]
+    ↓
+    (debounced for 800ms via scheduleSessionSave)
+    ↓
+    workspaceStore.updateSession(id, { source: {...} }) → IndexedDB write
+    ↓
+On user edit (temporary/draft session):
     scheduleSave() [state.js]
     ↓
     (debounced for 800ms)
     ↓
-    saveState() [state.js] → serialize to localStorage[xdebugx-session-v1]
+    workspaceStore.putDraft('draft-xslt', ...) or workspaceStore.putDraft('draft-xpath', ...)
+    + localStorage[xdebugx-session-v1] (backwards-compatible quick-playground draft)
     ↓
-    Persisted fields: xmlXslt, xmlXpath, xslt, headers, properties,
-    leftCollapsed, rightCollapsed, centerCollapsed, xpathExpr,
-    xpathEnabled, lastExampleKey, savedAt.
+    Persisted fields: xml, xslt (or expression), headers, properties,
+    runtimeProfile, activeMode, savedAt.
     (Note: rendered output is NOT persisted — it's recomputed on demand.)
     ↓
     Complete
@@ -287,6 +316,25 @@ On user edit:
 ## Global State Management
 
 All mutable state lives in **global variables** (no module system, no class-based state management).
+
+### Workspace & Session State (workspace-store.js, session-controller.js)
+
+```javascript
+// IndexedDB adapter — single instance initialized at startup
+let workspaceStore = null;  // set to new WorkspaceStore() in workspace-store.js
+
+// Active session controller — handles restore, save, flush
+let sessionController = null;  // set to new SessionController() in session-controller.js
+
+// Current active session record (null = quick playground / draft)
+let _activeSession = null;  // owned by session-controller.js
+```
+
+### Runtime Profile State (runtime-profile.js)
+
+```javascript
+let runtimeProfile = 'cpi'; // 'cpi' | 'standard' — persisted in IndexedDB drafts
+```
 
 ### Editor State (state.js)
 
@@ -527,40 +575,51 @@ The order in [../../index.html](../../index.html) is **critical**:
 <!-- 1. CSS first -->
 <link rel="stylesheet" href="css/style.css">
 
-<!-- 2. Vendor libs (Monaco, Saxon-JS, pako) -->
+<!-- 2. Vendor libs (Monaco, Saxon-JS, pako, fflate) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.0/..."></script>
 <script src="lib/SaxonJS2.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.2.0/..."></script>  <!-- used by share.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.2.0/..."></script>  <!-- share.js -->
+<script src="https://cdn.jsdelivr.net/npm/fflate/..."></script>                <!-- backup.js -->
 
-<!-- 3. JS modules in dependency order -->
-<script src="js/state.js"></script>      <!-- Global state, clog -->
-<script src="js/mode-manager.js"></script>  <!-- Mode management (XSLT vs XPath) -->
-<script src="js/validate.js"></script>   <!-- Validation, uses state -->
-<script src="js/panes.js"></script>      <!-- UI helpers, uses state -->
-<script src="js/transform.js"></script>  <!-- Transform logic, uses state, validate -->
-<script src="js/examples-data.js"></script>  <!-- Example definitions -->
-<script src="js/modal.js"></script>      <!-- Examples modal, uses examples-data -->
-<script src="js/files.js"></script>      <!-- File I/O, uses state -->
-<script src="js/ui.js"></script>         <!-- UI state, uses state -->
-<script src="js/share.js"></script>      <!-- URL sharing, uses state, transform -->
-<script src="js/xpath.js"></script>      <!-- XPath mode, uses validate, mode-manager -->
-<script src="js/themes.js"></script>     <!-- Monaco theme definitions -->
-<script src="js/editor.js"></script>     <!-- Monaco setup, uses all above (last) -->
+<!-- 3. JS modules in dependency order (19 modules) -->
+<script src="js/workspace-store.js"></script>   <!-- IndexedDB adapter (first — all modules use it) -->
+<script src="js/state.js"></script>             <!-- Global state, clog -->
+<script src="js/mode-manager.js"></script>      <!-- Mode management (XSLT vs XPath) -->
+<script src="js/runtime-profile.js"></script>   <!-- Runtime profile state -->
+<script src="js/session-controller.js"></script><!-- Session lifecycle -->
+<script src="js/validate.js"></script>          <!-- Validation, uses state -->
+<script src="js/panes.js"></script>             <!-- UI helpers, uses state -->
+<script src="js/transform.js"></script>         <!-- Transform logic, uses state, validate -->
+<script src="js/examples-data.js"></script>     <!-- Example definitions -->
+<script src="js/modal.js"></script>             <!-- Examples modal -->
+<script src="js/files.js"></script>             <!-- File I/O -->
+<script src="js/ui.js"></script>                <!-- UI state, toast notifications -->
+<script src="js/share.js"></script>             <!-- URL sharing -->
+<script src="js/explorer.js"></script>          <!-- Workspace Explorer sidebar -->
+<script src="js/pane-layout.js"></script>       <!-- Pane resizing -->
+<script src="js/backup.js"></script>            <!-- Backup ZIP creation/import -->
+<script src="js/xpath.js"></script>             <!-- XPath mode -->
+<script src="js/themes.js"></script>            <!-- Monaco theme definitions -->
+<script src="js/editor.js"></script>            <!-- Monaco setup (last) -->
 ```
 
 **Initialization sequence**:
 
 1. **Browser parses HTML** → loads CSS
-2. **Vendor libs load asynchronously** (Monaco, Saxon-JS)
+2. **Vendor libs load asynchronously** (Monaco, Saxon-JS, pako, fflate)
 3. **Module scripts execute in order**
-4. **state.js** → Initializes global state, sets up `_saveTimer`
-5. **mode-manager.js** → Registers mode switching logic
-6. **validate.js** → Provides XML validation functions
-7. **transform.js** → Registers transform button handler
-8. ... (remaining modules register event handlers, await their dependencies)
-9. **editor.js** (last) → Initializes Monaco editors, restores session, connects all handlers
-10. **All modules loaded** → `saxonReady` flag triggers when Saxon-JS loaded
-11. **On first user interaction** → Transform or XPath can run
+4. **workspace-store.js** → Creates `workspaceStore`; `workspaceStore.init()` called by editor.js
+5. **state.js** → Initializes global state, sets up `_saveTimer`
+6. **mode-manager.js** → Registers mode switching logic
+7. **runtime-profile.js** → Sets initial `runtimeProfile` value
+8. **session-controller.js** → Creates `sessionController`
+9. **validate.js** → Provides XML validation functions
+10. **transform.js** → Registers transform button handler
+11. ... (remaining modules register event handlers, await their dependencies)
+12. **explorer.js** → Builds the workspace sidebar, attaches keyboard shortcuts
+13. **editor.js** (last) → Initializes Monaco editors, calls `workspaceStore.init()`, restores session, connects all handlers
+14. **All modules loaded** → `saxonReady` flag triggers when Saxon-JS loaded
+15. **On first user interaction** → Transform or XPath can run
 
 ### When is the App Ready?
 
@@ -583,10 +642,13 @@ if (!eds.xml || !eds.xslt || !eds.out) {
 ### Global Variable Naming
 
 **Public APIs** (used across modules):
+- `workspaceStore` — IndexedDB adapter for all workspace persistence
+- `sessionController` — active session lifecycle (restore, save, flush)
 - `eds` — Editor instances
 - `xmlModelXslt`, `xmlModelXpath` — Monaco XML models
 - `kvData` — Headers/properties data
 - `saxonReady` — Saxon-JS ready flag
+- `runtimeProfile` — current runtime profile (`'cpi'` / `'standard'`)
 - `clog()` — Console logging function
 - Functions run by user: `runTransform()`, `runXPath()`, `toggleXPath()`, etc.
 
@@ -657,9 +719,9 @@ Validation is debounced at 800ms. When making programmatic editor changes, set `
 
 URLs cap at ~2,000 chars. Large XSLT + XML silently fail to encode. No warning is shown — users discover on load.
 
-### 7. localStorage Versioning
+### 7. Storage Versioning
 
-Storage key is `xdebugx-session-v1`. If you change the saved-state schema, bump to `v2` — old sessions are silently ignored, users get a clean state.
+Primary persistence is IndexedDB (`xdebugx-workspace-v1` database). `localStorage['xdebugx-session-v1']` is kept as a quick-playground draft fallback only. If you change the IndexedDB schema, bump the `_DB_VERSION` constant in `workspace-store.js` and provide an `onupgradeneeded` migration path. If you change the localStorage schema, bump to `v2` — old data is silently ignored.
 
 ### 8. Mode Switch Timing
 

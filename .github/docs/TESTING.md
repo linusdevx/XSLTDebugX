@@ -4,7 +4,7 @@
 
 XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the complete user workflows without mocking any backend systems.
 
-**Status**: ✅ 98 tests passing (smoke + 9 workflow specs)
+**Status**: ✅ Tests passing (smoke + 13 workflow specs)
 
 ---
 
@@ -20,17 +20,21 @@ XSLTDebugX uses **Playwright** for end-to-end (E2E) testing. Tests verify the co
     ├── fixtures/
     │   └── sample-data.js               # Test data (XML, XSLT, XPath examples)
     └── e2e/
-        ├── smoke.spec.js                    # 4 tests: smoke checks (incl. 1 SUMMARY)
+        ├── smoke.spec.js                        # 4 tests: smoke checks (incl. 1 SUMMARY)
         └── workflows/
-            ├── mode-switching.spec.js       # 13 tests: XSLT ↔ XPath mode switching
-            ├── session-management.spec.js   #  8 tests: localStorage persistence
-            ├── xpath-evaluation.spec.js     #  7 tests: XPath expression evaluation
-            ├── xslt-transform.spec.js       #  8 tests: XSLT transformations
-            ├── cpi-simulation.spec.js       # 12 tests: CPI headers/properties, interceptors
-            ├── cpi-validation.spec.js       # 11 tests: CPI pre-flight validation (unknown fns, arity, line mapping)
-            ├── examples-library.spec.js     # 14 tests: Examples modal, search, categories
-            ├── share-url.spec.js            #  9 tests: URL encoding, session sharing
-            └── kv-search.spec.js            # 12 tests: KV header/property search filter
+            ├── mode-switching.spec.js           # 13 tests: XSLT ↔ XPath mode switching
+            ├── session-management.spec.js       #  8 tests: localStorage persistence
+            ├── xpath-evaluation.spec.js         #  7 tests: XPath expression evaluation
+            ├── xslt-transform.spec.js           #  8 tests: XSLT transformations
+            ├── cpi-simulation.spec.js           # 12 tests: CPI headers/properties, interceptors
+            ├── cpi-validation.spec.js           # 11 tests: CPI pre-flight validation
+            ├── examples-library.spec.js         # 14 tests: Examples modal, search, categories
+            ├── share-url.spec.js                #  9 tests: URL encoding, session sharing
+            ├── kv-search.spec.js                # 12 tests: KV header/property search filter
+            ├── workspace-explorer.spec.js       #  4 tests: Explorer sidebar — create, rename, folder
+            ├── runtime-profile.spec.js          #  2 tests: Runtime profile switching and persistence
+            ├── safe-ingress.spec.js             #  5 tests: Safe temporary session handling for examples/files
+            └── accessibility.spec.js            #  3 tests: ARIA roles, keyboard shortcuts, Explorer Ctrl+B
 ```
 
 ---
@@ -224,6 +228,40 @@ Tests substring filter on Headers / Properties / output KV panels - 12 tests:
 
 **Run**: `npx playwright test tests/e2e/workflows/kv-search.spec.js`
 
+### 11. Workspace Explorer (`workflows/workspace-explorer.spec.js`)
+Tests Explorer sidebar create/rename/folder flows - 4 tests:
+- ✅ creates, edits, and reopens a named XSLT session
+- ✅ creates and renames a folder
+- ✅ moves a session into a folder
+- ✅ trashes and restores a session
+
+**Run**: `npx playwright test tests/e2e/workflows/workspace-explorer.spec.js`
+
+### 12. Runtime Profile (`workflows/runtime-profile.spec.js`)
+Tests runtime profile switching (CPI vs Standard) - 2 tests:
+- ✅ Standard XSLT hides CPI panels, runs, and restores from the draft
+- ✅ changing runtime in XPath mode persists only the XSLT context
+
+**Run**: `npx playwright test tests/e2e/workflows/runtime-profile.spec.js`
+
+### 13. Safe Ingress (`workflows/safe-ingress.spec.js`)
+Tests that examples and file uploads open as temporary sessions, never overwriting saved work - 5 tests:
+- ✅ an XSLT example cannot overwrite an open named mapping
+- ✅ an XPath example remains detached from a named query
+- ✅ uploading XML detaches before replacing editor content
+- ✅ rejects oversized pane files before reading them
+- ✅ a CPI example cannot change the saved runtime profile
+
+**Run**: `npx playwright test tests/e2e/workflows/safe-ingress.spec.js`
+
+### 14. Accessibility (`workflows/accessibility.spec.js`)
+Tests ARIA roles, keyboard navigation, Explorer shortcuts - 3 tests:
+- ✅ Explorer create buttons have correct aria-labels
+- ✅ Ctrl+B toggles the Explorer sidebar
+- ✅ Settings modal is accessible with role="dialog"
+
+**Run**: `npx playwright test tests/e2e/workflows/accessibility.spec.js`
+
 ---
 
 ## Test Utilities (`test-helpers.js`)
@@ -252,9 +290,11 @@ const mode = await page.getMode();        // Returns 'XSLT' or 'XPATH'
 await page.clickRun();                    // Click run button
 await page.runViaKeyboard();              // Ctrl+Enter
 
-// Session/Storage
-await page.getStoredSession();            // Get localStorage session
-const session = localStorage.getItem('xdebugx-session-v1');
+// Session / Storage
+await page.getStoredSession();   // Returns session snapshot via sessionController.serializeDrafts()
+                                  // Falls back to localStorage['xdebugx-session-v1'] if unavailable
+await page.clearSession();       // Opens Session menu → clicks "Clear current content"
+                                  // (uses #sessionMenuTrigger + role="menuitem" text match)
 
 // Console
 const errors = await page.getConsoleErrors();
@@ -264,6 +304,12 @@ const messages = await page.getConsoleMessages();
 await page.hasErrors();                   // Check for error badge
 const mode = await page.getModeIndicator();
 ```
+
+### Key POM Notes
+
+- **`clearSession()`** uses the Session menu (`#sessionMenuTrigger`), not a direct button. The old `#clearSessionBtn` element no longer exists.
+- **`getStoredSession()`** returns a legacy-shaped object using `sessionController.serializeDrafts()` — it maps IndexedDB draft fields to the old localStorage field names for backwards compatibility with existing workflow specs.
+- **`loadFromShareUrl()`** handles the safe-ingress flow automatically: if `#incomingShareBackdrop` appears, it clicks "Open temporarily".
 
 ---
 
@@ -428,7 +474,7 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 
 ## Current Status
 
-✅ **98 tests passing** (across 10 spec files)
+✅ Tests passing (across 14 spec files)
 - Smoke tests: 4/4
 - Mode switching: 13/13
 - Session management: 8/8
@@ -439,5 +485,9 @@ Edit `tests/fixtures/sample-data.js` to add new examples.
 - Examples library: 14/14
 - Share URL: 9/9
 - KV search: 12/12
+- Workspace Explorer: 4/4
+- Runtime Profile: 2/2
+- Safe Ingress: 5/5
+- Accessibility: 3/3
 
-Last updated: June 22, 2026
+Last updated: November 2026

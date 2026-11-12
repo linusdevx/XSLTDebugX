@@ -270,29 +270,46 @@
     .mode-switcher.xpath-mode .mode-pill { transform: translateX(100%); }
 
     /* ── TOAST NOTIFICATIONS ── */
-    .copy-toast {
+    #toastRegion {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--success);
-      color: white;
-      padding: 12px 16px;
-      border-radius: var(--r-sm);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      inset-block-end: max(42px, calc(env(safe-area-inset-bottom, 0px) + 42px));
+      inset-inline-end: max(20px, env(safe-area-inset-right, 0px));
       z-index: 10000;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: min(320px, calc(100vw - 32px));
       pointer-events: none;
     }
-    .copy-toast.visible {
-      opacity: 1;
-      transform: translateY(0);
+    .toast {
+      display: grid;
+      grid-template-columns: 22px 1fr 24px;
+      align-items: start;
+      gap: 8px;
+      padding: 11px 10px 11px 12px;
+      border: 1px solid var(--border-bright);
+      border-radius: var(--r-sm);
+      background: var(--surface);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.28);
+      font: 12px var(--font-mono);
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: auto;
     }
-    .copy-toast.error { background: var(--error); }
+    .toast.toast-in { opacity: 1; transform: translateY(0) scale(1); }
+    .toast.toast-exit { opacity: 0; transform: translateY(8px) scale(0.97); }
+    .toast svg { margin-top: 1px; }
+    .toast-success svg { color: var(--success); }
+    .toast-error   svg { color: var(--error); }
+    .toast-warning svg { color: var(--sap-gold); }
+    .toast-info    svg { color: var(--sap-blue-fg); }
+    .toast-message { color: var(--text-primary); line-height: 1.4; }
+    .toast-close {
+      background: transparent; border: 0; padding: 0; cursor: pointer;
+      color: var(--text-dim); border-radius: var(--r-xs); display: grid; place-items: center;
+    }
+    .toast-close:hover { color: var(--text-primary); background: var(--hover-bg); }
 
     /* ── Mobile warning banner ── */
     .mobile-banner {
@@ -353,6 +370,15 @@
       opacity: 0.5; pointer-events: none;
     }
     .header nav { display: contents; }
+    /* Skip link — visually hidden until focused, then slides in for keyboard users. */
+    .skip-link {
+      position: fixed; top: -100%; left: 50%; transform: translateX(-50%);
+      padding: 8px 16px; border-radius: var(--r-sm);
+      background: var(--sap-blue); color: #fff;
+      font: 700 12px var(--font-mono); text-decoration: none;
+      z-index: 10000; transition: top 0.15s;
+    }
+    .skip-link:focus { top: 8px; outline: 2px solid #fff; outline-offset: 2px; }
     /* Visually hidden but kept in the DOM and a11y tree.
        Used by the SEO content block: crawlers (Google, Bing) and screen readers see it;
        sighted users don't. Standard "sr-only" pattern — not display:none, which would
@@ -471,7 +497,7 @@
       border: 0; border-radius: 3px; background: transparent; color: var(--text-dim); cursor: pointer;
     }
     .workspace-view-switcher button:hover { color: var(--text-primary); background: var(--hover-bg); }
-    .workspace-view-switcher button.active { color: var(--sap-blue-fg); background: var(--hover-bg-strong); }
+    .workspace-view-switcher button.active { color: var(--sap-blue-fg); background: var(--sap-blue); background: color-mix(in srgb, var(--sap-blue) 18%, transparent); border-radius: 3px; }
     .run-btn {
       display: flex; align-items: center; gap: 7px;
       padding: 6px 14px;
@@ -539,6 +565,30 @@
       text-transform: uppercase;
       letter-spacing: 1.1px;
     }
+    .explorer-header-actions { display: flex; align-items: center; gap: 3px; }
+    .explorer-new-btn {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 7px; border-radius: var(--r-sm); cursor: pointer;
+      font: 700 10px var(--font-mono); white-space: nowrap;
+      transition: background var(--t-fast), color var(--t-fast);
+    }
+    .explorer-new-btn.xslt {
+      border: 1px solid rgba(0,112,242,0.4);
+      background: rgba(0,112,242,0.12);
+      color: var(--sap-blue-fg);
+    }
+    .explorer-new-btn.xslt:hover { background: rgba(0,112,242,0.22); }
+    .explorer-new-btn.xpath {
+      border: 1px solid rgba(245,165,36,0.4);
+      background: rgba(245,165,36,0.10);
+      color: var(--sap-gold);
+    }
+    .explorer-new-btn.xpath:hover { background: rgba(245,165,36,0.20); }
+    .explorer-new-btn.folder {
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-secondary); padding: 3px 5px;
+    }
+    .explorer-new-btn.folder:hover { background: var(--hover-bg); color: var(--text-primary); }
     .explorer-close {
       border: 0;
       background: transparent;
@@ -546,29 +596,6 @@
       cursor: pointer;
       font-size: 18px;
     }
-    .explorer-create-row { display: flex; gap: 6px; padding: 0 10px 8px; }
-    .explorer-create-row button {
-      flex: 1;
-      padding: 6px;
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      background: var(--hover-bg);
-      color: var(--text-secondary);
-      cursor: pointer;
-      font: 700 10px var(--font-mono);
-    }
-    .explorer-create-row button:hover { border-color: var(--sap-blue); color: var(--text-primary); }
-    .explorer-save-as {
-      margin: 0 10px 8px;
-      padding: 6px;
-      border: 1px solid rgba(0,112,242,0.3);
-      border-radius: var(--r-sm);
-      background: rgba(0,112,242,0.07);
-      color: var(--sap-blue-fg);
-      cursor: pointer;
-      font: 700 10px var(--font-mono);
-    }
-    .explorer-save-as:hover { border-color: var(--sap-blue); background: rgba(0,112,242,0.13); }
     .explorer-search {
       margin: 0 10px 8px;
       padding: 7px 9px;
@@ -591,68 +618,7 @@
       font: 600 9px var(--font-mono);
     }
     .explorer-filter.active { background: rgba(0,112,242,0.12); color: var(--sap-blue-fg); }
-    .explorer-workspace-label {
-      padding: 7px 12px;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      color: var(--text-dim);
-      font: 700 9px var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-    }
     .explorer-list { min-height: 0; overflow-y: auto; padding: 6px; }
-    .explorer-backup-actions {
-      display: flex;
-      gap: 6px;
-      padding: 8px 10px 10px;
-      border-top: 1px solid var(--border);
-    }
-    .explorer-runtime-profile {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-top: 1px solid var(--border);
-      color: var(--text-dim);
-      font: 700 9px var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-    }
-    .explorer-runtime-profile select {
-      flex: 1;
-      min-width: 0;
-      padding: 5px 6px;
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      outline: none;
-      background: var(--bg-base);
-      color: var(--text-primary);
-      font: 10px var(--font-mono);
-      text-transform: none;
-    }
-    .explorer-storage-status {
-      padding: 0 10px 7px;
-      color: var(--text-dim);
-      font: 8px/1.45 var(--font-mono);
-    }
-    .explorer-storage-status.error { color: var(--error); }
-    .explorer-backup-actions button {
-      flex: 1;
-      padding: 6px;
-      border: 1px solid var(--border);
-      border-radius: var(--r-sm);
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font: 700 10px var(--font-mono);
-    }
-    .explorer-backup-actions button:hover { border-color: var(--sap-blue); color: var(--text-primary); background: var(--hover-bg); }
-    .explorer-product-actions { display: flex; gap: 5px; padding: 0 10px 9px; }
-    .explorer-product-actions button {
-      flex: 1; padding: 5px; border: 0; background: transparent; color: var(--text-dim);
-      cursor: pointer; font: 9px var(--font-mono);
-    }
-    .explorer-product-actions button:hover { color: var(--text-primary); background: var(--hover-bg); }
     .explorer-row {
       display: flex;
       align-items: center;
@@ -677,8 +643,27 @@
     .explorer-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 11px var(--font-mono); }
     .explorer-row-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .explorer-row-location { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); font: 8px/1.4 var(--font-mono); }
-    .explorer-row-actions { display: flex; align-items: center; opacity: 0; }
+    .explorer-row-actions { display: flex; align-items: center; opacity: 0; gap: 1px; }
     .explorer-row:hover .explorer-row-actions, .explorer-row:focus-within .explorer-row-actions { opacity: 1; }
+    .explorer-row-fav { font-size: 12px !important; }
+    .explorer-row-menu-wrap { position: relative; }
+    .explorer-row-menu-trigger { letter-spacing: 1px; font-size: 11px !important; }
+    .explorer-row-menu {
+      position: fixed; z-index: 200;
+      background: var(--surface); border: 1px solid var(--border-bright);
+      border-radius: var(--r-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      min-width: 150px; padding: 3px;
+      display: flex; flex-direction: column;
+    }
+    .explorer-row-menu-item {
+      background: transparent; border: 0; border-radius: 4px;
+      padding: 6px 10px; text-align: left; cursor: pointer;
+      font: 11px var(--font-mono); color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .explorer-row-menu-item:hover, .explorer-row-menu-item:focus { background: var(--hover-bg); color: var(--text-primary); outline: none; }
+    .explorer-row-menu-item.danger { color: var(--error); }
+    .explorer-row-menu-item.danger:hover, .explorer-row-menu-item.danger:focus { background: rgba(248,81,73,0.1); }
     .explorer-row-action {
       width: 22px; height: 24px; padding: 0;
       border: 0; border-radius: 3px;
@@ -699,9 +684,23 @@
     .explorer-folder-row:hover, .explorer-folder-row:focus { outline: none; background: var(--hover-bg); color: var(--text-primary); }
     .explorer-folder-row .explorer-row-action { opacity: 0; }
     .explorer-folder-row:hover .explorer-row-action, .explorer-folder-row:focus-within .explorer-row-action { opacity: 1; }
+    .explorer-folder-row .explorer-row-menu-wrap { opacity: 0; }
+    .explorer-folder-row:hover .explorer-row-menu-wrap, .explorer-folder-row:focus-within .explorer-row-menu-wrap { opacity: 1; }
     .explorer-folder-actions { display: flex; margin-left: auto; }
     .explorer-empty { padding: 18px 10px; color: var(--text-dim); text-align: center; font: 10px/1.6 var(--font-mono); }
     .explorer-empty.error { color: var(--error); }
+    .explorer-empty-actions { padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .explorer-empty-hint { margin: 0 0 4px; color: var(--text-dim); font: 10px var(--font-mono); text-align: center; }
+    .explorer-empty-card {
+      display: flex; align-items: center; gap: 8px;
+      width: 100%; padding: 8px 10px;
+      background: transparent; border: 1px solid var(--border);
+      border-radius: var(--r-sm); cursor: pointer;
+      font: 11px var(--font-mono); color: var(--text-secondary);
+      transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+      text-align: left;
+    }
+    .explorer-empty-card:hover { border-color: var(--sap-blue); background: var(--hover-bg); color: var(--text-primary); }
     .explorer-backdrop { display: none; }
 
     @media (max-width: 899px) {
@@ -725,7 +724,7 @@
     }
 
     @media (max-width: 900px) {
-      .current-item, .workspace-view-switcher, .settings-header-btn { display: none; }
+      .current-item, .workspace-view-switcher { display: none; }
     }
 
     /* Side cols (Input / Output) are narrower than centre */
@@ -744,7 +743,6 @@
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--sap-blue-glow);
     }
     .col-side   { flex: 1; min-width: 0; }
-    .col-side:last-child { }
     .col-center { flex: 1.2; min-width: 0; }
     .col-center.collapsed { display: none; }
     .workspace.custom-pane-layout #colLeft:not(.collapsed)  { flex: 0 0 var(--colLeft-basis); }
@@ -922,6 +920,24 @@
     .xml-validation-badge .badge-text {
       letter-spacing: 0.3px;
       text-transform: uppercase;
+    }
+    body.light .xml-validation-badge.valid {
+      background: rgba(26,127,55,0.10);
+      border-color: rgba(26,127,55,0.35);
+      color: #1a7f37;
+    }
+    body.light .xml-validation-badge.valid:hover {
+      background: rgba(26,127,55,0.18);
+      border-color: rgba(26,127,55,0.55);
+    }
+    body.light .xml-validation-badge.error {
+      background: rgba(207,34,46,0.10);
+      border-color: rgba(207,34,46,0.35);
+      color: #cf222e;
+    }
+    body.light .xml-validation-badge.error:hover {
+      background: rgba(207,34,46,0.18);
+      border-color: rgba(207,34,46,0.55);
     }
 
     .pane-icon-btn {
@@ -1300,10 +1316,6 @@
       border-color: var(--error);
       background: rgba(248,81,73,0.12);
     }
-    /* Hide non-matching log lines when a filter is active */
-    #consoleBody[data-filter="info"]  .log-line:not(.info):not(.success) { display: none; }
-    #consoleBody[data-filter="warn"]  .log-line:not(.warn)               { display: none; }
-    #consoleBody[data-filter="error"] .log-line:not(.error)              { display: none; }
     .console-chevron {
       width: 20px; height: 20px;
       color: var(--text-dim);
@@ -1443,7 +1455,7 @@
       --sap-gold:       #d97706;
       --text-primary:   #0f172a;
       --text-secondary: #475569;
-      --text-dim:       #94a3b8;
+      --text-dim:       #64748b;
       --success:        #1a7f37;
       --error:          #cf222e;
       --warning:        #d97706;
@@ -1483,8 +1495,6 @@
         linear-gradient(rgba(0,112,242,0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,112,242,0.04) 1px, transparent 1px);
     }
-    body.light .mode-switcher { background: var(--bg-editor); }
-
 
     /* ════════════════════════════════════════════
        XPATH BAR & RESULTS
@@ -1842,14 +1852,17 @@
     .ex-btn svg { width: 12px; height: 12px; opacity: 0.85; }
     .ex-btn:hover svg { opacity: 1; }
 
-    /* ── GROUP 1: unified text+icon secondary buttons (Share, Examples, Clear Session) ── */
-    .clear-session-btn:hover {
-      color: var(--error);
-      border-color: var(--error);
-      background: rgba(248,81,73,0.08);
+    /* ── GROUP 1: unified text+icon secondary buttons (Share, Examples) ── */
+
+    /* ── Nav divider between header groups ── */
+    .header-nav-divider {
+      width: 1px; height: 18px;
+      background: color-mix(in srgb, var(--border) 72%, transparent);
+      margin: 0 2px;
+      flex-shrink: 0;
     }
 
-    /* ── GROUP 2: icon-only utility buttons (Theme, Help) ── */
+    /* ── GROUP 2: icon-only utility buttons (Theme, Help, Settings, About) ── */
     .header-icon-btn {
       display: flex; align-items: center; justify-content: center;
       width: 32px; height: 32px;
@@ -2089,6 +2102,13 @@
       pointer-events: none;
     }
     .ex-card:hover .ex-card-load { opacity: 1; }
+    .ex-card:focus-visible {
+      outline: 2px solid var(--sap-blue);
+      outline-offset: -2px;
+      border-color: var(--sap-blue);
+    }
+    .ex-card:focus-visible::before { opacity: 1; }
+    .ex-card:focus-visible .ex-card-load { opacity: 1; }
 
     /* ── SHARE BUTTON ── */
     .xf-session-share {
@@ -2251,7 +2271,6 @@
     .incoming-share-btn.danger { background: var(--error); border-color: var(--error); }
     .incoming-share-btn.danger:hover { filter: brightness(1.08); }
     .incoming-share-btn:disabled { opacity: 0.45; cursor: wait; }
-    .saved-indicator.temporary { color: var(--text-secondary); }
     #saveIndicatorAction {
       padding: 1px 5px; border: 1px solid currentColor; border-radius: 3px;
       background: transparent; color: inherit; cursor: pointer; font: 700 8px var(--font-mono);
@@ -2272,8 +2291,15 @@
     .settings-inline-actions { display: flex; flex-direction: row !important; gap: 5px !important; }
     .settings-action.danger { color: var(--error); }
     .settings-danger-row { border-bottom: 0; }
-    .about-body { color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
+    .about-body { color: var(--text-secondary); font-size: 12px; line-height: 1.6; display: flex; flex-direction: column; gap: 10px; }
     .about-body p { margin: 0; }
+    .about-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+    .about-version { font-size: 13px; color: var(--text-primary); }
+    .about-build { font-size: 10px; font-family: var(--font-mono); color: var(--text-dim); }
+    .about-author { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; }
+    .about-author-link { display: inline-flex; align-items: center; gap: 4px; color: var(--sap-blue-fg); text-decoration: none; }
+    .about-author-link:hover { text-decoration: underline; }
+    .about-trademark { font-size: 10px; opacity: 0.6; }
     .about-links { display: flex; flex-wrap: wrap; gap: 8px; }
     .about-links a {
       padding: 6px 9px; border: 1px solid var(--border); border-radius: var(--r-sm);
@@ -2398,7 +2424,14 @@
     .mode-xslt-badge { background: rgba(0,112,242,0.15); color: var(--sap-blue); border: 1px solid rgba(0,112,242,0.3); }
     .mode-xpath-badge { background: rgba(245,165,36,0.15); color: var(--sap-gold); border: 1px solid rgba(245,165,36,0.3); }
 
-/* ── Trademark notice (status bar item) ── */
+/* Keep the status rail clean at narrower widths */
+@media (max-width: 1100px) {
+  .status-bar .stat-github-link { display: none; }
+  .status-bar .tm-notice { display: none; }
+  .status-bar .stat-version-btn { display: none; }
+}
+
+/* ── Trademark / affiliation notice (status bar) ── */
 .tm-notice {
   opacity: 0.35;
   font-size: 10px;
@@ -2407,27 +2440,27 @@
 }
 .tm-notice:hover { opacity: 0.7; }
 
-/* Keep the status rail useful instead of letting attribution clip at
-   narrower desktop widths. Full credits and trademark text remain in About. */
-@media (max-width: 1100px) {
-  .status-bar .tm-notice { display: none; }
+/* ── GitHub + LinkedIn links (status bar right edge) ── */
+.stat-version-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: 10px var(--font-mono);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t-fast);
 }
-@media (max-width: 900px) {
-  .status-bar .stat-author { display: none; }
-}
-
-/* ── Author + social links (status bar) ── */
-.stat-author {
+.stat-version-btn:hover { color: rgba(255,255,255,0.9); }
+.stat-github-link {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  white-space: nowrap;
-  color: rgba(255,255,255,0.55);
 }
-.build-info {
-  color: rgba(255,255,255,0.7);
+.stat-github-link .stat-link {
+  opacity: 0.5;
+  transition: opacity var(--t-fast);
 }
+.stat-github-link .stat-link:hover { opacity: 1; }
 .stat-link,
 .stat-link:visited,
 .stat-link:active {
@@ -2453,6 +2486,7 @@
 }
 .saved-indicator.saving { color: var(--sap-blue-fg); }
 .saved-indicator.saved { color: var(--success); }
+.saved-indicator.temporary { color: var(--text-secondary); }
 .saved-indicator.failed { color: var(--error); }
 .saved-indicator.conflict { color: var(--warning); }
 
@@ -2609,9 +2643,6 @@ body.light .editor-wrap {
 /* ── Light-theme shadow tuning ──
    The dark-mode glows on columns and Run hover translate to muddy haloes
    on white. Calm them. */
-body.light .col {
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
-}
 body.light .col:focus-within {
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--sap-blue-glow);
 }
@@ -2627,12 +2658,6 @@ body.light .logo-mark {
 body.light .logo:hover .logo-mark {
   filter: drop-shadow(0 0 8px rgba(0,112,242,0.35));
 }
-/* Header underline accent loses contrast on light — boost it slightly */
-body.light .header::after {
-  background: linear-gradient(90deg,
-    transparent, rgba(0,112,242,0.18) 20%, rgba(0,112,242,0.18) 80%, transparent);
-}
-
 /* ── Status bar — SAP blue brand rail ──
    Uses the existing --status-bar-from/--status-bar-to vars (already
    theme-tuned in :root and body.light). Slightly calmer than the
@@ -2723,18 +2748,6 @@ body.light .col:has(.ind-out)::before {
 }
 body.light .col:focus-within::before { opacity: 1; }
 
-/* Header: blue-tinted glass. The new --bg-header value (rgba(238,244,252,…))
-   already tints it; this rule deepens the bottom-border accent so the header
-   reads as a distinct strip, not bleeding into the workspace. */
-body.light .header {
-  border-bottom: 1px solid rgba(0,112,242,0.18);
-}
-body.light .header::after {
-  background: linear-gradient(90deg,
-    transparent, rgba(0,112,242,0.35) 20%, rgba(0,112,242,0.35) 80%, transparent);
-  opacity: 0.7;
-}
-
 /* Editor wraps: keep pure-white bg for code legibility, but the hairline
    grid needs a touch more contrast against true white in light mode */
 body.light .editor-wrap {
@@ -2769,29 +2782,6 @@ body.light #outPropRows .kv-row-out {
 body.light .xpath-input-row {
   background: #ffffff;
   border-bottom: 2px solid var(--sap-blue);
-}
-
-/* Mode-switcher track in light mode — was using --bg-editor (white).
-   Tint it so the switcher reads as a control, not as the page bg. */
-body.light .mode-switcher {
-  background: rgba(0, 64, 140, 0.06);
-  border-color: rgba(0, 64, 140, 0.15);
-}
-
-/* Header buttons: slightly stronger borders so they don't disappear */
-body.light .ex-btn,
-body.light .header-icon-btn {
-  border-color: rgba(0, 64, 140, 0.15);
-}
-body.light .ex-btn:hover,
-body.light .header-icon-btn:hover {
-  border-color: rgba(0, 64, 140, 0.30);
-  background: rgba(0, 64, 140, 0.05);
-}
-
-/* Logo divider hairline */
-body.light .logo::after {
-  background: rgba(0, 64, 140, 0.20);
 }
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -3039,8 +3029,8 @@ body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { bord
   }
   .header .logo { padding: 0 2px; }
   .header .logo-name, .header .logo::after, .header .h-spacer,
-  .header #shareBtn, .header .theme-toggle, .header .clear-session-btn,
-  .header .help-btn { display: none; }
+  .header #shareBtn, .header .theme-toggle,
+  .header .help-btn, .header #settingsBtn, .header #aboutBtn { display: none; }
   .header .explorer-toggle { margin-left: 0; }
   .header #exBtn {
     width: 32px;
@@ -3082,12 +3072,12 @@ body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { bord
   .pane-splitter { display: none !important; }
   .status-bar { width: 100%; gap: 8px; padding: 0 7px; overflow: hidden; }
   .status-bar .stat:nth-of-type(2), .status-bar .stat-cursor,
-  .status-bar .stat-author, .status-bar .tm-notice { display: none; }
+  .status-bar .stat-github-link, .status-bar .tm-notice { display: none; }
   .status-bar .stat-spacer { flex: 1; }
 }
 
 /* ── XPath-mode pane numbers ──
-   The XQuery bar lives inside the left column (which has .ind-xml) but
+   The XPath bar lives inside the left column (which has .ind-xml) but
    conceptually it's the transform step — give it the blue/xpath chip
    color. The XPath Results bar lives in the right column (.ind-out) and
    is correctly gold by inheritance, but we explicit-override here to be

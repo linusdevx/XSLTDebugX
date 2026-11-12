@@ -294,50 +294,32 @@ applyTo:
 
 ## 7. Session Persistence
 
-### Auto-Save (localStorage)
+### Storage Architecture
+- **Primary**: IndexedDB `xdebugx-workspace-v1` — named sessions, folders, drafts, settings, trash
+- **Fallback**: localStorage `xdebugx-session-v1` — quick-playground draft (legacy key preserved)
+- Named sessions survive browser restarts and private-browsing restrictions better than localStorage
+- See **Section 9** (Workspace & Session Management) for the full API
+
+### Quick Playground Auto-Save (IndexedDB draft)
 - **scheduleSave()** → debounced 800ms (`state.js`)
-- **saveState()** → writes to localStorage (`state.js`)
-- **_saveTimer** → debounce timer handle (`state.js`)
 - **_suppressNextSave** → guards programmatic changes (`state.js`)
-- **Storage key**: `'xdebugx-session-v1'`
+- Draft keys: `draft-xslt`, `draft-xpath`
+- Source fields: `xmlXslt`, `xmlXpath`, `xslt`, `headers`, `properties`, `xpathExpr`, `runtimeProfile`
 
-### Saved Data Fields
-- **xmlXslt** → XSLT mode XML model content
-- **xmlXpath** → XPath mode XML model content
-- **xslt** → XSLT editor content
-- **headers** → KV headers array
-- **properties** → KV properties array
-- **xpathExpr** → XPath expression
-- **xpathEnabled** → mode flag (boolean)
-- **leftCollapsed** → left column state (boolean)
-- **rightCollapsed** → right column state (boolean)
-
-### Load Saved State
-- **loadSavedState()** → reads from localStorage (`state.js`)
-- **Backward compatibility** → migrates old `'xml'` key to `'xmlXslt'`
-- **Session restoration** → `editor.js` restores full state
-- **Model restoration** → creates both XML models with saved content
-- **Mode restoration** → swaps to correct XML model based on `xpathEnabled`
-- **KV restoration** → rebuilds headers/properties panels
-- **Column state** → restores collapsed states
-- **XPath state** → restores expression + hints
+### Named Session Auto-Save
+- **sessionController.saveChain** → persists active named session (`session-controller.js`)
+- Revision-based compare-and-set prevents cross-tab clobber
+- Save indicator: `#savedIndicatorText` shows "Saved locally", "Saving…", or "Save failed"
 
 ### Clear Session (Mode-Aware)
-- **clearSavedState()** → mode-aware reset (`state.js`)
-- **XSLT mode reset** → identity transform + sample XML
-- **XPath mode reset** → XPath navigation example
-- **localStorage clear** → removes `'xdebugx-session-v1'` key
-- **History clear** → wipes `_xpathHistory`
-- **KV clear** → empties headers/properties
-- **Output clear** → resets output editor language to XML
-- **Markers clear** → removes validation errors
-- **Console preserved** → logs "Session cleared" action
-- **Mode preserved** → stays in current mode (XSLT or XPath)
+- **clearSavedState()** → mode-aware reset: identity transform + sample XML or XPath nav example (`state.js`)
+- Wipes current editor content; named record remains intact in IndexedDB
+- History clear, KV clear, output clear, marker clear — mode and console preserved
 
-### Auto-Save Indicator
-- **showSavedIndicator()** → flashes "Saved" pill (`state.js`)
-- **_savedFadeTimer** → 2-second fade timer (`state.js`)
-- **Opacity animation** → CSS transition
+### Save Indicator
+- **`#savedIndicator`** → shows save state with tooltip (`state.js`)
+- Quick Playground: "Quick Playground saved locally"
+- Named session: "[Session title] saved locally" / "Saving…" / "Save failed"
 
 ---
 
@@ -414,7 +396,54 @@ applyTo:
 
 ---
 
-## 9. Key Workflows
+## 9. Workspace & Session Management
+
+### Explorer Sidebar
+- **toggleExplorer(force?)** → open/close sidebar (`explorer.js`)
+- **refreshExplorer()** → reload session list from IndexedDB (`explorer.js`)
+- **createExplorerSession(type)** → create new XSLT/XPath session (`explorer.js`)
+- **createExplorerFolder()** → prompt + create a folder (`explorer.js`)
+- **3 direct create buttons**: `#explorerNewXslt`, `#explorerNewXpath`, `#explorerNewFolder`
+- **Keyboard toggle**: `Ctrl+B` (and `Ctrl+Shift+E` alias)
+- **Overlay/drawer** on viewports < 900px; inline sidebar above
+
+### Session Lifecycle
+- **sessionController.restoreSession(record)** → load saved session (`session-controller.js`)
+- **sessionController.saveChain** → flush + persist active session (`session-controller.js`)
+- **sessionController.beginTemporary(data)** → open detached draft (examples/imports) (`session-controller.js`)
+- **Quick Playground** → unnamed draft stored as `draft-xslt` / `draft-xpath` in IndexedDB
+- **Named sessions** → full records with title, folders, revision, source
+
+### Storage
+- **workspaceStore.createSession(opts)** → create record (`workspace-store.js`)
+- **workspaceStore.updateSession(id, patch)** → update record (`workspace-store.js`)
+- **workspaceStore.listSessions(filter)** → query with type/folder/search (`workspace-store.js`)
+- **workspaceStore.getDraft(key)** → get draft-xslt or draft-xpath (`workspace-store.js`)
+- **workspaceStore.putDraft(key, source)** → save draft (`workspace-store.js`)
+- **workspaceStore.getStorageStatus()** → `{ used, quota, persisted }` (`workspace-store.js`)
+- **Primary**: IndexedDB `xdebugx-workspace-v1`
+- **Fallback**: localStorage `xdebugx-session-v1` (quick-playground legacy)
+
+### Settings Modal
+- **openWorkspaceSettings()** / **closeWorkspaceSettings()** → open/close (`explorer.js`)
+- **Keyboard shortcut**: `Ctrl+,`
+- **Controls**: theme, Explorer default state, storage status, runtime profile, backup/import
+
+### Backup & Import
+- **downloadWorkspaceBackup()** → export workspace as versioned ZIP (`backup.js`)
+- **prepareWorkspaceBackupImport(file)** → validate + show merge-as-copy preview (`backup.js`)
+- ZIP format: `manifest.json` + per-session JSON files + SHA-256 checksums
+
+### Runtime Profile
+- **setRuntimeProfile(profile)** → switch `'cpi'` / `'standard'` (`runtime-profile.js`)
+- **isCpiRuntimeProfile()** → boolean check (`runtime-profile.js`)
+- `cpi` — shows headers/properties panels, CPI extension functions, CPI examples
+- `standard` — hides CPI panels; clean XSLT-only workflow
+- Persisted per session; Settings modal `#settingsRuntimeProfile` select
+
+---
+
+## 10. Key Workflows
 
 ### XSLT Transform Workflow
 1. User loads XML + XSLT (manual entry, file upload, or example)
@@ -487,7 +516,7 @@ applyTo:
 
 ---
 
-## 10. Module Dependencies
+## 11. Module Dependencies
 
 ### Load Order (Critical — Defined in index.html)
 ```
@@ -530,14 +559,14 @@ examples-data.js → modal.js → files.js → ui.js → share.js → xpath.js �
 
 ---
 
-## 11. Implementation Patterns
+## 12. Implementation Patterns
 
 ### Adding New Editor Features
 1. Check if Monaco API supports it natively
 2. Add global state variable if needed (prefix with `_` if private)
 3. Implement in appropriate module (editor.js for Monaco, panes.js for actions)
-4. Call `scheduleSave()` if state should persist
-5. Update `saveState()` / `loadSavedState()` if new persistent field
+4. Call `scheduleSave()` if state should persist to the quick-playground draft
+5. For workspace session fields, update the session source schema in `workspace-store.js`
 
 ### Adding New CPI Functions
 1. Add to `rewriteCPICalls()` regex patterns
@@ -564,7 +593,7 @@ examples-data.js → modal.js → files.js → ui.js → share.js → xpath.js �
 
 ---
 
-## 12. Known Constraints & Limitations
+## 13. Known Constraints & Limitations
 
 ### Architecture Constraints
 - **Global namespace** → no module system, all functions are global
@@ -589,7 +618,7 @@ examples-data.js → modal.js → files.js → ui.js → share.js → xpath.js �
 
 ---
 
-## 13. Testing Checklist
+## 14. Testing Checklist
 
 ### Before Releasing New Features
 - [ ] Test in both XSLT and XPath modes
@@ -622,11 +651,20 @@ examples-data.js → modal.js → files.js → ui.js → share.js → xpath.js �
 | `preflight(xml, xslt)` | validate.js | Pre-transform check |
 | `prettyXML(xml)` | panes.js | XML formatter |
 | `clog(msg, type)` | state.js | Console logger |
-| `saveState()` | state.js | Save to localStorage |
-| `loadSavedState()` | state.js | Load from localStorage |
-| `clearSavedState()` | state.js | Clear localStorage |
+| `scheduleSave()` | state.js | Debounced quick-playground save |
+| `clearSavedState()` | state.js | Clear quick-playground draft |
+| `sessionController.restoreSession(record)` | session-controller.js | Load a saved session |
+| `sessionController.saveChain` | session-controller.js | Flush and save active session |
+| `workspaceStore.listSessions(filter)` | workspace-store.js | List IndexedDB sessions |
+| `workspaceStore.getDraft(key)` | workspace-store.js | Get draft by key |
+| `workspaceStore.getStorageStatus()` | workspace-store.js | Storage usage info |
+| `setRuntimeProfile(profile)` | runtime-profile.js | Switch CPI / Standard runtime |
+| `toggleExplorer(force)` | explorer.js | Open / close sidebar |
+| `openWorkspaceSettings()` | explorer.js | Open Settings modal |
 | `buildSharePayload()` | share.js | Build share data |
 | `applyShareData(data)` | share.js | Apply share data |
+| `downloadWorkspaceBackup()` | backup.js | Export workspace ZIP |
+| `prepareWorkspaceBackupImport(file)` | backup.js | Validate + stage import |
 
 ---
 

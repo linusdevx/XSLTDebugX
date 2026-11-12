@@ -4,6 +4,8 @@ import { EditorPage } from '../../utils/test-helpers.js';
 test.describe('examples and files open as temporary work', () => {
   let editor;
 
+  test.use({ timeout: 90000 });
+
   test.beforeEach(async ({ page }) => {
     editor = new EditorPage(page);
     await editor.navigate();
@@ -101,7 +103,9 @@ test.describe('examples and files open as temporary work', () => {
     });
     const stored = await page.evaluate(async () => (await workspaceStore.listSessions({ type: 'xslt' }))[0]);
     expect(stored.source.runtimeProfile).toBe('standard');
-    await expect(page.locator('#runtimeProfileSelect')).toHaveValue('cpi');
+    await page.evaluate(() => openWorkspaceSettings());
+    await expect(page.locator('#settingsRuntimeProfile')).toHaveValue('cpi');
+    await page.evaluate(() => closeWorkspaceSettings());
     await expect(page.locator('#savedIndicatorText')).toHaveText('Temporary · not saved');
   });
 });

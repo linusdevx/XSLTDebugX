@@ -335,15 +335,16 @@ function setSaveIndicator(state, error = null) {
         ? 'Save failed'
         : 'Saved locally';
   }
+  const itemName = sessionController?.getCurrentSession()?.title || 'Quick Playground';
   ind.title = state === 'conflict'
     ? 'This item changed in another tab; choose how to preserve your edits'
     : state === 'temporary'
-    ? 'This shared session is open temporarily and will not overwrite your Quick Playground'
+    ? 'This shared session is open temporarily and will not overwrite your saved work'
     : state === 'failed'
-    ? `Quick Playground could not be saved locally${error?.message ? ': ' + error.message : ''}`
+    ? `${itemName} could not be saved locally${error?.message ? ': ' + error.message : ''}`
     : state === 'saving'
-      ? 'Saving Quick Playground locally'
-      : 'Quick Playground saved locally';
+      ? `Saving ${itemName} locally`
+      : `${itemName} saved locally`;
   if (action) {
     action.hidden = !['failed', 'conflict', 'temporary'].includes(state);
     action.textContent = state === 'conflict' ? 'Resolve' : state === 'temporary' ? 'Save…' : 'Retry';
@@ -361,7 +362,7 @@ function handleSaveIndicatorAction(event) {
     return;
   }
   if (indicator?.classList.contains('failed')) {
-    void sessionController.saveQuickDrafts().catch(() => {});
+    void sessionController?.saveQuickDrafts().catch(() => {});
     return;
   }
   if (indicator?.classList.contains('temporary')) {

@@ -160,9 +160,17 @@ true
 > kvData
 { headers: [{id: 1, name: 'X-Custom', value: 'test'}, ...], properties: [...] }
 
-// Check persisted session
-> JSON.parse(localStorage.getItem('xdebugx-session-v1'))
-{ xmlXslt: "<?xml...?>", xmlXpath: "<?xml...?>", xslt: "...", headers: [...], properties: [...], ... }
+// Check current runtime profile
+> runtimeProfile
+"cpi"  // or "standard"
+
+// Check active session (null = quick playground)
+> sessionController._activeSession
+{ id: "sess_abc", title: "My Mapping", ... }
+
+// Check IndexedDB sessions
+> await workspaceStore.listSessions({ type: 'xslt' })
+[{ id: "sess_abc", title: "My Mapping", source: {...} }, ...]
 
 // Check XPath history
 > _xpathHistory
@@ -187,42 +195,41 @@ Check that vendor libraries load correctly:
 - App code (`/js/*`, `/css/*`) — `Cache-Control: no-store`
 - Vendor (`/lib/*`) — `Cache-Control: public, max-age=604800` (7 days)
 
-### Storage Tab (localStorage)
+### Storage Tab (IndexedDB + localStorage)
 
-View persisted session data:
+View persisted workspace data:
 
+**IndexedDB (primary — workspace sessions, folders, settings):**
 1. DevTools → **Application** tab
-2. Left sidebar → **Storage** → **localStorage**
-3. Look for key: `xdebugx-session-v1`
-4. Click to view the JSON object
+2. Left sidebar → **Storage** → **IndexedDB** → **xdebugx-workspace-v1**
+3. Explore object stores: `sessions`, `folders`, `drafts`, `settings`, `trash`
 
-Session contents (keys saved by `saveState()` in `js/state.js`):
-```json
-{
-  "xmlXslt": "<?xml version='1.0'?>...",        // XML in XSLT mode
-  "xmlXpath": "<?xml version='1.0'?>...",       // XML in XPath mode
-  "xslt": "<?xml version='1.0'?>...",           // XSLT stylesheet
-  "headers": [{"name": "X-Auth", "value": "token"}],
-  "properties": [],
-  "leftCollapsed": false,
-  "rightCollapsed": true,
-  "centerCollapsed": false,
-  "xpathExpr": "",
-  "xpathEnabled": false,
-  "lastExampleKey": null,
-  "savedAt": 1717200000000
-}
+**localStorage (secondary — quick-playground draft + legacy fallback):**
+1. DevTools → **Application** tab → **localStorage**
+2. Look for key: `xdebugx-session-v1` (legacy quick-playground draft)
+
+Inspect via console:
+```javascript
+// List all workspace sessions
+await workspaceStore.listSessions({ type: 'xslt' });
+// Get the XSLT quick-playground draft
+await workspaceStore.getDraft('draft-xslt');
+// Get a setting
+await workspaceStore.getSetting('explorerOpen', true);
+// Storage usage
+await workspaceStore.getStorageStatus();
+// Legacy localStorage session (quick-playground fallback)
+JSON.parse(localStorage.getItem('xdebugx-session-v1'));
+```
+
+Clear workspace for a fresh start:
+```javascript
+// In DevTools Console
+await workspaceStore.deleteDatabase();
+location.reload();
 ```
 
 Note: the last transform output is **not** stored — it's recomputed on demand.
-
-Clear session for a fresh start:
-
-```javascript
-// In DevTools Console
-localStorage.removeItem('xdebugx-session-v1');
-location.reload();
-```
 
 ---
 
@@ -359,14 +366,16 @@ Before committing or submitting a PR, verify:
 3. If null, wait a few seconds for editors to initialize
 4. Check for JavaScript errors in the Console
 
-### Issue: localStorage data is not persisting
+### Issue: Workspace data is not persisting
 
-**Cause**: localStorage disabled in browser or private browsing mode.
+**Cause**: IndexedDB not available (private browsing, browser restriction, or storage blocked by another tab).
 
 **Solution**:
-1. Check: Settings → Privacy → disable "Always use private browsing"
-2. Or: Allow the site to store data → Settings → **Cookies and other site data**
-3. Check DevTools **Application** → **Storage** → localStorage is available
+1. Check the Settings modal (Ctrl+,) — the Storage section shows `x.x MB used` or an error message
+2. Open DevTools → **Application** → **IndexedDB** → look for `xdebugx-workspace-v1`
+3. If blocked: close any other XSLTDebugX tabs, then reload
+4. Private/incognito mode: IndexedDB is in-session only — data is lost on tab close (this is expected)
+5. Check for `workspace-storage-blocked` events in Console
 
 ### Issue: Transform runs but output is empty
 
@@ -461,15 +470,24 @@ window.eds              // { xml, xslt, out } Monaco instances
 window.kvData           // { headers: [...], properties: [...] }
 window.saxonReady       // true if Saxon-JS loaded
 window.modeManager      // { isXpath, setMode(), ... }
+window.sessionController// active session lifecycle
+window.workspaceStore   // IndexedDB adapter
+window.runtimeProfile   // 'cpi' | 'standard'
 
 eds.xml.getValue()      // Current XML content
 eds.xslt.getValue()     // Current XSLT content
 modeManager.isXpath     // true = XPath mode, false = XSLT mode
 
-// localStorage
-localStorage.getItem('xdebugx-session-v1')   // Session state
-localStorage.getItem('xdebugx-xpath-history') // Last 20 XPath expressions
-localStorage.clear()                           // Wipe and start fresh
+// IndexedDB
+await workspaceStore.listSessions()         // All sessions
+await workspaceStore.getDraft('draft-xslt') // Quick-playground XSLT draft
+await workspaceStore.getStorageStatus()     // Storage usage
+
+// localStorage (legacy quick-playground draft)
+localStorage.getItem('xdebugx-session-v1')
+localStorage.clear()                        // Wipe localStorage only
+// Full clean start (deletes all IndexedDB data):
+await workspaceStore.deleteDatabase(); location.reload();
 ```
 
 ### Common Debugging Tasks
@@ -496,9 +514,11 @@ console.log(modeManager.isXpath);  // Must be false — CPI is XSLT-only
 
 **"Storage won't restore"**
 ```javascript
-const stored = localStorage.getItem('xdebugx-session-v1');
-try { JSON.parse(stored); } catch(e) { console.error('Corrupt:', e); }
-localStorage.clear(); location.reload();  // Fresh start
+// Check IndexedDB draft
+const draft = await workspaceStore.getDraft('draft-xslt');
+console.log(draft);
+// Full clean start:
+await workspaceStore.deleteDatabase(); location.reload();
 ```
 
 **"XPath won't evaluate"**

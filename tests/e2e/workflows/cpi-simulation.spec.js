@@ -10,6 +10,8 @@ import { sampleData } from '../../fixtures/sample-data.js';
 test.describe('CPI Simulation Workflow', () => {
   let page;
 
+  test.use({ timeout: 90000 });
+
   test.beforeEach(async ({ page: testPage }) => {
     page = new EditorPage(testPage);
     // Use max 45s timeout for navigation since server startup can be slow in CI

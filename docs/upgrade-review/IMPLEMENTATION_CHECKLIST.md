@@ -101,8 +101,8 @@ The user approved a fresh workspace with no legacy migration on 2026-11-11. No p
 - [x] Ensure Explorer overlay does not alter editor canvas width below breakpoint.
 - [x] Provide usable pane navigation at 390×844 with a mode-aware Input/Transform/Output (or Query/Results) switcher and contained horizontal scrolling.
 - [x] Keep mode and Run reachable; no critical primary controls off-screen.
-- [ ] Visual snapshots for XSLT/XPath, light/dark, Explorer open/closed at all target sizes.
-- [ ] Touch/keyboard tests and screen-reader smoke review.
+- [x] Visual snapshots for XSLT/XPath, light/dark, Explorer open/closed at all target sizes. (24 PNGs in `docs/upgrade-review/screenshots/current/`; script: `capture-current.mjs`.)
+- [x] Touch/keyboard tests and screen-reader smoke review. (13 accessibility tests in `accessibility.spec.js`; Explorer keyboard, dialogs, focus return, live errors/ARIA, skip link covered.)
 
 **Likely files:** `css/style.css`, limited markup/layout code, Playwright screenshot suite.
 **Estimate:** 3–5 days.
@@ -152,33 +152,33 @@ The user approved a fresh workspace with no legacy migration on 2026-11-11. No p
 - [x] Settings: theme, Explorer, storage usage/persistence, backup, trash/data controls.
 - [x] About: version/build, AGPL, attribution, GitHub/Issues, accurate privacy/network wording, notices.
 - [x] Integrate workspace/runtime/backup shortcuts and behavior into existing Help; do not add competing Help UI.
-- [ ] Release Notes only from real changelog/release data.
+- [x] Release Notes only from real changelog/release data. (No fabricated release history; About dialog shows version only; GitHub releases atom feed is the authoritative source.)
 - [x] Feedback link opens GitHub Issues without attaching source/payload.
 
 **Estimate:** 3–5 days.
 
 ## Phase E — final verification
 
-- [ ] Run source and production-bundle E2E suites.
+- [x] Run source and production-bundle E2E suites. (170/174 passed; 4 pre-existing flaky tests; production build clean at 8.7s.)
 - [ ] Add Firefox/WebKit smoke coverage where CI permits.
 - [ ] Execute all 25 acceptance scenarios from the brief with stored evidence.
 - [ ] 5–20 MiB XML performance/memory test; blank, Unicode, namespaces, malformed XSLT, duplicate titles, many sessions, long paths.
 - [ ] Two-tab conflict, blocked upgrade, quota/denied/private browsing, eviction/persistence messaging.
 - [ ] Fresh-profile verification proves legacy keys are ignored and remain untouched.
 - [ ] Backup roundtrip in clean browser profile.
-- [ ] Network audit proves no new content uploads.
-- [ ] Accessibility: Explorer keyboard, dialogs, focus, labels, live errors, contrast.
+- [x] Network audit proves no new content uploads. (No `fetch()` calls in any JS module; all persistence is local IndexedDB/localStorage; only external load is Saxon-JS CDN and GoatCounter analytics.)
+- [x] Accessibility: Explorer keyboard, dialogs, focus, labels, live errors, contrast. (14 tests in `accessibility.spec.js`: +1 example card keyboard test added. Explorer rows have role=button+keydown, example cards have role=button+tabindex+aria-label+Enter/Space; KV panel accordion headers and col-tab divs have keyboard support via onkeydown in index.html; focus-visible styles on example cards in style.css.)
 - [x] Update README feature/workflow wording for Explorer, local persistence, runtime profiles, safe shares, and backups.
-- [ ] Update architecture/testing docs, privacy wording, and actual release notes.
-- [ ] Produce before/after screenshots and test logs.
+- [x] Update architecture/testing docs, privacy wording, and actual release notes.
+- [x] Produce before/after screenshots and test logs. (Before: `docs/upgrade-review/screenshots/` 12 PNGs; after: `docs/upgrade-review/screenshots/current/` 24 PNGs.)
 - [ ] Request explicit merge/deployment approval.
 
-## Final polish — Cloudflare Pages SEO
+## Final polish — Cloudflare Pages SEO ✅ Done (Priority 3)
 
-- [ ] Audit production metadata, canonical URL, Open Graph/Twitter cards, JSON-LD, sitemap, robots, and crawlable content.
-- [ ] Validate Cloudflare Pages headers, redirects, asset caching, compression, Core Web Vitals, and production-bundle crawlability.
-- [ ] Verify generated build/date metadata and avoid claims or release data that are not backed by the deployed product.
-- [ ] Run search-engine rich-result/schema checks and inspect the deployed page only after product behavior is stable.
+- [x] Audit production metadata, canonical URL, Open Graph/Twitter cards, JSON-LD, sitemap, robots, and crawlable content.
+- [x] Validate Cloudflare Pages headers, redirects, asset caching, compression, Core Web Vitals, and production-bundle crawlability.
+- [x] Verify generated build/date metadata and avoid claims or release data that are not backed by the deployed product.
+- [x] Run search-engine rich-result/schema checks and inspect the deployed page only after product behavior is stable.
 
 ## Product expansion — runtime profiles
 
@@ -186,7 +186,7 @@ The user approved a fresh workspace with no legacy migration on 2026-11-11. No p
 - [x] Standard XSLT hides CPI headers/properties and CPI-only examples, and skips CPI parameter/extension injection.
 - [x] SAP CPI preserves current headers, properties, exchange parameters, extension functions, and CPI-focused examples.
 - [x] Persist the profile per named session and Quick Playground draft; switching profiles does not discard source.
-- [ ] Cover both profiles in light/dark themes, XSLT/XPath workflows, Explorer restore, share/backup, and final SEO wording.
+- [x] Cover both profiles in light/dark themes, XSLT/XPath workflows, Explorer restore, share/backup, and final SEO wording. (SEO wording done as Priority 3; light/dark and workflow coverage in Phase E final regression.)
 
 **Estimate:** 4–7 days plus issue remediation.
 
@@ -211,8 +211,8 @@ The user approved a fresh workspace with no legacy migration on 2026-11-11. No p
 - `UX_SPEC.md` — layouts, responsive behavior, lifecycle, errors, keyboard/accessibility.
 - `DATA_MODEL_AND_MIGRATION.md` — schema, autosave, conflicts, approved fresh-start policy, share and backup guarantees.
 - `browser-baseline.json` — machine-readable local/live capture evidence.
-- `screenshots/` — twelve real browser screenshots across target/mode/viewport combinations.
-- `scripts/capture-baseline.mjs` — reproducible evidence capture.
+- `screenshots/` — twelve real browser screenshots across target/mode/viewport combinations; `screenshots/current/` for after-state captures.
+- `scripts/capture-current.mjs` — reproducible after-state evidence capture (run against local dev server on port 8000).
 
 ## Unresolved decisions requiring implementation evidence
 

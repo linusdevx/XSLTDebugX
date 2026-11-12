@@ -13,8 +13,8 @@ SAP Community — for years of CPI knowledge that shaped what this tool needed t
 /* SITE */
 Site: XSLTDebugX
 URL: https://xsltdebugx.pages.dev/
-Last update: 2026-06-25
+Last update: 2026-11-12
 Standards: HTML5, CSS3, ES2020, XSLT 3.0, XPath 3.1
-Components: Saxon-JS 2, Monaco Editor 0.44, Lucide Icons, pako
+Components: Saxon-JS 2, Monaco Editor 0.52, Lucide Icons, pako, fflate
 Software: hand-written vanilla JS, Vite + esbuild build, Cloudflare Pages
 License: AGPL-3.0

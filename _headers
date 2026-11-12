@@ -33,5 +33,11 @@
 /og-image.png
   Cache-Control: public, max-age=604800
 
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+
+/robots.txt
+  Cache-Control: public, max-age=86400
+
 /screenshot.png
   Cache-Control: public, max-age=604800

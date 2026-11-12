@@ -19,8 +19,8 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
-  <meta property="og:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally with headers, properties, and extension functions — no deployment needed.">
+  <meta property="og:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP Cloud Integration">
+  <meta property="og:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug Cloud Integration transformations locally with headers, properties, and extension functions — no deployment needed.">
   <meta property="og:url" content="https://xsltdebugx.pages.dev/">
   <meta property="og:site_name" content="XSLTDebugX">
   <meta property="og:locale" content="en_US">
@@ -32,8 +32,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP CPI">
-  <meta name="twitter:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug SAP CPI transformations locally — no deployment needed.">
+  <meta name="twitter:title" content="XSLTDebugX — Free Online XSLT 3.0 Debugger for SAP Cloud Integration">
+  <meta name="twitter:description" content="Free online XSLT 3.0 debugger and XPath 3.1 tester. Debug Cloud Integration transformations locally — no deployment needed.">
   <meta name="twitter:domain" content="xsltdebugx.pages.dev">
   <meta name="twitter:image" content="https://xsltdebugx.pages.dev/og-image.png">
   <meta name="twitter:image:alt" content="XSLTDebugX — XSLT 3.0 IDE with XML input, XSLT stylesheet editor, and console output">
@@ -79,7 +79,7 @@
     "softwareRequirements": "Saxon-JS 2 (bundled), Monaco Editor (bundled). No installation required.",
     "softwareVersion": "1.0",
     "datePublished": "2026-03-04",
-    "dateModified": "2026-06-03",
+    "dateModified": "2026-11-12",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": {
       "@type": "Person",
@@ -90,8 +90,8 @@
       "XSLT 3.0 transformation engine (Saxon-JS 2)",
       "XPath 3.1 expression evaluator and tester",
       "Online XSLT debugger — no installation needed",
-      "SAP CPI header and property simulation",
-      "SAP CPI extension function support",
+      "SAP Cloud Integration header and property simulation",
+      "SAP Cloud Integration extension function support",
       "61 built-in examples across 6 categories",
       "Monaco Editor with XML/XSLT syntax highlighting",
       "Real-time XML validation and error detection",
@@ -126,7 +126,7 @@
         "name": "How do I debug XSLT for SAP Cloud Integration without deploying an iFlow?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "XSLTDebugX simulates the SAP CPI runtime in your browser — including message headers, exchange properties, and CPI extension functions — so you can run and debug XSLT 3.0 mappings against sample XML and see the output instantly, with no deployment to SAP Integration Suite required."
+          "text": "XSLTDebugX simulates the SAP Cloud Integration runtime in your browser — including message headers, exchange properties, and CPI extension functions — so you can run and debug XSLT 3.0 mappings against sample XML and see the output instantly, with no deployment to SAP Integration Suite required."
         }
       },
       {
@@ -158,7 +158,7 @@
         "name": "Does XSLTDebugX work offline?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "After the first load, XSLTDebugX runs entirely client-side — XSLT execution, XPath evaluation, and CPI simulation all happen in your browser with no network calls. Saved sessions persist in localStorage."
+          "text": "After the first load, XSLTDebugX runs entirely client-side — XSLT execution, XPath evaluation, and CPI simulation all happen in your browser with no network calls. Sessions and mappings are saved locally in your browser."
         }
       }
     ]
@@ -180,7 +180,7 @@
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "XSLT 3.0 Debugger & XPath Tester for SAP CPI",
+        "name": "XSLT 3.0 Debugger & XPath Tester for SAP Cloud Integration",
         "item": "https://xsltdebugx.pages.dev/"
       }
     ]
@@ -196,6 +196,8 @@
   } catch (_) {}
 </script>
 
+<a class="skip-link" href="#runBtn">Skip to editor actions</a>
+
 <!-- SEO + a11y: real DOM content for crawlers that DO render JS (Googlebot etc.)
      and for screen readers. Visually hidden via .seo-content (clip-path, off-screen)
      but kept in the accessibility tree. The page H1 lives here. -->
@@ -206,7 +208,7 @@
   <ul>
     <li>Online XSLT 3.0 transformation engine powered by Saxon-JS 2</li>
     <li>XPath 3.1 expression tester with syntax highlighting and history</li>
-    <li>SAP CPI runtime simulation — debug with headers, properties, and extension functions</li>
+    <li>SAP Cloud Integration runtime simulation — debug with headers, properties, and extension functions</li>
     <li>61 built-in examples covering basic to advanced XSLT patterns</li>
     <li>Monaco Editor with XML/XSLT syntax highlighting and real-time error detection</li>
     <li>Share XSLT transformations via URL — no server or account needed</li>
@@ -221,7 +223,7 @@
     <li>Validate XML structure and XSLT transformation output before deployment</li>
   </ul>
   <h2>Why Use an Online XSLT Debugger?</h2>
-  <p>Testing XSLT in SAP CPI requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and CPI extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
+  <p>Testing XSLT in SAP Cloud Integration requires deploying iFlows and checking trace logs — slow and tedious. XSLTDebugX lets you debug XSLT mappings instantly in your browser with the same headers, properties, and Cloud Integration extension functions available at runtime. It's the fastest way to develop and test SAP Cloud Integration XSLT transformations.</p>
 </section>
 
 <!-- True no-JS fallback: shown only when JavaScript is disabled. -->
@@ -268,7 +270,7 @@
     <span class="logo-name">XSLTDebug<span class="logo-name-x">X</span></span>
   </div>
 
-  <button class="header-icon-btn explorer-toggle" id="explorerToggle" onclick="toggleExplorer()" aria-label="Toggle workspace Explorer" aria-expanded="true" title="Explorer (Ctrl+Shift+E)">
+  <button class="header-icon-btn explorer-toggle" id="explorerToggle" onclick="toggleExplorer()" aria-label="Toggle workspace Explorer" aria-expanded="true" aria-keyshortcuts="Control+b Meta+b" title="Explorer (Ctrl+B)">
     <i data-lucide="panel-left" width="15" height="15"></i>
   </button>
   <div class="current-item">
@@ -281,8 +283,10 @@
       <button role="menuitem" onclick="toggleSessionMenu(false);saveCurrentAsCopy().catch(reportExplorerActionError)">Save as copy…</button>
       <button role="menuitem" id="sessionMenuDuplicate" onclick="toggleSessionMenu(false);duplicateCurrentSession().catch(reportExplorerActionError)">Duplicate current</button>
       <span class="session-menu-separator"></span>
-      <button role="menuitem" onclick="toggleSessionMenu(false);openWorkspaceSettings()">Settings</button>
-      <button role="menuitem" onclick="toggleSessionMenu(false);openAboutDialog()">About</button>
+      <button role="menuitem" onclick="toggleSessionMenu(false);clearSavedState()">Clear current content</button>
+      <span class="session-menu-separator"></span>
+      <button role="menuitem" onclick="toggleSessionMenu(false);downloadWorkspaceBackup()">Backup workspace…</button>
+      <button role="menuitem" onclick="toggleSessionMenu(false);document.getElementById('backupImportInput').click()">Import backup…</button>
     </div>
   </div>
 
@@ -294,6 +298,9 @@
     <button type="button" data-workspace-view="all" onclick="setWorkspaceView('all')" aria-label="Show all panes" title="All panes"><i data-lucide="columns-3" width="13" height="13"></i></button>
     <button type="button" data-workspace-view="output" onclick="setWorkspaceView('output')" aria-label="Focus output" title="Output"><i data-lucide="panel-right" width="13" height="13"></i></button>
   </div>
+
+  <div class="header-nav-divider" aria-hidden="true"></div>
+
   <button class="ex-btn xf-session-share" id="shareBtn" onclick="openShareModal()">
     <i data-lucide="share2" width="14" height="14"></i>
     Share
@@ -316,26 +323,26 @@
     </button>
   </div>
 
+  <div class="header-nav-divider" aria-hidden="true"></div>
+
   <button class="header-icon-btn theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light / dark theme" title="Toggle light / dark theme">
     <i data-lucide="sun" width="15" height="15" class="theme-icon-sun"></i>
     <i data-lucide="moon" width="15" height="15" class="theme-icon-moon"></i>
   </button>
 
-  <button class="header-icon-btn settings-header-btn" onclick="openWorkspaceSettings()" aria-label="Settings" title="Settings">
+  <button class="header-icon-btn help-btn" id="helpBtn" onclick="openHelpModal()" aria-label="Help — features & shortcuts" title="Help — features &amp; shortcuts (Ctrl+/)" aria-keyshortcuts="Control+Slash Meta+Slash">
+    <i data-lucide="circle-help" width="15" height="15"></i>
+  </button>
+
+  <button class="header-icon-btn" id="settingsBtn" onclick="openWorkspaceSettings()" aria-label="Settings" title="Settings (Ctrl+,)" aria-keyshortcuts="Control+Comma Meta+Comma">
     <i data-lucide="settings" width="15" height="15"></i>
   </button>
 
-  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" aria-label="Clear current content" title="Clear current content">
-    <i data-lucide="trash2" width="14" height="14"></i>
-    Clear
+  <button class="header-icon-btn" id="aboutBtn" onclick="openAboutDialog()" aria-label="About XSLTDebugX" title="About XSLTDebugX">
+    <i data-lucide="info" width="15" height="15"></i>
   </button>
 
-  <button class="ex-btn help-btn" id="helpBtn" onclick="openHelpModal()" aria-label="Help — features & shortcuts" title="Help — features & shortcuts">
-    <i data-lucide="circle-help" width="14" height="14"></i>
-    Help
-  </button>
-
-  <button class="run-btn" id="runBtn" onclick="createRipple(event); runTransform()">
+  <button class="run-btn" id="runBtn" aria-label="Run transform" onclick="createRipple(event); runTransform()">
     <i data-lucide="zap" width="14" height="14"></i>
     Run
     <span class="kbd">Ctrl+↵</span>
@@ -355,14 +362,13 @@
   <aside class="workspace-explorer" id="workspaceExplorer" aria-label="Workspace Explorer">
     <div class="explorer-header">
       <span class="explorer-heading">Explorer</span>
-      <button class="explorer-close" onclick="toggleExplorer(false)" aria-label="Close Explorer">×</button>
+      <div class="explorer-header-actions">
+        <button class="explorer-new-btn xslt" id="explorerNewXslt" aria-label="New XSLT mapping" title="New XSLT mapping" onclick="createExplorerSession('xslt').catch(reportExplorerActionError)">+ XSLT</button>
+        <button class="explorer-new-btn xpath" id="explorerNewXpath" aria-label="New XPath query" title="New XPath query" onclick="createExplorerSession('xpath').catch(reportExplorerActionError)">+ XPath</button>
+        <button class="explorer-new-btn folder" id="explorerNewFolder" aria-label="New folder" title="New folder" onclick="createExplorerFolder().catch(reportExplorerActionError)"><i data-lucide="folder-plus" width="12" height="12"></i></button>
+        <button class="explorer-close" onclick="toggleExplorer(false)" aria-label="Close Explorer">×</button>
+      </div>
     </div>
-    <div class="explorer-create-row">
-      <button onclick="createExplorerSession('xslt').catch(reportExplorerActionError)">+ XSLT</button>
-      <button onclick="createExplorerSession('xpath').catch(reportExplorerActionError)">+ XPath</button>
-      <button onclick="createExplorerFolder().catch(reportExplorerActionError)">+ Folder</button>
-    </div>
-    <button class="explorer-save-as" type="button" onclick="saveCurrentAsCopy().catch(reportExplorerActionError)">Save current as…</button>
     <input class="explorer-search" id="explorerSearch" type="search" placeholder="Search saved items…" aria-label="Search saved mappings and queries">
     <div class="explorer-filters" aria-label="Explorer views">
       <button class="explorer-filter active" data-view="all" aria-pressed="true" onclick="setExplorerView('all')">All</button>
@@ -370,25 +376,7 @@
       <button class="explorer-filter" data-view="favorites" aria-pressed="false" onclick="setExplorerView('favorites')">Favorites</button>
       <button class="explorer-filter" data-view="trash" aria-pressed="false" onclick="setExplorerView('trash')">Trash</button>
     </div>
-    <div class="explorer-workspace-label">Saved sessions</div>
     <div class="explorer-list" id="explorerList" aria-live="polite"></div>
-    <label class="explorer-runtime-profile">
-      <span>Runtime</span>
-      <select id="runtimeProfileSelect" onchange="setRuntimeProfile(this.value)" aria-label="XSLT runtime profile">
-        <option value="cpi">SAP CPI</option>
-        <option value="standard">Standard XSLT</option>
-      </select>
-    </label>
-    <div class="explorer-storage-status" id="explorerStorageStatus" title="Local browser storage status">Checking local storage…</div>
-    <div class="explorer-backup-actions">
-      <button type="button" onclick="downloadWorkspaceBackup()" title="Export a validated ZIP backup">Backup</button>
-      <button type="button" onclick="document.getElementById('backupImportInput').click()" title="Import a ZIP backup as new copies">Import</button>
-      <input type="file" class="file-input-hidden" id="backupImportInput" accept=".zip,application/zip" aria-label="Import workspace backup" onchange="prepareWorkspaceBackupImport(this.files[0])">
-    </div>
-    <div class="explorer-product-actions">
-      <button type="button" onclick="openWorkspaceSettings()">Settings</button>
-      <button type="button" onclick="openAboutDialog()">About</button>
-    </div>
   </aside>
   <!-- Inter-column flow lines: rendered absolutely over the workspace gutters.
        Hairline by default; on Run, the .flowing class sends a bright dot left→right
@@ -406,21 +394,21 @@
   <!-- LEFT: XML Input + Headers + Properties -->
   <div class="col col-side" id="colLeft">
     <!-- Collapsed tab (shown only when minimized) -->
-    <div class="col-tab" onclick="toggleSideCol('left')">
+    <div class="col-tab" role="button" tabindex="0" aria-label="Expand input panel" onclick="toggleSideCol('left')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSideCol('left')}">
       <div class="col-tab-dot ind-xml"></div>
       <span class="col-tab-label" id="xmlColTabLabel">Input</span>
     </div>
     <!-- Normal content -->
     <div class="col-inner">
-      <!-- ── XQuery section (shown in XPath mode only) ── -->
+      <!-- ── XPath bar (shown in XPath mode only) ── -->
       <div id="xpathBar" style="display:none">
         <div class="pane-bar pane-bar-clickable" onclick="toggleSideCol('left')" title="Click to collapse / restore the input panel">
           <div class="pane-indicator ind-xpath"></div>
           <span class="pane-num pane-num-xpath" id="xpathPaneNum">01</span>
-          <span class="pane-title">XQuery</span>
+          <span class="pane-title">XPath</span>
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
           <div class="pane-actions" onclick="event.stopPropagation()">
-            <span class="lang-badge">XQuery</span>
+            <span class="lang-badge">XPath</span>
             <button class="pane-icon-btn" aria-label="Copy XPath expression" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="copy" width="14" height="14"></i></button>
             <button class="pane-icon-btn" aria-label="Clear XPath expression" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
@@ -475,12 +463,12 @@
 
       <!-- Headers Panel -->
       <div class="kv-panel" id="hdrPanel">
-        <div class="kv-header" onclick="toggleKVPanel('hdrPanel')">
+        <div class="kv-header" role="button" tabindex="0" aria-controls="hdrBody" onclick="toggleKVPanel('hdrPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKVPanel('hdrPanel')}">
           <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
           <span class="kv-title">Headers</span>
           <span class="kv-count" id="hdrCount">0</span>
           <input class="kv-search" id="hdrPanelSearch" type="text" placeholder="search…" aria-label="Filter headers" onclick="event.stopPropagation()" oninput="_applyKVFilter('hdrPanel')" title="Filter rows by name or value"/>
-          <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('headers')">+</button>
+          <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('headers')" aria-label="Add header row" title="Add header">+</button>
           <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="hdrBody">
@@ -491,12 +479,12 @@
 
       <!-- Properties Panel -->
       <div class="kv-panel" id="propPanel">
-        <div class="kv-header" onclick="toggleKVPanel('propPanel')">
+        <div class="kv-header" role="button" tabindex="0" aria-controls="propBody" onclick="toggleKVPanel('propPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKVPanel('propPanel')}">
           <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
           <span class="kv-title">Properties</span>
           <span class="kv-count" id="propCount">0</span>
           <input class="kv-search" id="propPanelSearch" type="text" placeholder="search…" aria-label="Filter properties" onclick="event.stopPropagation()" oninput="_applyKVFilter('propPanel')" title="Filter rows by name or value"/>
-          <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('properties')">+</button>
+          <button class="kv-add-btn" onclick="event.stopPropagation(); addKVRow('properties')" aria-label="Add property row" title="Add property">+</button>
           <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron"></i>
         </div>
         <div class="kv-body" id="propBody">
@@ -534,7 +522,7 @@
     <!-- Console — default position: below XSLT editor. Moved below workspace in XPath mode. -->
     <div class="console-panel" id="consolePanel">
       <div class="console-resize-handle" onpointerdown="startConsoleResize(event)" title="Drag to resize console"></div>
-      <div class="console-bar" onclick="handleConsoleBarClick(event)">
+      <div class="console-bar" role="button" tabindex="0" aria-label="Toggle console" onclick="handleConsoleBarClick(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleConsoleBarClick(event)}">
         <span class="kv-icon"><i data-lucide="terminal" width="12" height="12"></i></span>
         <span class="console-title">Console</span>
         <span class="console-err-badge" id="consoleErrBadge">0</span>
@@ -551,7 +539,7 @@
           <button class="console-text-btn" id="consoleCopyBtn" aria-label="Copy console output" title="Copy console output" onclick="copyConsole()">Copy</button>
           <button class="console-text-btn" id="consoleClearBtn" aria-label="Clear console" title="Clear console" onclick="clearConsole()">Clear</button>
         </div>
-        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" onclick="event.stopPropagation(); handleConsoleBarClick(event)" title="Minimize / restore console"></i>
+        <i data-lucide="chevron-down" width="14" height="14" class="kv-chevron console-chevron" aria-hidden="true"></i>
       </div>
       <div class="console-body" id="consoleBody"></div>
     </div>
@@ -562,7 +550,7 @@
   <!-- RIGHT: XPath bar + Results + Output -->
   <div class="col col-side collapsed" id="colRight">
     <!-- Collapsed tab -->
-    <div class="col-tab" onclick="toggleSideCol('right')">
+    <div class="col-tab" role="button" tabindex="0" aria-label="Expand output panel" onclick="toggleSideCol('right')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSideCol('right')}">
       <div class="col-tab-dot ind-out"></div>
       <span class="col-tab-label">Output</span>
     </div>
@@ -635,7 +623,7 @@
 
         <!-- Output Headers Panel -->
         <div class="kv-panel" id="outHdrPanel">
-          <div class="kv-header" onclick="toggleKVPanel('outHdrPanel')">
+          <div class="kv-header" role="button" tabindex="0" aria-controls="outHdrBody" onclick="toggleKVPanel('outHdrPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKVPanel('outHdrPanel')}">
             <span class="kv-icon"><i data-lucide="hash" width="12" height="12"></i></span>
             <span class="kv-title">Headers</span>
             <span class="kv-count" id="outHdrCount">0</span>
@@ -650,7 +638,7 @@
 
         <!-- Output Properties Panel -->
         <div class="kv-panel" id="outPropPanel">
-          <div class="kv-header" onclick="toggleKVPanel('outPropPanel')">
+          <div class="kv-header" role="button" tabindex="0" aria-controls="outPropBody" onclick="toggleKVPanel('outPropPanel')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKVPanel('outPropPanel')}">
             <span class="kv-icon"><i data-lucide="at-sign" width="12" height="12"></i></span>
             <span class="kv-title">Properties</span>
             <span class="kv-count" id="outPropCount">0</span>
@@ -783,8 +771,8 @@
       <label class="settings-row"><span><strong>Theme</strong><small>Applied immediately and remembered locally.</small></span>
         <select id="settingsTheme" onchange="setWorkspaceTheme(this.value)"><option value="dark">Dark</option><option value="light">Light</option></select>
       </label>
-      <label class="settings-row"><span><strong>XSLT runtime</strong><small>SAP CPI enables headers/properties; Standard keeps a plain XSLT workflow.</small></span>
-        <select id="settingsRuntimeProfile" onchange="setRuntimeProfile(this.value)"><option value="cpi">SAP CPI</option><option value="standard">Standard XSLT</option></select>
+      <label class="settings-row"><span><strong>XSLT runtime</strong><small>Cloud Integration enables headers/properties; Standard keeps a plain XSLT workflow.</small></span>
+        <select id="settingsRuntimeProfile" onchange="setRuntimeProfile(this.value)"><option value="cpi">Cloud Integration</option><option value="standard">Standard XSLT</option></select>
       </label>
       <label class="settings-row"><span><strong>Open Explorer on startup</strong><small>Keep saved sessions visible on wider screens.</small></span>
         <input id="settingsExplorerOpen" type="checkbox" onchange="setExplorerStartupPreference(this.checked)">
@@ -797,6 +785,7 @@
       </div>
       <div class="settings-row"><span><strong>Workspace backup</strong><small>Export or merge a validated ZIP as new copies.</small></span>
         <span class="settings-inline-actions"><button type="button" class="settings-action" onclick="downloadWorkspaceBackup()">Backup</button><button type="button" class="settings-action" onclick="document.getElementById('backupImportInput').click()">Import</button></span>
+        <input type="file" class="file-input-hidden" id="backupImportInput" accept=".zip,application/zip" aria-label="Import workspace backup" onchange="prepareWorkspaceBackupImport(this.files[0])">
       </div>
       <div class="settings-row"><span><strong>Trash</strong><small id="settingsTrashStatus">Checking…</small></span>
         <button type="button" class="settings-action danger" onclick="emptyWorkspaceTrash()">Empty Trash</button>
@@ -841,12 +830,21 @@
       <button class="ex-modal-close" onclick="closeAboutDialog()" aria-label="Close About"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
     <div class="share-modal-body about-body">
-      <p><strong>XSLTDebugX 1.0.0</strong><br><span id="aboutBuildInfo">Local dev</span></p>
-      <p>A browser-based XSLT 3.0 and XPath 3.1 debugger with optional SAP CPI simulation. Licensed under <strong>AGPL-3.0-or-later</strong>.</p>
+      <div class="about-meta">
+        <div class="about-version"><strong>XSLTDebugX 1.0.0</strong> &nbsp;<span class="about-build" id="aboutBuildInfo">Local dev</span></div>
+        <div class="about-author">
+          Built by
+          <a href="https://www.linkedin.com/in/sunilph/" target="_blank" rel="noopener" class="about-author-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+            Sunil Pharswan
+          </a>
+        </div>
+      </div>
+      <p>A browser-based XSLT 3.0 and XPath 3.1 debugger with optional SAP Cloud Integration simulation. Licensed under <strong>AGPL-3.0-or-later</strong>.</p>
       <p><strong>Privacy and network:</strong> XML, XSLT, headers, properties, sessions, and backups stay in your browser unless you explicitly create and send a share URL. The page still requests CDN-hosted editor/UI assets and anonymous GoatCounter page analytics; source content is not attached to those analytics requests.</p>
-      <p>Built by Sunil Pharswan. SAP® is a trademark of SAP SE; this project is not affiliated with or endorsed by SAP SE.</p>
+      <p class="about-trademark">SAP® is a trademark of SAP SE; this project is not affiliated with or endorsed by SAP SE.</p>
       <div class="about-links">
-        <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener">Source</a>
+        <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener">Source on GitHub</a>
         <a href="https://github.com/linusdevx/XSLTDebugX/issues" target="_blank" rel="noopener">Issues / Feedback</a>
         <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
       </div>
@@ -893,27 +891,22 @@
   <div class="stat-mode" id="statMode" title="Current editor mode">
     <span class="mode-pill mode-xslt" id="modePill">XSLT</span>
   </div>
-  <div class="stat" id="runtimeProfileStatus" title="Current XSLT runtime profile">SAP CPI</div>
+  <div class="stat" id="runtimeProfileStatus" title="Current XSLT runtime profile">Cloud Integration</div>
   <div class="stat-spacer"></div>
-  <div id="savedIndicator" class="saved-indicator" title="Quick Playground is saved locally" aria-live="polite">
+  <div id="savedIndicator" class="saved-indicator" title="Local save state" aria-live="polite">
     <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3.5"/></svg><span id="savedIndicatorText">Saved locally</span>
     <button type="button" id="saveIndicatorAction" hidden onclick="handleSaveIndicatorAction(event)">Retry</button>
   </div>
-  <div class="stat stat-author">
-    <span>Built by</span>
+  <div class="stat stat-github-link">
     <a href="https://www.linkedin.com/in/sunilph/" target="_blank" rel="noopener" class="stat-link" title="Sunil Pharswan on LinkedIn">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-      Sunil Pharswan
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
     </a>
-    <span class="stat-divider">·</span>
-    <span id="buildInfo" class="build-info" data-placeholder="true" title="Build date and short commit SHA">__BUILD_INFO__</span>
-    <span class="stat-divider">·</span>
     <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" title="View source on GitHub">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
     </a>
   </div>
-  <div class="stat tm-notice" title="SAP® and SAP Cloud Platform Integration (CPI) are registered trademarks of SAP SE. This tool is not affiliated with or endorsed by SAP SE.">SAP® trademark of SAP SE</div>
+  <button type="button" class="stat stat-version-btn" onclick="openAboutDialog()" title="About XSLTDebugX">v1.0.0 · <span id="buildInfo" data-placeholder="true">Local dev</span></button>
+  <div class="stat tm-notice" title="SAP® and SAP Integration Suite are registered trademarks of SAP SE. This tool is not affiliated with or endorsed by SAP SE.">Not affiliated with SAP SE</div>
 </footer>
 
 <!-- Help Modal -->
@@ -943,7 +936,7 @@
         <div class="help-row"><span class="help-key">Theme Toggle</span><span>Switch between light and dark themes — toggles colors for better visibility in different lighting conditions</span></div>
         <div class="help-row"><span class="help-key">Upload Files</span><span>Load XML or XSLT from your computer — click the upload icon in the pane toolbar or drag & drop directly onto a pane</span></div>
         <div class="help-row"><span class="help-key">Download Panes</span><span>Export XML, XSLT, or Output to a file — click the download icon in each pane toolbar (auto-detects output type: XML/JSON/TXT)</span></div>
-        <div class="help-row"><span class="help-key">Collapse Panels</span><span>Hide side panels to focus on one editor — click the collapse icon (◀/▶) on the left/right column dividers</span></div>
+        <div class="help-row"><span class="help-key">Collapse Panels</span><span>Hide side panels to focus on one editor — click the collapse icon (◀/▶) in any pane bar, or use the view switcher in the top toolbar to jump to Editors, All panes, or Output</span></div>
       </div>
 
       <div class="help-section">
@@ -991,7 +984,7 @@
       </div>
 
       <div class="help-section">
-        <div class="help-section-title">SAP CPI Simulation</div>
+        <div class="help-section-title">Cloud Integration Simulation</div>
         <div class="help-row"><span class="help-key">Headers</span><span>Add CPI headers in the left panel — injected as <code>xsl:param</code> values</span></div>
         <div class="help-row"><span class="help-key">Properties</span><span>Add CPI properties — same injection mechanism as headers</span></div>
         <div class="help-row"><span class="help-key">Field Validation</span><span>Header and Property names turn red if invalid — name must start with a letter or underscore, then use letters, digits, hyphens, dots, or underscores. Hover over the red field for details. Invalid names are skipped during transform.</span></div>
@@ -1002,9 +995,9 @@
       <div class="help-section">
         <div class="help-section-title">Session & Share</div>
         <div class="help-row"><span class="help-key">Auto-save</span><span>Quick Playground and named sessions save locally 800ms after you stop typing</span></div>
-        <div class="help-row"><span class="help-key">Explorer</span><span>Create, reopen, rename, duplicate, favorite, trash, restore, back up, and import local sessions</span></div>
-        <div class="help-row"><span class="help-key">Runtime</span><span>SAP CPI enables header/property simulation; Standard XSLT runs without CPI injection</span></div>
-        <div class="help-row"><span class="help-key">Clear content</span><span>Mode-aware reset; named records remain saved</span></div>
+        <div class="help-row"><span class="help-key">Explorer</span><span>Use "+ XSLT", "+ XPath", or folder buttons in the Explorer header to create items · click "···" on any row for rename, duplicate, move, or trash actions</span></div>
+        <div class="help-row"><span class="help-key">Runtime</span><span>Cloud Integration enables header/property simulation; Standard XSLT runs without CPI injection — change in Settings (Ctrl+,)</span></div>
+        <div class="help-row"><span class="help-key">Clear content</span><span>Mode-aware reset — in Session menu (top bar); named records remain saved</span></div>
         <div class="help-row"><span class="help-key">Share</span><span>Recipient chooses temporary open or a separately saved copy; existing work is not overwritten</span></div>
       </div>
     </div>
@@ -1017,7 +1010,9 @@
         <div class="help-row"><kbd>Enter</kbd><span>Run XPath expression (when cursor is in the XPath bar)</span></div>
         <div class="help-row"><kbd>Ctrl+S</kbd><span>Save now; names the current Quick Playground when needed</span></div>
         <div class="help-row"><kbd>Ctrl+Shift+S</kbd><span>Save current work as a new copy</span></div>
-        <div class="help-row"><kbd>Ctrl+Shift+E</kbd><span>Toggle the workspace Explorer</span></div>
+        <div class="help-row"><kbd>Ctrl+B</kbd><span>Toggle the workspace Explorer</span></div>
+        <div class="help-row"><kbd>Ctrl+,</kbd><span>Open Settings</span></div>
+        <div class="help-row"><kbd>Ctrl+/</kbd><span>Open this Help panel</span></div>
       </div>
       <div class="help-section">
         <div class="help-section-title">XPath History</div>

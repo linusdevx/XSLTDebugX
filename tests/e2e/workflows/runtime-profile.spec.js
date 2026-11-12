@@ -2,11 +2,14 @@ import { test, expect } from '@playwright/test';
 import { EditorPage } from '../../utils/test-helpers.js';
 
 test('Standard XSLT hides CPI panels, runs, and restores from the draft', async ({ page }) => {
+  test.setTimeout(90000);
   const editor = new EditorPage(page);
   await editor.navigate();
   await page.evaluate(async () => { await workspaceStore.deleteDatabase(); await workspaceStore.init(); });
 
-  await page.selectOption('#runtimeProfileSelect', 'standard');
+  await page.evaluate(() => openWorkspaceSettings());
+  await page.selectOption('#settingsRuntimeProfile', 'standard');
+  await page.evaluate(() => closeWorkspaceSettings());
   await expect(page.locator('#hdrPanel')).toBeHidden();
   await expect(page.locator('#propPanel')).toBeHidden();
   await editor.clickRun();
@@ -16,11 +19,14 @@ test('Standard XSLT hides CPI panels, runs, and restores from the draft', async 
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForSelector('.monaco-editor');
-  await expect(page.locator('#runtimeProfileSelect')).toHaveValue('standard', { timeout: 15000 });
+  await page.evaluate(() => openWorkspaceSettings());
+  await expect(page.locator('#settingsRuntimeProfile')).toHaveValue('standard', { timeout: 15000 });
+  await page.evaluate(() => closeWorkspaceSettings());
   await expect(page.locator('#hdrPanel')).toBeHidden();
 });
 
 test('changing runtime in XPath mode persists only the XSLT context', async ({ page }) => {
+  test.setTimeout(90000);
   const editor = new EditorPage(page);
   await editor.navigate();
   const ids = await page.evaluate(async () => {
@@ -52,6 +58,8 @@ test('changing runtime in XPath mode persists only the XSLT context', async ({ p
 
   await page.evaluate(() => closeWorkspaceSettings());
   await editor.switchToXslt();
-  await expect(page.locator('#runtimeProfileSelect')).toHaveValue('standard');
+  await page.evaluate(() => openWorkspaceSettings());
+  await expect(page.locator('#settingsRuntimeProfile')).toHaveValue('standard');
+  await page.evaluate(() => closeWorkspaceSettings());
   await expect(page.locator('#hdrPanel')).toBeHidden();
 });

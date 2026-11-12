@@ -75,11 +75,11 @@ window.addEventListener('workspace-store-change', event => {
   clearTimeout(explorerRemoteRefreshTimer);
   explorerRemoteRefreshTimer = setTimeout(() => {
     void refreshExplorer();
-    void refreshExplorerStorageStatus();
   }, 80);
 });
 window.addEventListener('workspace-storage-blocked', () => {
-  const element = document.getElementById('explorerStorageStatus');
+  showToast('Storage upgrade blocked — close other XSLTDebugX tabs, then reload', { tone: 'error', duration: 0 });
+  const element = document.getElementById('settingsStorageStatus');
   if (element) {
     element.textContent = 'Storage upgrade blocked · close other XSLTDebugX tabs, then reload';
     element.classList.add('error');
@@ -116,7 +116,6 @@ function toggleExplorer(force) {
   void workspaceStore.setSetting('explorerOpen', open).catch(() => {});
   if (open) {
     void refreshExplorer();
-    void refreshExplorerStorageStatus();
     if (window.innerWidth < 900) requestAnimationFrame(() => document.getElementById('explorerSearch')?.focus());
   } else if (window.innerWidth < 900) {
     document.getElementById('explorerToggle')?.focus();
@@ -133,28 +132,10 @@ function setExplorerView(view) {
   void refreshExplorer();
 }
 
-async function refreshExplorerStorageStatus() {
-  const element = document.getElementById('explorerStorageStatus');
-  if (!element) return;
-  try {
-    const status = await workspaceStore.getStorageStatus();
-    if (!status.available) throw new Error('IndexedDB unavailable');
-    if (status.blocked) {
-      element.textContent = 'Storage upgrade blocked · close other XSLTDebugX tabs, then reload';
-      element.classList.add('error');
-      return;
-    }
-    const format = bytes => bytes == null ? 'unknown' : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-    element.textContent = `Local storage: ${format(status.usage)} used${status.quota == null ? '' : ` of ${format(status.quota)}`} · ${status.persisted === true ? 'persistent' : status.persisted === false ? 'browser-managed' : 'persistence unknown'}`;
-    element.classList.remove('error');
-  } catch (error) {
-    element.textContent = 'Local storage unavailable · edits remain temporary';
-    element.classList.add('error');
-    element.title = error.message;
-  }
-}
+let _conflictReturnFocus = null;
 
 function openSessionConflictDialog() {
+  _conflictReturnFocus = document.activeElement;
   const type = modeManager.isXpath ? 'xpath' : 'xslt';
   const conflict = sessionController.pendingConflicts[type];
   if (!conflict) return;
@@ -169,6 +150,9 @@ function openSessionConflictDialog() {
 function closeSessionConflictDialog() {
   document.getElementById('sessionConflictBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
+  const returnFocus = _conflictReturnFocus;
+  _conflictReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 function setSessionConflictError(message) {
@@ -278,7 +262,10 @@ async function deleteAllWorkspaceData() {
   location.reload();
 }
 
+let _aboutReturnFocus = null;
+
 function openAboutDialog() {
+  _aboutReturnFocus = document.activeElement;
   const build = document.getElementById('buildInfo')?.textContent?.trim() || 'Unknown build';
   document.getElementById('aboutBuildInfo').textContent = `Build ${build}`;
   document.getElementById('aboutBackdrop')?.classList.add('open');
@@ -289,6 +276,9 @@ function openAboutDialog() {
 function closeAboutDialog() {
   document.getElementById('aboutBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
+  const returnFocus = _aboutReturnFocus;
+  _aboutReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 var handleAboutBackdropClick = _makeBackdropClose('aboutBackdrop', closeAboutDialog);
@@ -357,14 +347,28 @@ async function refreshExplorer() {
 
 function renderExplorerSessions(list, sessions, search, workspaces = [], folders = [], allFolders = folders) {
   const appendEmptyState = () => {
-    const empty = document.createElement('div');
-    empty.className = 'explorer-empty';
-    empty.textContent = search
-      ? `No saved items match “${search}”.`
-      : explorerView === 'favorites'
-        ? 'No favorites yet.'
-        : 'No saved mappings or queries yet. Use + XSLT or + XPath to create one.';
-    list.appendChild(empty);
+    if (search) {
+      const empty = document.createElement('div');
+      empty.className = 'explorer-empty';
+      empty.textContent = `No saved items match “${search}”.`;
+      list.appendChild(empty);
+      return;
+    }
+    if (explorerView === 'favorites') {
+      const empty = document.createElement('div');
+      empty.className = 'explorer-empty';
+      empty.textContent = 'No favorites yet.';
+      list.appendChild(empty);
+      return;
+    }
+    // Simple empty state pointing to the + New button
+    const wrap = document.createElement('div');
+    wrap.className = 'explorer-empty-actions';
+    const hint = document.createElement('p');
+    hint.className = 'explorer-empty-hint';
+    hint.textContent = 'No saved items yet — use + XSLT or + XPath above.';
+    wrap.append(hint);
+    list.appendChild(wrap);
   };
   for (const workspace of workspaces) {
     const workspaceSessions = sessions.filter(session => session.workspaceId === workspace.id);
@@ -393,7 +397,10 @@ function renderExplorerSessions(list, sessions, search, workspaces = [], folders
       const remove = explorerAction('×', `Move folder ${folder.name} to Trash`, () => trashExplorerFolder(folder));
       const actions = document.createElement('span');
       actions.className = 'explorer-folder-actions';
-      actions.append(rename, remove);
+      actions.appendChild(_explorerRowMenu([
+        { label: 'Rename', handler: () => renameExplorerFolder(folder) },
+        { label: 'Move to Trash', handler: () => trashExplorerFolder(folder), danger: true },
+      ]));
       folderRow.append(name, actions);
       parent.appendChild(folderRow);
       const children = document.createElement('div');
@@ -447,12 +454,16 @@ function renderExplorerSessionRow(list, session, workspaceFolders = [], depth = 
     main.append(type, text);
     const actions = document.createElement('div');
     actions.className = 'explorer-row-actions';
+    const favBtn = explorerAction(session.favorite ? '★' : '☆', session.favorite ? 'Remove favorite' : 'Add favorite', () => toggleSessionFavorite(session));
+    favBtn.className += ' explorer-row-fav';
     actions.append(
-      explorerAction(session.favorite ? '★' : '☆', session.favorite ? 'Remove favorite' : 'Add favorite', () => toggleSessionFavorite(session)),
-      explorerAction('↪', 'Move to folder', () => moveExplorerSession(session, workspaceFolders)),
-      explorerAction('⧉', 'Duplicate', () => duplicateExplorerSession(session)),
-      explorerAction('✎', 'Rename', () => renameExplorerSession(session)),
-      explorerAction('×', 'Move to Trash', () => trashExplorerSession(session)),
+      favBtn,
+      _explorerRowMenu([
+        { label: 'Rename', handler: () => renameExplorerSession(session) },
+        { label: 'Duplicate', handler: () => duplicateExplorerSession(session) },
+        { label: 'Move to folder', handler: () => moveExplorerSession(session, workspaceFolders) },
+        { label: 'Move to Trash', handler: () => trashExplorerSession(session), danger: true },
+      ]),
     );
     row.append(main, actions);
     row.addEventListener('click', () => { void openExplorerSession(session.id).catch(reportExplorerActionError); });
@@ -489,6 +500,84 @@ function explorerAction(text, label, handler) {
     catch (error) { reportExplorerActionError(error); }
   });
   return button;
+}
+
+// items: [{ label, handler, danger? }]
+function _explorerRowMenu(items) {
+  const wrap = document.createElement('div');
+  wrap.className = 'explorer-row-menu-wrap';
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'explorer-row-action explorer-row-menu-trigger';
+  trigger.textContent = '···';
+  trigger.setAttribute('aria-label', 'More actions');
+  trigger.setAttribute('aria-haspopup', 'menu');
+  trigger.setAttribute('aria-expanded', 'false');
+
+  const menu = document.createElement('div');
+  menu.className = 'explorer-row-menu';
+  menu.setAttribute('role', 'menu');
+  menu.hidden = true;
+
+  items.forEach(({ label, handler, danger }) => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.role = 'menuitem';
+    item.className = 'explorer-row-menu-item' + (danger ? ' danger' : '');
+    item.textContent = label;
+    item.addEventListener('click', event => {
+      event.stopPropagation();
+      _closeExplorerMenus();
+      try { void Promise.resolve(handler()).catch(reportExplorerActionError); }
+      catch (error) { reportExplorerActionError(error); }
+    });
+    menu.appendChild(item);
+  });
+
+  const close = () => { menu.hidden = true; trigger.setAttribute('aria-expanded', 'false'); };
+  trigger.addEventListener('click', event => {
+    event.stopPropagation();
+    const wasOpen = !menu.hidden;
+    _closeExplorerMenus();
+    if (!wasOpen) {
+      menu.hidden = false;
+      trigger.setAttribute('aria-expanded', 'true');
+      // Position fixed to escape overflow:hidden on the Explorer panel
+      const rect = trigger.getBoundingClientRect();
+      const menuHeight = items.length * 30 + 8;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const flipUp = spaceBelow < menuHeight + 8;
+      menu.style.position = 'fixed';
+      menu.style.minWidth = '150px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      if (flipUp) {
+        menu.style.bottom = (window.innerHeight - rect.top) + 'px';
+        menu.style.top = 'auto';
+      } else {
+        menu.style.top = (rect.bottom + 2) + 'px';
+        menu.style.bottom = 'auto';
+      }
+      requestAnimationFrame(() => menu.querySelector('.explorer-row-menu-item')?.focus());
+    }
+  });
+  menu.addEventListener('keydown', event => {
+    const items = [...menu.querySelectorAll('.explorer-row-menu-item')];
+    const idx = items.indexOf(document.activeElement);
+    if (event.key === 'ArrowDown') { event.preventDefault(); items[(idx + 1) % items.length]?.focus(); }
+    if (event.key === 'ArrowUp')   { event.preventDefault(); items[(idx - 1 + items.length) % items.length]?.focus(); }
+    if (event.key === 'Escape')    { event.preventDefault(); close(); trigger.focus(); }
+  });
+
+  wrap.append(trigger, menu);
+  return wrap;
+}
+
+function _closeExplorerMenus() {
+  document.querySelectorAll('.explorer-row-menu').forEach(m => {
+    m.hidden = true;
+    m.closest('.explorer-row-menu-wrap')?.querySelector('.explorer-row-menu-trigger')?.setAttribute('aria-expanded', 'false');
+  });
 }
 
 function reportExplorerActionError(error) {
@@ -694,6 +783,7 @@ function toggleSessionMenu(force) {
   }
 }
 
+
 async function toggleSessionFavorite(session) {
   await flushActiveExplorerSession(session);
   const current = await workspaceStore.getSession(session.id);
@@ -764,9 +854,20 @@ document.addEventListener('keydown', event => {
       }
     }
   }
+  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 'b') {
+    if (!document.activeElement?.closest('.monaco-editor')) { event.preventDefault(); toggleExplorer(); }
+  }
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLocaleLowerCase() === 'e') {
     event.preventDefault();
     toggleExplorer();
+  }
+  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === ',') {
+    event.preventDefault();
+    openWorkspaceSettings();
+  }
+  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === '/') {
+    const inEditor = document.activeElement?.closest('.monaco-editor');
+    if (!inEditor) { event.preventDefault(); openHelpModal(); }
   }
   if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 's') {
     event.preventDefault();
@@ -782,4 +883,5 @@ document.addEventListener('keydown', event => {
 
 document.addEventListener('click', event => {
   if (!event.target.closest('.current-item')) toggleSessionMenu(false);
+  if (!event.target.closest('.explorer-row-menu-wrap')) _closeExplorerMenus();
 });

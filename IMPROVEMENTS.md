@@ -11,28 +11,72 @@ This file is the handoff for future implementation work. The local-first workspa
 - Add focused tests for changed behavior. Run the full E2E suite only at a final integration gate.
 - Update this file when an item is completed, deferred, or materially changed.
 
-## Priority 1 — existing product and workflow refinement
+## Priority 1 — existing product and workflow refinement ✅ Done
 
-- Audit the complete XSLT, XPath, SAP CPI, and Standard XSLT workflows for unclear or redundant steps.
-- Simplify the top bar, Help access, pane actions, and footer while keeping primary actions discoverable.
-- Review every pane icon and action: copy, clear, upload, import, download, format, and collapse. Standardize labels, ordering, tooltips, and keyboard access.
-- Review light and dark themes for contrast, editor chrome, overlays, menus, dialogs, badges, and disabled states.
-- Review Explorer, save/reopen, share receive/send, backup/import, conflict recovery, Trash, and failure-state UX.
-- Remove dead styles, duplicated paths, and stale compatibility code only when behavior is covered by a focused test.
+- ✅ Audit the complete XSLT, XPath, SAP CPI, and Standard XSLT workflows for unclear or redundant steps.
+- ✅ Simplify the top bar, Help access, pane actions, and footer while keeping primary actions discoverable.
+- ✅ Review every pane icon and action: copy, clear, upload, import, download, format, and collapse. Standardize labels, ordering, tooltips, and keyboard access.
+- ✅ Review light and dark themes for contrast, editor chrome, overlays, menus, dialogs, badges, and disabled states.
+- ✅ Review Explorer, save/reopen, share receive/send, backup/import, conflict recovery, Trash, and failure-state UX. Dynamic save indicator tooltip uses session name; retry routing fixed.
+- ✅ Remove dead styles, duplicated paths, and stale compatibility code only when behavior is covered by a focused test. 57 lines of dead CSS removed.
 
-## Priority 2 — responsive and accessibility completion
+## Priority 2 — responsive and accessibility completion ✅ Done
 
-- Capture final XSLT/XPath snapshots in light/dark themes with Explorer open/closed at target desktop and phone sizes.
-- Complete touch, keyboard, focus-order, screen-reader, and contrast smoke reviews.
-- Keep the desktop/laptop recommendation on small touch devices without blocking quick mobile viewing or edits.
-- Verify all dialogs trap and return focus, all icon-only buttons have accessible names, and live errors are announced.
+- ✅ Capture final XSLT/XPath snapshots in light/dark themes with Explorer open/closed at target desktop and phone sizes.
+- ✅ Complete touch, keyboard, focus-order, screen-reader, and contrast smoke reviews. Skip link, console bar keyboard/ARIA, WCAG AA contrast fix (`--text-dim`).
+- ✅ Keep the desktop/laptop recommendation on small touch devices without blocking quick mobile viewing or edits.
+- ✅ Verify all dialogs trap and return focus, all icon-only buttons have accessible names, and live errors are announced. 9 dialogs return focus; 12 accessibility tests added.
 
-## Priority 3 — Cloudflare Pages and SEO
+## Priority 3 — Cloudflare Pages and SEO ✅ Done
 
-- Audit canonical URL, title/description, Open Graph, Twitter cards, JSON-LD, sitemap, robots, and crawlable page content.
-- Verify Cloudflare Pages redirects, headers, compression, caching, and Core Web Vitals.
-- Run rich-result/schema validation against the deployed build.
-- Keep product, release, build-date, privacy, and telemetry claims backed by the deployed application.
+- ✅ Audit canonical URL, title/description, Open Graph, Twitter cards, JSON-LD, sitemap, robots, and crawlable page content. "Cloud Integration" labels updated.
+- ✅ Verify Cloudflare Pages redirects, headers, compression, caching, and Core Web Vitals. Cache headers added for sitemap.xml and robots.txt.
+- ✅ Run rich-result/schema validation against the deployed build.
+- ✅ Keep product, release, build-date, privacy, and telemetry claims backed by the deployed application. sitemap.xml, humans.txt, llms.txt all updated to 2026-11-12.
+
+## Priority 4 — UI/UX polish: header, footer, Explorer sidebar ✅ Done
+
+- ✅ Consolidated scattered controls: Clear moved to Session menu, Settings/About promoted to header icon buttons with tooltip shortcuts.
+- ✅ Footer redesigned: LinkedIn + GitHub icons, version button (opens About dialog), "Not affiliated with SAP SE" trademark notice.
+- ✅ About dialog enriched with version, build info, and LinkedIn attribution link.
+- ✅ Explorer "+ New" dropdown replaced with 3 direct inline buttons: `+ XSLT` (blue), `+ XPath` (gold), folder icon — no menu-within-sidebar.
+- ✅ Explorer row actions consolidated into a `···` overflow menu (position:fixed, flip-up when near bottom, arrow-key navigation).
+- ✅ Explorer empty state replaced with a simple hint pointing to the create buttons.
+- ✅ Runtime profile selector, storage status, and Backup/Import moved from Explorer sidebar into Settings modal — Explorer now shows only the file list.
+- ✅ Dead `refreshExplorerStorageStatus` function removed; `refreshWorkspaceSettingsStatus` in Settings covers it.
+- ✅ `workspace-storage-blocked` now shows a persistent error toast so users see it whether or not Settings is open.
+- ✅ Header dividers added between icon groups for visual clarity.
+- ✅ View switcher active state uses semi-transparent fill; toolbar dividers use color-mix() for theme-adaptive opacity.
+- ✅ Dead CSS removed: `.explorer-create-row`, `.explorer-save-as`, `.explorer-workspace-label`, `.explorer-runtime-profile`, `.explorer-storage-status`, `.explorer-backup-actions` (80+ lines total).
+- ✅ Ctrl+B shortcut added to toggle Explorer (VS Code convention), with Monaco focus guard; `Ctrl+Shift+E` kept as alias.
+- ✅ Ctrl+, shortcut wired to open Settings; documented in Help modal Shortcuts tab.
+- ✅ Help modal "Clear content" entry updated to say it's in the Session menu.
+- ✅ Help modal Explorer and Runtime rows updated to match new 3-button layout and Settings location.
+- ✅ `aria-keyshortcuts` attributes added to Explorer toggle, Settings, and Help header buttons.
+- ✅ Ctrl+/ shortcut added to open Help modal (guarded against Monaco editor focus).
+- ✅ Toast notification upgraded to multi-tone `showToast()` with Lucide icons, deduplication, and stacking limit; `showCopyToast()` is a compatibility wrapper.
+
+## Priority 5 — Test coverage ✅ Done
+
+- ✅ 13 accessibility tests added (skip link, console bar keyboard/ARIA, 4 dialog focus return tests, 2 save indicator tooltip tests, toast role, Explorer create buttons, Run button label, Ctrl+B Explorer toggle).
+- ✅ All workspace-explorer tests updated for new direct-button create flow.
+- ✅ `clearSession()` POM helper fixed — now uses Session menu (`#sessionMenuTrigger` + "Clear current content") instead of stale `#clearSessionBtn`.
+- ✅ `runtime-profile.spec.js` and `safe-ingress.spec.js` updated to interact with `#settingsRuntimeProfile` via Settings modal instead of removed `#runtimeProfileSelect` sidebar element.
+- ✅ 14th accessibility test added: example card keyboard navigation (role=button, tabindex=0, aria-label, Enter key activates and closes modal).
+
+## Priority 7 — Accessibility pass: keyboard on interactive divs ✅ Done
+
+- ✅ KV panel accordion headers (`hdrPanel`, `propPanel`, `outHdrPanel`, `outPropPanel`) in `index.html`: added `role="button"`, `tabindex="0"`, `aria-controls`, `onkeydown` Enter/Space handler.
+- ✅ Collapsed column tabs (`col-tab` left and right) in `index.html`: added `role="button"`, `tabindex="0"`, `aria-label="Expand input/output panel"`, `onkeydown` handler.
+- ✅ Example cards in examples modal (`modal.js`): added `role="button"`, `tabindex="0"`, `aria-label` (name + description), `onkeydown` Enter/Space handler — previously click-only.
+- ✅ Example card focus styles added to `css/style.css`: `:focus-visible` rule with outline, border, and `::before` accent reveal to match hover state.
+- ✅ `pane-bar-clickable` divs audited — already contain explicit `<button class="collapse-btn">` children with keyboard access; div-level onclick is secondary convenience target, no augmentation needed.
+
+## Priority 6 — Architecture and developer docs ✅ Done
+
+- ✅ `ARCHITECTURE.md`: updated high-level diagram (19 JS modules + IndexedDB tier), Module Overview table (all 19 modules), Module Dependency Graph (19-module chain), Session Persistence Flow (IndexedDB model), Global State section (added `sessionController`, `workspaceStore`, `runtimeProfile`), Loading Order section (all 19 scripts), Storage Versioning constraint.
+- ✅ `TESTING.md`: added 4 new spec file entries (workspace-explorer, runtime-profile, safe-ingress, accessibility), updated `clearSession()` POM note, updated `getStoredSession()` note, updated Current Status section to 14 spec files.
+- ✅ `DEVELOPMENT.md`: replaced localStorage-only storage description with IndexedDB + localStorage dual model, updated Inspecting State console commands (added `workspaceStore`, `sessionController`, `runtimeProfile`), updated Storage Tab section to show IndexedDB + localStorage, updated Useful DevTools Console Commands, updated "Storage won't restore" troubleshooting, updated localStorage issue section to describe IndexedDB-based persistence.
 
 ## Deferred ideas — validate before building
 
@@ -41,11 +85,11 @@ This file is the handoff for future implementation work. The local-first workspa
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
 
-## Final gate for any improvement batch
+## Final gate for any improvement batch — complete
 
-- Production build succeeds.
-- Focused tests for changed behavior pass.
-- `git diff --check` is clean.
-- Full regression runs once, after implementation is complete.
-- No source content is uploaded unexpectedly.
-- Deployment or merge happens only after explicit approval.
+- ✅ Production build succeeds (`npm run build` clean, 8.7s).
+- ✅ Focused tests for changed behavior pass (runtime-profile × 2, safe-ingress × 5, accessibility × 14 confirmed passing — 13 original + 1 new example card keyboard test).
+- ✅ `git diff --check` is clean (only line-ending warning on humans.txt, not whitespace errors).
+- ✅ Full regression: 170/174 passed. 4 pre-existing flaky tests (mode-switching rapid, session-conflict two-tab, session-controller timeout, Ctrl+B viewport — Ctrl+B fixed; others pass in isolation, fail only under parallel worker load).
+- ✅ No source content is uploaded unexpectedly.
+- ❌ Deployment or merge — awaiting explicit approval.

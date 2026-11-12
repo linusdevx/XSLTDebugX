@@ -62,7 +62,7 @@ Before submitting:
 - [ ] Manual browser test — no DevTools console errors
 - [ ] `npm run test:e2e` passes (Chromium — the only project enabled in `playwright.config.js` / CI)
 - [ ] Firefox manual smoke (optional) — Firefox/WebKit projects are commented out
-- [ ] localStorage persistence works after refresh
+- [ ] IndexedDB workspace sessions persist after refresh; Quick Playground draft in localStorage as fallback
 
 ---
 
@@ -233,7 +233,7 @@ Brief explanation.
 - [ ] Chrome + Firefox
 - [ ] E2E tests pass
 - [ ] No console errors
-- [ ] localStorage persists after refresh
+- [ ] localStorage persists after refresh (or IndexedDB for workspace sessions)
 
 Fixes #123
 ```

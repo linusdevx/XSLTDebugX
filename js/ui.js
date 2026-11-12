@@ -18,17 +18,72 @@ function createRipple(e) {
 }
 
 function showCopyToast(message, duration = 1500, type = 'success') {
+  showToast(message, { tone: type === 'error' ? 'error' : 'success', duration });
+}
+
+const _TOAST_ICONS = {
+  success: 'check',
+  error:   'circle-alert',
+  warning: 'triangle-alert',
+  info:    'info',
+};
+const _TOAST_DURATIONS = { error: 6000, warning: 5000, info: 4000, success: 2500 };
+
+function showToast(message, { tone = 'success', duration, dedupeKey } = {}) {
+  let region = document.getElementById('toastRegion');
+  if (!region) {
+    region = document.createElement('div');
+    region.id = 'toastRegion';
+    region.setAttribute('aria-live', 'polite');
+    region.setAttribute('aria-atomic', 'false');
+    document.body.appendChild(region);
+  }
+
+  const key = dedupeKey || tone + ':' + message;
+  const existing = region.querySelector(`[data-dedupe="${CSS.escape(key)}"]`);
+  if (existing) existing._dismiss?.();
+
+  while (region.children.length >= 4) region.firstElementChild?._dismiss?.();
+
+  const ms = duration ?? _TOAST_DURATIONS[tone] ?? 2500;
   const toast = document.createElement('div');
-  toast.className = `copy-toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
+  toast.className = `toast toast-${tone}`;
+  toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+  toast.dataset.dedupe = key;
 
-  setTimeout(() => toast.classList.add('visible'), 10);
+  const icon = document.createElement('i');
+  icon.setAttribute('data-lucide', _TOAST_ICONS[tone] ?? 'info');
+  icon.setAttribute('width', '14');
+  icon.setAttribute('height', '14');
+  icon.setAttribute('aria-hidden', 'true');
 
-  setTimeout(() => {
-    toast.classList.remove('visible');
+  const text = document.createElement('span');
+  text.className = 'toast-message';
+  text.textContent = message;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'toast-close';
+  closeBtn.setAttribute('aria-label', 'Dismiss');
+  closeBtn.innerHTML = '<i data-lucide="x" width="12" height="12" aria-hidden="true"></i>';
+
+  toast.append(icon, text, closeBtn);
+  region.appendChild(toast);
+  reinitIcons(toast);
+
+  let dismissed = false;
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+    toast.classList.add('toast-exit');
     setTimeout(() => toast.remove(), 300);
-  }, duration);
+  }
+  toast._dismiss = dismiss;
+  closeBtn.addEventListener('click', dismiss);
+
+  setTimeout(() => toast.classList.add('toast-in'), 10);
+  const timer = setTimeout(dismiss, ms);
+  closeBtn.addEventListener('click', () => clearTimeout(timer));
 }
 
 function toggleSideCol(side) {
@@ -209,12 +264,18 @@ function toggleTheme() {
   });
 }
 
+let _helpReturnFocus = null;
+
 function openHelpModal() {
+  _helpReturnFocus = document.activeElement;
   document.getElementById('helpModalBackdrop').classList.add('open');
 }
 
 function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
+  const returnFocus = _helpReturnFocus;
+  _helpReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 // `var` keeps it on window for inline onclick=. Factory in state.js.

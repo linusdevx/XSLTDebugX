@@ -165,19 +165,12 @@ export class EditorPage {
   }
 
   /**
-   * Clear session (localStorage)
+   * Clear session — opens Session menu and clicks "Clear current content"
    */
   async clearSession() {
-    const clearBtn = this.page.locator(this.clearSessionButton);
-    if (await clearBtn.isVisible()) {
-      await clearBtn.click();
-      // Handle confirmation dialog
-      const confirmBtn = this.page.locator('button:has-text("Confirm"), button:has-text("Yes"), button:has-text("OK")');
-      if (await confirmBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await confirmBtn.first().click();
-      }
-      await this.page.waitForTimeout(500);
-    }
+    await this.page.locator('#sessionMenuTrigger').click();
+    await this.page.locator('#sessionMenu [role="menuitem"]', { hasText: 'Clear current content' }).click();
+    await this.page.waitForTimeout(300);
   }
 
   /**

@@ -1,6 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { EditorPage } from '../../utils/test-helpers.js';
 
+// Helper: open the ··· menu on the row containing rowText and click a menuitem by label.
+async function explorerRowAction(page, rowText, actionLabel) {
+  const row = page.locator('.explorer-row, .explorer-folder-row').filter({ hasText: rowText }).first();
+  await row.locator('button[aria-label="More actions"]').click();
+  // Click the menuitem inside the open (not hidden) menu
+  await page.locator('.explorer-row-menu:not([hidden]) [role="menuitem"]', { hasText: actionLabel }).click();
+}
+
 test.describe('local workspace Explorer', () => {
   let editor;
 
@@ -16,7 +24,7 @@ test.describe('local workspace Explorer', () => {
   });
 
   test('creates, edits, and reopens a named XSLT mapping', async ({ page }) => {
-    await page.getByRole('button', { name: '+ XSLT' }).click();
+    await page.locator('#explorerNewXslt').click();
     await page.locator('#explorerActionInput').fill('Order Mapping');
     await page.locator('#explorerActionConfirm').click();
 
@@ -73,12 +81,12 @@ test.describe('local workspace Explorer', () => {
     await page.getByRole('button', { name: 'Favorites' }).click();
     await expect(page.getByText('Lifecycle Mapping', { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Rename' }).click();
+    await explorerRowAction(page, 'Lifecycle Mapping', 'Rename');
     await page.locator('#explorerActionInput').fill('Renamed Mapping');
     await page.locator('#explorerActionConfirm').click();
     await expect(page.getByText('Renamed Mapping', { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Move to Trash' }).click();
+    await explorerRowAction(page, 'Renamed Mapping', 'Move to Trash');
     await page.locator('#explorerActionConfirm').click();
     await expect(page.getByText('Renamed Mapping', { exact: true })).toBeHidden();
     await page.getByRole('button', { name: 'Trash' }).click();
@@ -194,14 +202,14 @@ test.describe('local workspace Explorer', () => {
       await workspaceStore.createSession({ type: 'xslt', workspaceId: 'workspace-default', title: 'Folder Item', favorite: true, source: { xml: '<item/>', xslt: '<xsl:stylesheet/>', headers: [], properties: [] } });
       await refreshExplorer();
     });
-    await page.getByRole('button', { name: '+ Folder' }).click();
+    await page.locator('#explorerNewFolder').click();
     await page.locator('#explorerActionInput').fill('Mappings');
     await page.locator('#explorerActionConfirm').click();
     await page.getByRole('button', { name: 'Favorites', exact: true }).click();
-    await page.getByRole('button', { name: 'Move to folder' }).click();
+    await explorerRowAction(page, 'Folder Item', 'Move to folder');
     await page.locator('#explorerActionSelect').selectOption({ label: 'Mappings' });
     await page.locator('#explorerActionConfirm').click();
-    await page.getByRole('button', { name: 'Rename folder Mappings', exact: true }).click();
+    await explorerRowAction(page, 'Mappings', 'Rename');
     await page.locator('#explorerActionInput').fill('CPI Mappings');
     await page.locator('#explorerActionConfirm').click();
     await expect(page.getByText('▾ CPI Mappings')).toBeVisible();
@@ -225,11 +233,11 @@ test.describe('local workspace Explorer', () => {
       const record = await workspaceStore.createSession({ type: 'xslt', workspaceId: 'workspace-default', title: 'Disposable', source: { xml: '<x/>', xslt: '<xsl:stylesheet/>', headers: [], properties: [] } });
       await workspaceStore.moveSessionToTrash(record.id, record.revision);
     });
-    await page.getByRole('button', { name: 'About', exact: true }).click();
+    await page.getByRole('button', { name: 'About XSLTDebugX' }).click();
     await expect(page.getByRole('dialog', { name: 'About XSLTDebugX' })).toContainText('source content is not attached');
     await page.getByRole('button', { name: 'Close About' }).click();
 
-    await page.locator('#workspaceExplorer').getByRole('button', { name: 'Settings', exact: true }).click();
+    await page.locator('#settingsBtn').click();
     await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
     await page.locator('#settingsTheme').selectOption('light');
     await expect(page.locator('body')).toHaveClass(/light/);
@@ -247,7 +255,7 @@ test.describe('local workspace Explorer', () => {
       await workspaceStore.createSession({ type: 'xslt', workspaceId: 'workspace-default', folderId: child.id, title: 'Nested Mapping', source: { xml: '<nested/>', xslt: '<xsl:stylesheet/>', headers: [], properties: [] } });
       await refreshExplorer();
     });
-    await page.getByRole('button', { name: 'Move folder Parent to Trash', exact: true }).click();
+    await explorerRowAction(page, 'Parent', 'Move to Trash');
     await page.locator('#explorerActionConfirm').click();
     await expect.poll(() => page.evaluate(async () => (await workspaceStore.listFolders('workspace-default')).length)).toBe(0);
     await expect.poll(() => page.evaluate(async () => (await workspaceStore.listSessions()).length)).toBe(0);

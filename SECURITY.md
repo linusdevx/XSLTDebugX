@@ -35,6 +35,7 @@ The app ships with **no npm packages** at runtime. The full list of runtime code
 | Monaco Editor | CDN (`cdn.jsdelivr.net`) at a pinned version | MIT |
 | Lucide Icons | CDN (`cdn.jsdelivr.net`) at a pinned version | ISC |
 | pako (share-URL compression) | CDN (`cdnjs.cloudflare.com`) at a pinned version | MIT |
+| fflate (ZIP backup compression) | Bundled locally in `lib/fflate.js` at a pinned version | MIT |
 | JetBrains Mono | Google Fonts | OFL-1.1 |
 
 `npm install` only pulls **devDependencies** (Playwright, Vite, http-server, esbuild). None of them are part of the deployed bundle.

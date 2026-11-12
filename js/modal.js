@@ -24,7 +24,10 @@ function renderExSidebar() {
   reinitIcons(sidebar);
 }
 
+let _exModalReturnFocus = null;
+
 function openExModal() {
+  _exModalReturnFocus = document.activeElement;
   document.getElementById('exModalBackdrop').classList.add('open');
   document.body.classList.add('modal-open');
   document.getElementById('exModalSearch').value = '';
@@ -43,6 +46,9 @@ function openExModal() {
 function closeExModal() {
   document.getElementById('exModalBackdrop').classList.remove('open');
   document.body.classList.remove('modal-open');
+  const returnFocus = _exModalReturnFocus;
+  _exModalReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 // `var` keeps it on window so inline onclick="handleModalBackdropClick(event)" resolves at top level.
@@ -175,7 +181,7 @@ function renderExGrid() {
       // ex.icon is a Lucide name [a-z-]+ and k is a bundled key [a-zA-Z0-9]+ —
       // both internal. Add escapes if external sources ever feed this template.
       html += `
-        <div class="ex-card" data-ex-key="${k}" style="--card-accent:${accent}" onclick="loadExample('${k}')">
+        <div class="ex-card" role="button" tabindex="0" data-ex-key="${k}" style="--card-accent:${accent}" aria-label="${escHtml(ex.label)}: ${escHtml(ex.desc)}" onclick="loadExample('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadExample('${k}')}">
           <div class="ex-card-top">
             <span class="ex-card-icon"><i data-lucide="${ex.icon}" width="16" height="16"></i></span>
             <span class="ex-card-name">${escHtml(ex.label)}</span>
