@@ -15,6 +15,21 @@ function toggleWordWrap(which) {
   const btnId = which === 'xml' ? 'wrapToggleXml' : which === 'xslt' ? 'wrapToggleXslt' : 'wrapToggleOut';
   document.getElementById(btnId)?.classList.toggle('active', _wrapState[which]);
   clog(`${which.toUpperCase()} word wrap ${_wrapState[which] ? 'on' : 'off'}`, 'info');
+  void workspaceStore?.setSetting('wordWrap:' + which, _wrapState[which]).catch(() => {});
+}
+
+function _restoreWordWrap() {
+  ['xml', 'xslt', 'out'].forEach(which => {
+    workspaceStore.getSetting('wordWrap:' + which, false).then(on => {
+      if (!on) return;
+      const ed = _getPaneEd(which);
+      if (!ed) return;
+      _wrapState[which] = true;
+      ed.updateOptions({ wordWrap: 'on' });
+      const btnId = which === 'xml' ? 'wrapToggleXml' : which === 'xslt' ? 'wrapToggleXslt' : 'wrapToggleOut';
+      document.getElementById(btnId)?.classList.add('active');
+    }).catch(() => {});
+  });
 }
 
 function clearPane(which) {

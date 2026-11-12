@@ -790,10 +790,11 @@ require(['vs/editor/editor.main'], () => {
       renderKV('properties');
       renderOutputKV({}, {});
       if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
-      // Restore console height from settings (survives fresh profiles and new workspace).
+      // Restore UI preferences from settings.
       workspaceStore.getSetting('consoleHeight', 160).then(h => {
         if (typeof h === 'number' && typeof setConsoleHeight === 'function') setConsoleHeight(h);
       }).catch(() => {});
+      if (typeof _restoreWordWrap === 'function') _restoreWordWrap();
       setStatus('Ready', 'ok');
     }
   }, 200);
