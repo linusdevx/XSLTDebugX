@@ -37,11 +37,13 @@ This file is the handoff for future implementation work. The local-first workspa
 ## Priority 4 — UI/UX polish: header, footer, Explorer sidebar ✅ Done
 
 - ✅ Consolidated scattered controls: Clear moved to Session menu, Settings/About promoted to header icon buttons with tooltip shortcuts.
-- ✅ Footer redesigned: LinkedIn + GitHub icons, version button (opens About dialog), "Not affiliated with SAP SE" trademark notice.
+- ✅ Footer keeps LinkedIn personal branding, GitHub, version/About, and the "Not affiliated with SAP SE" trademark notice.
 - ✅ About dialog enriched with version, build info, and LinkedIn attribution link.
 - ✅ Explorer "+ New" dropdown replaced with 3 direct inline buttons: `+ XSLT` (blue), `+ XPath` (gold), folder icon — no menu-within-sidebar.
 - ✅ Explorer row actions consolidated into a `···` overflow menu (position:fixed, flip-up when near bottom, arrow-key navigation).
 - ✅ Explorer empty state replaced with a simple hint pointing to the create buttons.
+- ✅ New mapping/query and Save as copy dialogs offer an optional folder location when folders exist.
+- ✅ New XSLT mappings start with a compact runnable payload and XSLT 3 identity stylesheet instead of the large SalesOrder sample.
 - ✅ Runtime profile selector, storage status, and Backup/Import moved from Explorer sidebar into Settings modal — Explorer now shows only the file list.
 - ✅ Dead `refreshExplorerStorageStatus` function removed; `refreshWorkspaceSettingsStatus` in Settings covers it.
 - ✅ `workspace-storage-blocked` now shows a persistent error toast so users see it whether or not Settings is open.
@@ -51,6 +53,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ Ctrl+B shortcut added to toggle Explorer (VS Code convention), with Monaco focus guard; `Ctrl+Shift+E` kept as alias.
 - ✅ Ctrl+, shortcut wired to open Settings; documented in Help modal Shortcuts tab.
 - ✅ Help modal "Clear content" entry updated to say it's in the Session menu.
+- ✅ Session menu kept focused on New, Save/Duplicate, and Clear; Backup/Import remain in Settings.
 - ✅ Help modal Explorer and Runtime rows updated to match new 3-button layout and Settings location.
 - ✅ `aria-keyshortcuts` attributes added to Explorer toggle, Settings, and Help header buttons.
 - ✅ Ctrl+/ shortcut added to open Help modal (guarded against Monaco editor focus).
@@ -63,6 +66,11 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ `clearSession()` POM helper fixed — now uses Session menu (`#sessionMenuTrigger` + "Clear current content") instead of stale `#clearSessionBtn`.
 - ✅ `runtime-profile.spec.js` and `safe-ingress.spec.js` updated to interact with `#settingsRuntimeProfile` via Settings modal instead of removed `#runtimeProfileSelect` sidebar element.
 - ✅ 14th accessibility test added: example card keyboard navigation (role=button, tabindex=0, aria-label, Enter key activates and closes modal).
+- ✅ Examples now run immediately when selected; the redundant Auto-run preference and its stale helper/test coverage were removed.
+- ✅ Editor `Copy XPath — Exact/General` actions are copy-only in both modes and no longer replace or execute the active XPath query.
+- ✅ Global dialogs now layer above the narrow-screen Explorer drawer; About, Help, Settings, Share, and Examples remain usable while Explorer is open.
+- ✅ About feedback now links directly to GitHub's new-issue form.
+- ✅ Settings explains that workspace data is saved automatically on-device; the confusing persistent-storage request and browser-management jargon were removed.
 
 ## Priority 7 — Accessibility pass: keyboard on interactive divs ✅ Done
 
@@ -84,12 +92,28 @@ This file is the handoff for future implementation work. The local-first workspa
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
+- UI terminology cleanup: keep internal `cpi` compatibility identifiers, but gradually use **Cloud Integration** or **Runtime** in user-facing copy where that is clearer.
+- Standard XSLT positioning: validate that the Standard runtime profile, simplified Input → XSLT → Output workflow, examples, and SEO copy are understandable to users outside SAP Cloud Integration before expanding it further.
+- Toolbar and pane-action simplification: revisit only after usage feedback; prefer removing duplicate actions over adding more menus or icons.
+
+## Follow-up verification
+
+- [ ] In the deployed build, smoke-test Move to Trash, restore, empty Trash, and permanent delete with disposable sessions.
+- [ ] Review the compact footer branding in production at desktop and constrained widths.
+- [ ] Recheck the first-visit starter in a fresh browser profile; existing users correctly continue seeing their saved session instead.
+- [ ] Recheck Explorer overflow menus, toasts, and folder buttons in both themes after deployment.
+- [ ] Smoke-test one XSLT and one XPath example to confirm selection closes the library and executes immediately without an Auto-run setting.
+- [ ] In XPath mode, right-click XML and verify both Copy XPath actions only copy the path and do not alter or execute the current query.
+- [ ] With Explorer open at constrained width, open About, Help, Settings, Share, and Examples and confirm each dialog is above the drawer and returns focus correctly.
+- [ ] Confirm the About feedback link opens the upstream repository's pre-filled new-issue page in a separate tab.
+- [ ] Validate the CPI Helper Chrome extension data-transfer/share contract against the deployed build before the final release.
+- [ ] Perform a final light/dark theme and responsive-layout visual pass after Cloudflare Pages deploys the release candidate.
 
 ## Final gate for any improvement batch — complete
 
 - ✅ Production build succeeds (`npm run build` clean, 8.7s).
 - ✅ Focused tests for changed behavior pass (runtime-profile × 2, safe-ingress × 5, accessibility × 14 confirmed passing — 13 original + 1 new example card keyboard test).
 - ✅ `git diff --check` is clean (only line-ending warning on humans.txt, not whitespace errors).
-- ✅ Full regression: 170/174 passed. 4 pre-existing flaky tests (mode-switching rapid, session-conflict two-tab, session-controller timeout, Ctrl+B viewport — Ctrl+B fixed; others pass in isolation, fail only under parallel worker load).
+- ✅ Latest upstream CI regression: 175/175 passed with 4 workers.
 - ✅ No source content is uploaded unexpectedly.
-- ❌ Deployment or merge — awaiting explicit approval.
+- ✅ Workspace PR #89 merged into `dev`; production deployment / `dev` → `main` remains an explicit release decision.

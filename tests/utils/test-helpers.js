@@ -491,20 +491,6 @@ export class EditorPage {
   }
 
   /**
-   * Set auto-run checkbox for examples
-   * @param {boolean} enabled - Whether to enable auto-run
-   */
-  async setAutoRunExamples(enabled) {
-    const checkbox = this.page.locator('#exAutoRunCheckbox');
-    const isChecked = await checkbox.isChecked().catch(() => false);
-
-    if (isChecked !== enabled) {
-      await checkbox.click();
-      await this.page.waitForTimeout(500);
-    }
-  }
-
-  /**
    * Get the currently filtered example count
    */
   async getExampleCount() {

@@ -1,5 +1,4 @@
 let exActiveCat = 'all';
-let exAutoRunChecked = false;
 
 function renderExSidebar() {
   const sidebar = document.getElementById('exSidebar');
@@ -31,10 +30,6 @@ function openExModal() {
   document.getElementById('exModalBackdrop').classList.add('open');
   document.body.classList.add('modal-open');
   document.getElementById('exModalSearch').value = '';
-  const savedAutoRun = localStorage.getItem('xdebugx-auto-run-examples') === 'true';
-  exAutoRunChecked = savedAutoRun;
-  const checkbox = document.getElementById('exAutoRunCheckbox');
-  if (checkbox) checkbox.checked = savedAutoRun;
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
   // Force fresh render — examples list / icons may have changed since last open.
   _exRendered = false;
@@ -282,12 +277,8 @@ async function loadExample(key) {
     if (xpathInput) {
       if (typeof _syncXPathInput === 'function') _syncXPathInput(ex.xpathExpr);
       else xpathInput.value = ex.xpathExpr;
-      if (exAutoRunChecked) {
-        clog(`Example loaded: "${ex.label}" — XPath pre-filled, running…`, 'success');
-        setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 350);
-      } else {
-        clog(`Example loaded: "${ex.label}" — XPath pre-filled, ready to run`, 'success');
-      }
+      clog(`Example loaded: "${ex.label}" — XPath pre-filled, running…`, 'success');
+      setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 350);
     }
     if (typeof renderXPathHints === 'function') renderXPathHints(ex.xpathHints ?? null);
   } else {
@@ -297,12 +288,8 @@ async function loadExample(key) {
       setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 250);
     }
     if (typeof renderXPathHints === 'function') renderXPathHints(null);
-    if (exAutoRunChecked) {
-      clog(`Example loaded: "${ex.label}" ✓ Running…`, 'success');
-      setTimeout(() => { if (typeof runTransform === 'function') runTransform(); }, 350);
-    } else {
-      clog(`Example loaded: "${ex.label}" ✓ Ready to run`, 'success');
-    }
+    clog(`Example loaded: "${ex.label}" ✓ Running…`, 'success');
+    setTimeout(() => { if (typeof runTransform === 'function') runTransform(); }, 350);
   }
 
   if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();

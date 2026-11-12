@@ -189,8 +189,7 @@ Tests example modal, search, filtering, and loading - 14 tests (13 real + 1 SUMM
 - ✅ should load CPI example with auto-populated headers
 - ✅ should search examples by keyword
 - ✅ should return to full list when clearing search
-- ✅ should toggle auto-run checkbox and persist preference
-- ✅ should auto-run example when preference is enabled
+- ✅ should run an example when it is selected
 - ✅ should clear validation errors when loading example
 - ✅ should display correct mode indicator in modal
 - ✅ should isolate examples by category

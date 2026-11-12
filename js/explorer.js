@@ -9,7 +9,7 @@ let explorerRefreshToken = 0;
 let explorerActionResolve = null;
 let explorerActionReturnFocus = null;
 
-function requestExplorerAction({ title, message = '', label = 'Name', value = '', options = null, confirmLabel = 'Save', danger = false }) {
+function requestExplorerAction({ title, message = '', label = 'Name', value = '', options = null, optionValue = '', includeInput = false, confirmLabel = 'Save', danger = false }) {
   closeExplorerActionDialog();
   explorerActionReturnFocus = document.activeElement;
   document.getElementById('explorerActionTitle').textContent = title;
@@ -21,13 +21,14 @@ function requestExplorerAction({ title, message = '', label = 'Name', value = ''
   const select = document.getElementById('explorerActionSelect');
   const selectLabel = document.getElementById('explorerActionSelectLabel');
   const usesSelect = Array.isArray(options);
-  input.hidden = usesSelect || label === null;
+  input.hidden = (usesSelect && !includeInput) || label === null;
   inputLabel.hidden = input.hidden;
   inputLabel.textContent = label || '';
   input.value = value;
   select.hidden = !usesSelect;
   selectLabel.hidden = !usesSelect;
   select.replaceChildren(...(options || []).map(option => new Option(option.label, option.value)));
+  if (usesSelect) select.value = optionValue;
   const error = document.getElementById('explorerActionError');
   error.textContent = '';
   error.hidden = true;
@@ -36,7 +37,7 @@ function requestExplorerAction({ title, message = '', label = 'Name', value = ''
   confirm.classList.toggle('danger', danger);
   document.getElementById('explorerActionBackdrop').classList.add('open');
   document.body.classList.add('modal-open');
-  requestAnimationFrame(() => (usesSelect ? select : input.hidden ? confirm : input).focus());
+  requestAnimationFrame(() => (input.hidden ? usesSelect ? select : confirm : input).focus());
   return new Promise(resolve => { explorerActionResolve = resolve; });
 }
 
@@ -44,8 +45,11 @@ function submitExplorerActionDialog(event) {
   event?.preventDefault();
   const input = document.getElementById('explorerActionInput');
   const select = document.getElementById('explorerActionSelect');
-  let value = input.hidden ? (select.hidden ? true : select.value) : input.value.trim();
-  if (!input.hidden && !value) {
+  const inputValue = input.value.trim();
+  let value = input.hidden
+    ? (select.hidden ? true : select.value)
+    : select.hidden ? inputValue : { value: inputValue, option: select.value };
+  if (!input.hidden && !inputValue) {
     const error = document.getElementById('explorerActionError');
     error.textContent = 'Enter a name to continue.';
     error.hidden = false;
@@ -215,7 +219,7 @@ async function refreshWorkspaceSettingsStatus() {
     const format = bytes => bytes == null ? 'unknown usage' : `${(bytes / 1024 / 1024).toFixed(1)} MB used`;
     storage.textContent = status.blocked
       ? 'Upgrade blocked by another tab · close it, then reload'
-      : `${format(status.usage)} · ${status.persisted === true ? 'persistent' : status.persisted === false ? 'browser-managed' : 'persistence unknown'}`;
+      : `${format(status.usage)} · clearing browser site data removes this workspace`;
     const items = await workspaceStore.listTrash();
     trash.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
   } catch (error) {
@@ -232,20 +236,6 @@ function setWorkspaceTheme(theme) {
 async function setExplorerStartupPreference(open) {
   await workspaceStore.setSetting('explorerOpen', Boolean(open));
   toggleExplorer(Boolean(open));
-}
-
-async function requestWorkspacePersistence() {
-  const error = document.getElementById('workspaceSettingsError');
-  try {
-    if (!navigator.storage?.persist) throw new Error('Persistent storage requests are not supported by this browser.');
-    const granted = await navigator.storage.persist();
-    if (!granted) throw new Error('The browser kept storage under automatic management. Backups remain recommended.');
-    error.hidden = true;
-    await refreshWorkspaceSettingsStatus();
-  } catch (cause) {
-    error.textContent = cause.message;
-    error.hidden = false;
-  }
 }
 
 async function emptyWorkspaceTrash() {
@@ -635,14 +625,28 @@ async function openExplorerSession(id) {
 
 async function createExplorerSession(type) {
   const suggested = type === 'xpath' ? 'Untitled XPath Query' : 'Untitled XSLT Mapping';
-  const title = await requestExplorerAction({ title: `New ${type === 'xpath' ? 'XPath query' : 'XSLT mapping'}`, label: 'Name', value: suggested, confirmLabel: 'Create' });
-  if (title == null) return;
+  const workspaceId = sessionController.getCurrentSession()?.workspaceId || 'workspace-default';
+  const folders = await workspaceStore.listFolders(workspaceId);
+  const result = await requestExplorerAction({
+    title: `New ${type === 'xpath' ? 'XPath query' : 'XSLT mapping'}`,
+    label: 'Name',
+    value: suggested,
+    options: folders.length ? [
+      { value: '', label: 'Workspace root' },
+      ...folders.map(folder => ({ value: folder.id, label: explorerFolderPath(folder, folders) })),
+    ] : null,
+    includeInput: folders.length > 0,
+    confirmLabel: 'Create',
+  });
+  if (result == null) return;
+  const title = typeof result === 'object' ? result.value : result;
+  const folderId = typeof result === 'object' ? result.option || null : null;
   await flushPendingSave();
   const source = type === 'xpath'
     ? { xml: EXAMPLES.xpathNavigation.xml, expression: EXAMPLES.xpathNavigation.xpathExpr, namespaces: {}, evaluatorOptions: {} }
     : { xml: EXAMPLES.identityTransform.xml, xslt: EXAMPLES.identityTransform.xslt, headers: [], properties: [], runtimeProfile, runOptions: {} };
   const record = await workspaceStore.createSession({
-    type, workspaceId: sessionController.getCurrentSession()?.workspaceId || 'workspace-default', folderId: null, title, source,
+    type, workspaceId, folderId, title, source,
   });
   await sessionController.restoreSession(record);
   await refreshExplorer();
@@ -725,14 +729,29 @@ async function saveCurrentAsCopy() {
   const active = sessionController.activeSessions[type];
   const temporaryTitle = sessionController.getTemporaryTitle(type);
   const suggested = active ? `${active.title} Copy` : temporaryTitle || (type === 'xpath' ? 'Untitled XPath Query' : 'Untitled XSLT Mapping');
-  const title = await requestExplorerAction({ title: 'Save current work', label: 'Name', value: suggested, confirmLabel: 'Save' });
-  if (title == null) return null;
+  const workspaceId = active?.workspaceId || 'workspace-default';
+  const folders = await workspaceStore.listFolders(workspaceId);
+  const result = await requestExplorerAction({
+    title: 'Save current work',
+    label: 'Name',
+    value: suggested,
+    options: folders.length ? [
+      { value: '', label: 'Workspace root' },
+      ...folders.map(folder => ({ value: folder.id, label: explorerFolderPath(folder, folders) })),
+    ] : null,
+    optionValue: active?.folderId || '',
+    includeInput: folders.length > 0,
+    confirmLabel: 'Save',
+  });
+  if (result == null) return null;
+  const title = typeof result === 'object' ? result.value : result;
+  const folderId = typeof result === 'object' ? result.option || null : active?.folderId || null;
   await flushPendingSave();
   const source = sessionController.serializeDrafts()[type].source;
   const record = await workspaceStore.createSession({
     type,
-    workspaceId: active?.workspaceId || 'workspace-default',
-    folderId: active?.folderId || null,
+    workspaceId,
+    folderId,
     title,
     source,
   });

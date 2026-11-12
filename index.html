@@ -284,9 +284,6 @@
       <button role="menuitem" id="sessionMenuDuplicate" onclick="toggleSessionMenu(false);duplicateCurrentSession().catch(reportExplorerActionError)">Duplicate current</button>
       <span class="session-menu-separator"></span>
       <button role="menuitem" onclick="toggleSessionMenu(false);clearSavedState()">Clear current content</button>
-      <span class="session-menu-separator"></span>
-      <button role="menuitem" onclick="toggleSessionMenu(false);downloadWorkspaceBackup()">Backup workspace…</button>
-      <button role="menuitem" onclick="toggleSessionMenu(false);document.getElementById('backupImportInput').click()">Import backup…</button>
     </div>
   </div>
 
@@ -780,8 +777,8 @@
       <div class="settings-row"><span><strong>Pane layout</strong><small>Restore the default Input, Transform, and Output widths.</small></span>
         <button type="button" class="settings-action" onclick="resetAllPaneLayouts()">Reset layout</button>
       </div>
-      <div class="settings-row"><span><strong>Browser storage</strong><small id="settingsStorageStatus">Checking…</small></span>
-        <button type="button" class="settings-action" onclick="requestWorkspacePersistence()">Request persistence</button>
+      <div class="settings-row"><span><strong>Local workspace storage</strong><small id="settingsStorageStatus">Checking…</small></span>
+        <small>Saved automatically on this device</small>
       </div>
       <div class="settings-row"><span><strong>Workspace backup</strong><small>Export or merge a validated ZIP as new copies.</small></span>
         <span class="settings-inline-actions"><button type="button" class="settings-action" onclick="downloadWorkspaceBackup()">Backup</button><button type="button" class="settings-action" onclick="document.getElementById('backupImportInput').click()">Import</button></span>
@@ -845,7 +842,7 @@
       <p class="about-trademark">SAP® is a trademark of SAP SE; this project is not affiliated with or endorsed by SAP SE.</p>
       <div class="about-links">
         <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener">Source on GitHub</a>
-        <a href="https://github.com/linusdevx/XSLTDebugX/issues" target="_blank" rel="noopener">Issues / Feedback</a>
+        <a href="https://github.com/linusdevx/XSLTDebugX/issues/new" target="_blank" rel="noopener" aria-label="Report an issue or share feedback on GitHub">Report issue / feedback</a>
         <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
       </div>
     </div>
@@ -862,10 +859,6 @@
         <i data-lucide="search" width="14" height="14" class="ex-search-icon"></i>
         <input class="ex-modal-search" id="exModalSearch" placeholder="Search examples…" oninput="filterExamples()" autocomplete="off">
       </div>
-      <label class="ex-auto-run-label" title="Automatically run examples after loading them">
-        <input type="checkbox" id="exAutoRunCheckbox" aria-label="Auto-run loaded examples" onchange="exAutoRunChecked = this.checked; localStorage.setItem('xdebugx-auto-run-examples', this.checked)">
-        Auto-run
-      </label>
       <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
     <div class="ex-modal-body">
@@ -898,10 +891,10 @@
     <button type="button" id="saveIndicatorAction" hidden onclick="handleSaveIndicatorAction(event)">Retry</button>
   </div>
   <div class="stat stat-github-link">
-    <a href="https://www.linkedin.com/in/sunilph/" target="_blank" rel="noopener" class="stat-link" title="Sunil Pharswan on LinkedIn">
+    <a href="https://www.linkedin.com/in/sunilph/" target="_blank" rel="noopener" class="stat-link" aria-label="Sunil Pharswan on LinkedIn" title="Sunil Pharswan on LinkedIn">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
     </a>
-    <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" title="View source on GitHub">
+    <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener" class="stat-link" aria-label="View XSLTDebugX source on GitHub" title="View source on GitHub">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
     </a>
   </div>

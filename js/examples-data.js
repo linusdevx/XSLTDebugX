@@ -23,45 +23,15 @@ const EXAMPLES = {
     desc: 'Copy XML as-is — foundation for all CPI mappings',
     cat:  'transform',
     xml: `<?xml version="1.0" encoding="UTF-8"?>
-<SalesOrder>
-  <Header>
-    <OrderId>SO-2024-001</OrderId>
-    <Customer>C-10042</Customer>
-    <OrderDate>2024-03-15</OrderDate>
-    <Currency>USD</Currency>
-  </Header>
-  <Items>
-    <Item>
-      <LineNo>10</LineNo>
-      <Material>MAT-001</Material>
-      <Qty>5</Qty>
-      <UnitPrice>120.00</UnitPrice>
-    </Item>
-    <Item>
-      <LineNo>20</LineNo>
-      <Material>MAT-002</Material>
-      <Qty>3</Qty>
-      <UnitPrice>85.50</UnitPrice>
-    </Item>
-  </Items>
-</SalesOrder>`,
+<order>
+  <id>1001</id>
+  <status>NEW</status>
+</order>`,
     xslt: `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="3.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" indent="yes"/>
-
-  <!--
-    Identity Transform — copies every node and attribute unchanged.
-    The foundation for all CPI mappings: start here, then override
-    only the templates you need to modify.
-  -->
-
-  <xsl:template match="@* | node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@* | node()"/>
-    </xsl:copy>
-  </xsl:template>
-
+  <xsl:mode on-no-match="shallow-copy"/>
 </xsl:stylesheet>`
   },
 

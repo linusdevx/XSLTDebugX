@@ -88,6 +88,7 @@ applyTo:
 
 ### Copy XPath Feature
 - **getXPathAtCursor(editor)** → returns `{ indexed, general }` (`xpath.js`)
+- **Right-click copy actions** → copy only; they do not replace or execute the active query
 - **_buildXPathFromNode(el, indexed)** → generates XPath (`xpath.js`)
 - **_getXPathDomNodeAtOffset(xmlSrc, offset)** → finds element at cursor (`xpath.js`)
 - **_findNodeRange(xmlSrc, el, occurrenceIndex)** → finds start/end offsets (`xpath.js`)
