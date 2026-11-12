@@ -4,7 +4,7 @@ import { sampleData } from '../../fixtures/sample-data.js';
 
 /**
  * Examples Library Modal Tests
- * Tests the Examples feature: open modal, load examples, search, auto-run, mode switching
+ * Tests the Examples feature: open modal, load and run examples, search, mode switching
  */
 
 test.describe('Examples Library Workflow', () => {
@@ -131,36 +131,9 @@ test.describe('Examples Library Workflow', () => {
     expect(clearedCount).toBe(initialCount);
   });
 
-  test('should toggle auto-run checkbox and persist preference', async ({ page: testPage }) => {
-    await page.openExamplesModal();
-
-    // Enable auto-run
-    await page.setAutoRunExamples(true);
-    await testPage.waitForTimeout(300);
-
-    // Verify preference is saved in localStorage
-    const autoRunPref = await testPage.evaluate(() => {
-      return localStorage.getItem('xdebugx-auto-run-examples');
-    });
-    expect(autoRunPref).toBeDefined();
-
-    // Close and reopen modal
-    await page.closeExamplesModal();
-    await testPage.waitForTimeout(500);
-    await page.openExamplesModal();
-  });
-
-  test('should auto-run example when preference is enabled', async ({ page: testPage }) => {
-    // Enable auto-run before opening modal
-    await page.openExamplesModal();
-    await page.setAutoRunExamples(true);
-    await page.closeExamplesModal();
-
-    // Load an example with auto-run enabled
+  test('should run an example when it is selected', async ({ page: testPage }) => {
     await page.openExamplesModal();
     await page.loadExample('identityTransform');
-
-    // Wait for auto-run to execute
     await testPage.waitForTimeout(2000);
 
     // Output should be populated

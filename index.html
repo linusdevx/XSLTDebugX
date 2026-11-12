@@ -842,7 +842,7 @@
       <p class="about-trademark">SAP® is a trademark of SAP SE; this project is not affiliated with or endorsed by SAP SE.</p>
       <div class="about-links">
         <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener">Source on GitHub</a>
-        <a href="https://github.com/linusdevx/XSLTDebugX/issues" target="_blank" rel="noopener">Issues / Feedback</a>
+        <a href="https://github.com/linusdevx/XSLTDebugX/issues/new" target="_blank" rel="noopener" aria-label="Report an issue or share feedback on GitHub">Report issue / feedback</a>
         <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
       </div>
     </div>
@@ -859,10 +859,6 @@
         <i data-lucide="search" width="14" height="14" class="ex-search-icon"></i>
         <input class="ex-modal-search" id="exModalSearch" placeholder="Search examples…" oninput="filterExamples()" autocomplete="off">
       </div>
-      <label class="ex-auto-run-label" title="Automatically run examples after loading them">
-        <input type="checkbox" id="exAutoRunCheckbox" aria-label="Auto-run loaded examples" onchange="exAutoRunChecked = this.checked; localStorage.setItem('xdebugx-auto-run-examples', this.checked)">
-        Auto-run
-      </label>
       <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
     <div class="ex-modal-body">

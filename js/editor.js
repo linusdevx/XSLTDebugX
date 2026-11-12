@@ -360,20 +360,10 @@ require(['vs/editor/editor.main'], () => {
     });
   }
 
-  // XSLT mode logs + copies; XPath mode also fills the bar and runs.
+  // Copy actions should never replace or execute the user's current XPath query.
   function _handleCopyXPath(xpath, label) {
-    if (!modeManager.isXpath) {
-      clog(`ƒx  ${label}: ${xpath}`, 'info');
-      _copyXPathToClipboard(xpath, label);
-    } else {
-      const input = document.getElementById('xpathInput');
-      if (input) {
-        input.value = xpath;
-        input.dispatchEvent(new Event('input'));
-      }
-      if (typeof runXPath === 'function') runXPath();
-      _copyXPathToClipboard(xpath, label);
-    }
+    clog(`ƒx  ${label}: ${xpath}`, 'info');
+    _copyXPathToClipboard(xpath, label);
   }
 
   eds.xml.addAction({

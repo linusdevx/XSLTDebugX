@@ -1891,7 +1891,9 @@
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.55);
       backdrop-filter: blur(3px);
-      z-index: 2000;
+      /* Global dialogs must sit above the narrow-screen Explorer drawer (2100)
+         and header menus (5000), while toasts remain the top notification layer. */
+      z-index: 6000;
       align-items: center; justify-content: center;
     }
     .ex-modal-backdrop.open {
@@ -1962,23 +1964,6 @@
       flex-shrink: 0;
     }
     .ex-modal-close:hover { color: var(--text-primary); border-color: var(--border); background: var(--hover-bg-strong); }
-
-    /* Auto-run checkbox */
-    .ex-auto-run-label {
-      display: flex; align-items: center; gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 11px; color: var(--text-dim);
-      cursor: pointer; flex-shrink: 0;
-      margin-left: auto;
-      padding: 4px 8px; border-radius: var(--r-sm);
-      transition: background var(--t-fast);
-      user-select: none;
-    }
-    .ex-auto-run-label:hover { background: var(--hover-bg-strong); }
-    .ex-auto-run-label input[type="checkbox"] {
-      cursor: pointer; width: 14px; height: 14px;
-      accent-color: var(--sap-blue);
-    }
 
     /* Modal body: sidebar + grid */
     .ex-modal-body {
