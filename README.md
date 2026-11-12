@@ -2,7 +2,7 @@
 
 ![XSLT 3.0](https://img.shields.io/badge/XSLT-3.0-blue?logo=w3c) ![XPath 3.1](https://img.shields.io/badge/XPath-3.1-blue) ![Saxon-JS](https://img.shields.io/badge/Saxon--JS-2.x-green) [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](LICENSE) [![CI](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/e2e-tests.yml) [![CodeQL](https://github.com/linusdevx/XSLTDebugX/actions/workflows/codeql.yml/badge.svg)](https://github.com/linusdevx/XSLTDebugX/actions/workflows/codeql.yml) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/linusdevx/XSLTDebugX/badge)](https://scorecard.dev/viewer/?uri=github.com/linusdevx/XSLTDebugX) [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025e8c?logo=dependabot&logoColor=white)](.github/dependabot.yml) ![Built with Vite](https://img.shields.io/badge/built%20with-vite-646cff?logo=vite&logoColor=white) ![Deployed on Cloudflare Pages](https://img.shields.io/badge/deployed%20on-Cloudflare%20Pages-f38020?logo=cloudflare&logoColor=white) ![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen) [![No Telemetry](https://img.shields.io/badge/telemetry-none-brightgreen)](SECURITY.md)
 
-> A browser-based XSLT 3.0 IDE and XPath evaluator built specifically for SAP Cloud Integration (CPI) developers. Test and debug XSLT mappings and XPath expressions locally — with full CPI runtime simulation — before ever deploying to your tenant.
+> A local-first XSLT 3.0 IDE and XPath evaluator for SAP Cloud Integration (CPI) and standard XSLT workflows. Test mappings, organize reusable cases, and debug runtime data entirely in your browser.
 
 **[🚀 Try it now: xsltdebugx.pages.dev](https://xsltdebugx.pages.dev)**
 
@@ -84,13 +84,16 @@ For the full local dev / debugging guide, see **[.github/docs/DEVELOPMENT.md](.g
 A condensed highlight reel — the full catalog (200+ features with file/function pointers) lives in **[.github/docs/reference/features.md](.github/docs/reference/features.md)**.
 
 - **Two modes, one app** — XSLT transform mode and XPath evaluator mode share the XML editor; loading an example switches automatically.
+- **Local workspace Explorer** — save named XSLT and XPath cases, organize them in folders, search, favorite, duplicate, move, trash, and restore without an account.
 - **Monaco Editor** — XML/XSLT syntax highlighting, bracket-pair colorisation, live validation with inline squiggles, format/minify, word-wrap toggle, drag-drop file load.
 - **CPI runtime simulation** — Headers and Properties injected as `xsl:param` (read via `$name`, exactly like real CPI), `cpi:setHeader`/`cpi:setProperty` fully evaluated, `$exchange` auto-injected, `xsl:message` streamed to console with `terminate="yes"` shown as warning. Deep dive: **[.github/docs/TRANSFORM.md](.github/docs/TRANSFORM.md)**.
+- **Runtime profiles** — SAP CPI mode includes Headers and Properties; Standard XSLT mode provides a simpler XML, XSLT, and Output workflow.
 - **XPath 3.1 evaluator** — namespace bindings (`xs`, `fn`, `math`, `map`, `array`) auto-provided; live syntax colorisation as you type; expression history (last 20); amber highlighting on matched nodes; right-click "Copy XPath — Exact / General".
 - **Console** — colour-coded info/success/warn/error with timestamps, search, type filter, minimize/restore with error-count badge, auto-expand on errors.
 - **Examples library** — built-in examples across 6 categories (Data Transformation, Aggregation, Format Conversion, XSLT 3.0 Advanced, SAP CPI Patterns, XPath Explorer); searchable; one-click load.
-- **Share** — XML + XSLT + headers + properties encoded in a URL; never hits a server. (XPath mode is not shareable.)
-- **Session persistence** — everything auto-saved to `localStorage` 800ms after you stop typing; **Clear Session** is mode-aware.
+- **Safe sharing** — XML, XSLT, headers, properties, and runtime profile are encoded in the URL and never uploaded by XSLTDebugX. Recipients can preview temporarily or save an explicit copy; XPath mode is not shareable.
+- **Local persistence** — quick-playground drafts and named sessions auto-save locally. Workspace data uses IndexedDB and stays in the current browser profile.
+- **Backup and restore** — export a validated ZIP of saved work and import it as new copies without overwriting existing sessions.
 - **Output detection** — auto-detects XML / JSON / plain text from the actual output, switches Monaco language, updates download filename.
 - **Theme toggle, column collapse, status bar with cursor position, help modal, responsive layout.**
 
@@ -147,7 +150,7 @@ Tested working with the current XSLTDebugX share-URL format. The plugin is third
 **Partially.** After first load, the app works offline from browser cache. Monaco Editor and fonts come from CDN — offline mode may have degraded styling. Saxon-JS is bundled locally and works offline.
 
 ### Can I save my work?
-**Three ways:** auto-save to `localStorage`, **Share** URL with full session, or **Download** individual panes as files.
+**Yes.** Use the Explorer for named local sessions and folders, export a workspace ZIP backup, create a Share URL, or download individual panes. Browser data is device/profile-specific, so keep a backup for important work.
 
 ### Why is my XSLT slow?
 Large XML (>100 KB) or complex recursive templates can be slow — Saxon-JS is interpreted JavaScript, not compiled. Use `xsl:message` to identify bottleneck templates.

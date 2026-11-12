@@ -17,9 +17,9 @@ function createRipple(e) {
   setTimeout(() => circle.remove(), 600);
 }
 
-function showCopyToast(message, duration = 1500) {
+function showCopyToast(message, duration = 1500, type = 'success') {
   const toast = document.createElement('div');
-  toast.className = 'copy-toast';
+  toast.className = `copy-toast ${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
 
@@ -34,6 +34,9 @@ function showCopyToast(message, duration = 1500) {
 function toggleSideCol(side) {
   const col = document.getElementById(side === 'left' ? 'colLeft' : 'colRight');
   col.classList.toggle('collapsed');
+  syncWorkspaceViewButtons();
+  if (typeof updatePaneSplitters === 'function') updatePaneSplitters();
+  if (typeof restorePaneLayout === 'function') void restorePaneLayout();
   scheduleSave();
   _layoutAfterTransition(col, 400);
 }
@@ -225,20 +228,105 @@ function switchHelpTab(tab) {
   document.getElementById('helpTabShortcuts').classList.toggle('active', tab === 'shortcuts');
 }
 
+function syncMobilePaneNav() {
+  const nav = document.getElementById('mobilePaneNav');
+  const workspace = document.querySelector('.workspace');
+  if (!nav || !workspace) return;
+  const centerButton = nav.querySelector('[data-pane="colCenter"]');
+  const labels = modeManager?.isXpath
+    ? { colLeft: 'Query + Input', colCenter: 'Transform', colRight: 'Results' }
+    : { colLeft: 'Input', colCenter: 'Transform', colRight: 'Output' };
+  nav.querySelectorAll('button').forEach(button => { button.textContent = labels[button.dataset.pane]; });
+  if (centerButton) centerButton.hidden = Boolean(modeManager?.isXpath);
+  const visible = [...nav.querySelectorAll('button:not([hidden])')];
+  const workspaceLeft = workspace.getBoundingClientRect().left;
+  const active = visible.reduce((closest, button) => {
+    const pane = document.getElementById(button.dataset.pane);
+    const distance = pane?.classList.contains('collapsed') ? Infinity : Math.abs(pane.getBoundingClientRect().left - workspaceLeft);
+    return distance < closest.distance ? { button, distance } : closest;
+  }, { button: visible[0], distance: Infinity }).button;
+  visible.forEach(button => {
+    const selected = button === active;
+    button.classList.toggle('active', selected);
+    if (selected) button.setAttribute('aria-current', 'true');
+    else button.removeAttribute('aria-current');
+  });
+}
+
+function focusMobilePane(id) {
+  const workspace = document.querySelector('.workspace');
+  const pane = document.getElementById(id);
+  if (!workspace || !pane || window.innerWidth > 767) return;
+  pane.classList.remove('collapsed');
+  workspace.scrollTo({ left: pane.offsetLeft, behavior: 'smooth' });
+  setTimeout(() => {
+    syncMobilePaneNav();
+    eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout();
+  }, 250);
+}
+
+function setWorkspaceView(view) {
+  const left = document.getElementById('colLeft');
+  const center = document.getElementById('colCenter');
+  const right = document.getElementById('colRight');
+  if (!left || !center || !right) return;
+  if (modeManager.isXpath) {
+    left.classList.toggle('collapsed', view === 'output');
+    center.classList.add('collapsed');
+    right.classList.toggle('collapsed', view === 'edit');
+  } else {
+    left.classList.toggle('collapsed', view === 'output');
+    center.classList.toggle('collapsed', view === 'output');
+    right.classList.toggle('collapsed', view === 'edit');
+  }
+  syncWorkspaceViewButtons();
+  if (typeof updatePaneSplitters === 'function') updatePaneSplitters();
+  scheduleSave();
+  setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 80);
+}
+
+function syncWorkspaceViewButtons() {
+  const leftCollapsed = document.getElementById('colLeft')?.classList.contains('collapsed');
+  const rightCollapsed = document.getElementById('colRight')?.classList.contains('collapsed');
+  const view = leftCollapsed ? 'output' : rightCollapsed ? 'edit' : 'all';
+  document.querySelectorAll('[data-workspace-view]').forEach(button => {
+    const active = button.dataset.workspaceView === view;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  const labels = modeManager?.isXpath
+    ? { edit: 'Query and input', all: 'Query and results', output: 'Results' }
+    : { edit: 'Input and transform', all: 'All panes', output: 'Output' };
+  document.querySelectorAll('[data-workspace-view]').forEach(button => {
+    button.title = labels[button.dataset.workspaceView];
+    button.setAttribute('aria-label', labels[button.dataset.workspaceView]);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const workspace = document.querySelector('.workspace');
+  workspace?.addEventListener('scroll', syncMobilePaneNav, { passive: true });
+  window.addEventListener('resize', syncMobilePaneNav);
+  syncMobilePaneNav();
+  syncWorkspaceViewButtons();
+});
+
 (function _initMobileBanner() {
   const DISMISSED_KEY = 'xdebugx-mobile-notice-dismissed';
   // Only show on actual mobile/tablet: small screen AND touch device.
   // Avoids false positives on touch-enabled laptops or narrow browser windows.
-  const isSmallScreen = window.screen.width < 1024 || window.screen.height < 700;
+  const isSmallScreen = window.matchMedia('(max-width: 900px)').matches;
   const isTouch = navigator.maxTouchPoints > 1;
   if (!(isSmallScreen && isTouch) || localStorage.getItem(DISMISSED_KEY)) return;
 
   const banner = document.createElement('div');
   banner.className = 'mobile-banner';
+  banner.setAttribute('role', 'note');
+  banner.setAttribute('aria-label', 'Desktop browser recommended');
   const msg = document.createElement('span');
-  msg.textContent = '💡 XSLTDebugX works best on a desktop browser — Monaco editor and 3-column layout need more space.';
+  msg.textContent = 'Desktop recommended: You can view and make quick edits on mobile, but for reliable XSLT/XPath debugging, use a laptop or desktop browser.';
   const btn = document.createElement('button');
-  btn.textContent = 'Got it';
+  btn.textContent = 'Continue on mobile';
   btn.addEventListener('click', () => {
     banner.remove();
     localStorage.setItem(DISMISSED_KEY, '1');

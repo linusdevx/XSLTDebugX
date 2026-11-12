@@ -24,14 +24,27 @@ class ModeManager {
 
     const previousMode = this.mode;
     try {
+      // Commit the outgoing mode before the mode flag changes. The save chain
+      // serializes this with the new mode's subsequent autosave.
+      if (typeof flushPendingSave === 'function') void flushPendingSave().catch(() => {});
       this.cleanup();
       this.saveColumnState();
       this.mode = newMode;
       this.setup();
       this.updateUI();
+      window.sessionController?._updateCurrentItemLabel();
+      void window.sessionController?.syncCurrentPersistenceIndicator?.();
+      if (typeof syncExplorerPaneLayout === 'function') {
+        syncExplorerPaneLayout(document.getElementById('workspaceExplorer')?.classList.contains('open'));
+      }
+      if (typeof restorePaneLayout === 'function') void restorePaneLayout();
       this.layout();
       this.trackModeChange(previousMode, newMode);
-      scheduleSave();
+      if (window.sessionController?.persistModeSelection) {
+        void window.sessionController.persistModeSelection(newMode).catch(error => {
+          console.warn('Could not remember the selected mode:', error);
+        });
+      }
       return true;
     } catch (error) {
       console.error('❌ Error switching mode:', error);
@@ -121,6 +134,8 @@ class ModeManager {
     this.updateRunButton();
     this.updateStatusBar();
     this.updateConsolePosition();
+    if (typeof syncMobilePaneNav === 'function') syncMobilePaneNav();
+    if (typeof syncWorkspaceViewButtons === 'function') syncWorkspaceViewButtons();
   }
 
   updateButtonStates() {
@@ -134,16 +149,23 @@ class ModeManager {
   }
 
   updatePanelVisibility() {
-    const visibility = this.isXslt ? '' : 'none';
+    const visibility = this.isXslt && (typeof isCpiRuntimeProfile !== 'function' || isCpiRuntimeProfile()) ? '' : 'none';
 
     const hdrPanel = document.getElementById('hdrPanel');
     const propPanel = document.getElementById('propPanel');
     const outSection = document.getElementById('outputSection');
     const shareBtn = document.getElementById('shareBtn');
+    const runtimeStatus = document.getElementById('runtimeProfileStatus');
 
     if (hdrPanel) hdrPanel.style.display = visibility;
     if (propPanel) propPanel.style.display = visibility;
     if (outSection) outSection.style.display = visibility;
+    // Output itself remains available in Standard XSLT; only CPI metadata panels hide.
+    if (outSection && this.isXslt) outSection.style.display = '';
+    const outHdrPanel = document.getElementById('outHdrPanel');
+    const outPropPanel = document.getElementById('outPropPanel');
+    if (outHdrPanel) outHdrPanel.style.display = visibility;
+    if (outPropPanel) outPropPanel.style.display = visibility;
     // XPath Results panel: persistent in XPath mode (empty-state until first run),
     // hidden in XSLT mode. Mirror of outputSection gating.
     const xpathPanel = document.getElementById('xpathResultsPanel');
@@ -152,6 +174,7 @@ class ModeManager {
       shareBtn.disabled = this.isXpath;
       shareBtn.title = this.isXpath ? 'Sharing is only available in XSLT mode' : '';
     }
+    if (runtimeStatus) runtimeStatus.hidden = this.isXpath;
 
     const bar = document.getElementById('xpathBar');
     if (bar) bar.style.display = this.isXpath ? '' : 'none';

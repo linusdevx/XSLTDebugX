@@ -4,9 +4,39 @@ function triggerUpload(pane) {
   document.getElementById(id).click();
 }
 
+const USER_TEXT_FILE_MAX_BYTES = 25 * 1024 * 1024;
+
+function validateUserTextFile(file) {
+  if (!file || !Number.isFinite(file.size) || file.size < 0) throw new Error('The selected file is invalid.');
+  if (file.size > USER_TEXT_FILE_MAX_BYTES) throw new Error('File exceeds the 25 MiB editor limit.');
+}
+
+function reportFileIngressError(file, error) {
+  const name = file?.name || 'File';
+  clog(`${name} could not be opened: ${error.message}`, 'error');
+  if (typeof showCopyToast === 'function') showCopyToast(`${name} could not be opened: ${error.message}`, 3500, 'error');
+}
+
 // `verb` lets the caller distinguish "Uploaded" from "Dropped" while keeping routing identical.
-function _applyFileContent(text, file, pane, verb) {
+async function _applyFileContent(text, file, pane, verb) {
+  try { validateUserTextFile(file); }
+  catch (error) { reportFileIngressError(file, error); return; }
+  if (typeof text !== 'string' || text.includes('\0')) {
+    reportFileIngressError(file, new Error('Only text XML/XSLT files are supported.'));
+    return;
+  }
   const sizeKB = formatFileSize(file.size);
+  try {
+    await flushPendingSave();
+  } catch (error) {
+    clog(`Could not save the current item before opening ${file.name}: ${error.message}`, 'error');
+    return;
+  }
+  if (pane === 'xslt' && modeManager.isXpath) modeManager.setMode('XSLT');
+  sessionController.beginTemporary(
+    modeManager.isXpath ? 'xpath' : 'xslt',
+    file.name.replace(/\.(xml|xsl|xslt|txt)$/i, '') || file.name,
+  );
   if (pane === 'xml') {
     const targetModel = modeManager.currentModel;
     if (!targetModel) { clog('Editor not ready — cannot upload file', 'error'); return; }
@@ -17,15 +47,21 @@ function _applyFileContent(text, file, pane, verb) {
     clog('Editor not ready — cannot upload file', 'error');
     return;
   }
-  scheduleSave();
+  setSaveIndicator('temporary');
   clog(`${verb}: ${file.name} (${sizeKB} KB) → ${pane.toUpperCase()} pane`, 'success');
 }
 
 function handleUpload(event, pane) {
   const file = event.target.files[0];
   if (!file) return;
+  try { validateUserTextFile(file); }
+  catch (error) {
+    event.target.value = '';
+    reportFileIngressError(file, error);
+    return;
+  }
   const reader = new FileReader();
-  reader.onload  = e => _applyFileContent(e.target.result, file, pane, 'Uploaded');
+  reader.onload  = e => { void _applyFileContent(e.target.result, file, pane, 'Uploaded'); };
   reader.onerror = e => clog(`Failed to read file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
   reader.readAsText(file);
 }
@@ -68,8 +104,10 @@ function setupDragDrop(editorWrapId, pane) {
     const file = e.dataTransfer.files[0];
     if (!file) return;
     if (pane === 'out') { clog('Cannot drop onto Output pane', 'warn'); return; }
+    try { validateUserTextFile(file); }
+    catch (error) { reportFileIngressError(file, error); return; }
     const reader = new FileReader();
-    reader.onload  = ev => _applyFileContent(ev.target.result, file, pane, 'Dropped');
+    reader.onload  = ev => { void _applyFileContent(ev.target.result, file, pane, 'Dropped'); };
     reader.onerror = e  => clog(`Failed to read dropped file: ${file.name} (${e.target.error?.name ?? 'unknown error'})`, 'error');
     reader.readAsText(file);
   });

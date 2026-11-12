@@ -33,8 +33,11 @@ function resolveBuildInfo() {
 
 // Exact load order from index.html — critical for global namespace correctness
 const JS_MODULES = [
+  'js/workspace-store.js',
   'js/state.js',
   'js/mode-manager.js',
+  'js/runtime-profile.js',
+  'js/session-controller.js',
   'js/validate.js',
   'js/panes.js',
   'js/transform.js',
@@ -43,6 +46,9 @@ const JS_MODULES = [
   'js/files.js',
   'js/ui.js',
   'js/share.js',
+  'js/explorer.js',
+  'js/pane-layout.js',
+  'js/backup.js',
   'js/xpath.js',
   'js/themes.js',
   'js/editor.js',
@@ -121,6 +127,7 @@ export default defineConfig({
         // ── Vendor + config files ─────────────────────────────────────────
         mkdirSync('dist/lib', { recursive: true });
         copyFileSync('lib/SaxonJS2.js', 'dist/lib/SaxonJS2.js');
+        copyFileSync('node_modules/fflate/umd/index.js', 'dist/lib/fflate.js');
         copyFileSync('_headers', 'dist/_headers');
         if (existsSync('_redirects')) copyFileSync('_redirects', 'dist/_redirects');
         if (existsSync('favicon.svg')) copyFileSync('favicon.svg', 'dist/favicon.svg');
@@ -130,6 +137,7 @@ export default defineConfig({
         if (existsSync('robots.txt')) copyFileSync('robots.txt', 'dist/robots.txt');
         if (existsSync('llms.txt')) copyFileSync('llms.txt', 'dist/llms.txt');
         if (existsSync('humans.txt')) copyFileSync('humans.txt', 'dist/humans.txt');
+        if (existsSync('THIRD_PARTY_NOTICES.md')) copyFileSync('THIRD_PARTY_NOTICES.md', 'dist/THIRD_PARTY_NOTICES.md');
         // RFC 9116 security.txt — must be served from /.well-known/
         if (existsSync('.well-known/security.txt')) {
           mkdirSync('dist/.well-known', { recursive: true });
@@ -157,6 +165,7 @@ export default defineConfig({
         let html = readFileSync('index.html', 'utf8');
         html = html.replace(/<script src="js\/[^"]+"><\/script>\n?/g, '');
         html = html.replace('src="./lib/SaxonJS2.js"', 'src="lib/SaxonJS2.js"');
+        html = html.replace('src="./node_modules/fflate/umd/index.js"', 'src="lib/fflate.js"');
         if (cssFile) html = html.replace('href="css/style.css"', `href="${cssFile}"`);
         html = html.replace('</body>', `  <script src="${jsFilename}"></script>\n</body>`);
         // Refresh JSON-LD dateModified — keeps SEO signals current without manual edits
