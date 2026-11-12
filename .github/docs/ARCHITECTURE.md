@@ -95,7 +95,7 @@ dist/
 | Module | Responsibility | Key Functions |
 |--------|-----------------|----------------|
 | **workspace-store.js** | IndexedDB adapter — sessions, folders, drafts, settings, trash, backup ZIP | `init()`, `createSession()`, `updateSession()`, `listSessions()`, `putDraft()`, `getDraft()`, `getSetting()`, `setSetting()`, `getStorageStatus()` |
-| **state.js** | Global state, shared utilities, quick-playground localStorage persistence, console | `clog()`, `scheduleSave()`, `loadSavedState()`, `setStatus()`, `logError()`, `guardReady()` |
+| **state.js** | Global state, shared utilities, console, save scheduling, session reset | `clog()`, `scheduleSave()`, `setStatus()`, `logError()`, `guardReady()`, `_withSuppress()` |
 | **mode-manager.js** | Centralized mode management (XSLT vs XPath) | `setMode()`, `isXpath`, `isXslt`, `currentModel` |
 | **runtime-profile.js** | Runtime profile state (`cpi` / `standard`), syncs to Settings modal | `setRuntimeProfile()`, `isCpiRuntimeProfile()` |
 | **session-controller.js** | Active session lifecycle — restore, save, flush, draft management, mode-aware switching | `restoreSession()`, `saveChain()`, `flushActiveSession()`, `restoreModeDraft()`, `beginTemporary()` |

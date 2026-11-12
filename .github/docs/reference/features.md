@@ -505,15 +505,14 @@ applyTo:
 
 ### Session Restoration Workflow
 1. Page loads, Monaco loader script runs
-2. `loadSavedState()` reads from localStorage
-3. Both XML models created with saved content (xmlXslt, xmlXpath)
-4. Editors initialized with saved XSLT content
-5. `xpathEnabled` flag restored from saved session
-6. XML editor model swapped to match restored mode
-7. KV panels populated with saved headers/properties
-8. Column collapse states applied
-9. XPath expression restored to input
-10. If share hash present in URL, overrides saved state
+2. Both XML models created with default example content
+3. Editors initialized with default XSLT content
+4. Saxon-JS loads asynchronously
+5. On Saxon ready: `sessionController.restoreInitialSession()` loads from IndexedDB
+6. Active sessions and drafts restored to editors
+7. Mode (XSLT / XPath) restored from stored setting
+8. KV panels populated with saved headers/properties
+9. If share hash present in URL, overrides local session and opens incoming share dialog
 
 ---
 

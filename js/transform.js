@@ -231,20 +231,6 @@ const _KV_PANEL_MAP = {
   outPropPanel: { rowsId: 'outPropRows', childSelector: '.kv-row-out' },
 };
 
-function toggleKVSearch(panelId) {
-  // Legacy no-op — search is now an always-visible inline input in the panel header.
-  // Kept as a stub so any stray callers don't throw; can be removed once nothing references it.
-  void panelId;
-}
-
-function clearKVSearch(panelId) {
-  const input = document.getElementById(panelId + 'Search');
-  if (!input) return;
-  input.value = '';
-  _applyKVFilter(panelId);
-  input.focus();
-}
-
 // Toggle .kv-hidden on each row child by substring match against name + value.
 function _applyKVFilter(panelId) {
   const cfg = _KV_PANEL_MAP[panelId];
