@@ -5,7 +5,7 @@ require.config({
 document.getElementById('loadTxt').textContent = 'Loading Monaco Editor…';
 
 // Parse share hash before editors initialize so _pendingShareData is set in time.
-loadFromShareHash();
+window._pendingShareNeedsRestore = loadFromShareHash();
 
 require(['vs/editor/editor.main'], () => {
   document.getElementById('loadTxt').textContent = 'Defining theme…';
@@ -52,7 +52,8 @@ require(['vs/editor/editor.main'], () => {
     }
   };
 
-  // Skip session restore when a share link is pending — applyShareData handles init.
+  // Legacy combined-session restore is intentionally disabled. Quick Playground
+  // drafts restore asynchronously from IndexedDB after Saxon-JS is ready.
   const _savedSession = window._pendingShareData ? null : loadSavedState();
 
   xmlModelXslt = monaco.editor.createModel(
@@ -788,7 +789,7 @@ require(['vs/editor/editor.main'], () => {
 
       // Share link takes priority over saved session.
       if (window._pendingShareData) {
-        applyShareData(window._pendingShareData);
+        openIncomingShareDialog(window._pendingShareData);
       } else if (_savedSession) {
         if (Array.isArray(_savedSession.headers)) {
           _savedSession.headers.forEach(r => {
@@ -853,6 +854,8 @@ require(['vs/editor/editor.main'], () => {
         const _defaultExpr = EXAMPLES.xpathNavigation?.xpathExpr ?? '';
         if (typeof _syncXPathInput === 'function') _syncXPathInput(_defaultExpr);
         else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _defaultExpr; }
+        void sessionController.restoreInitialSession();
+        if (window._pendingShareError) openInvalidShareDialog(window._pendingShareError);
       }
 
       renderKV('headers');

@@ -225,12 +225,26 @@ export class EditorPage {
   }
 
   /**
-   * Get stored session from localStorage
+   * Return a legacy-shaped view of the current local-first session state.
+   * Older workflow specs use these field names; production persistence is IndexedDB.
    */
   async getStoredSession() {
     return await this.page.evaluate(() => {
-      const session = localStorage.getItem('xdebugx-session-v1');
-      return session ? JSON.parse(session) : null;
+      if (window.sessionController?.serializeDrafts) {
+        const snapshot = window.sessionController.serializeDrafts();
+        return {
+          xmlXslt: snapshot.xslt.source.xml,
+          xmlXpath: snapshot.xpath.source.xml,
+          xslt: snapshot.xslt.source.xslt,
+          xpathExpr: snapshot.xpath.source.expression,
+          xpathEnabled: snapshot.activeMode === 'XPATH',
+          headers: snapshot.xslt.source.headers,
+          properties: snapshot.xslt.source.properties,
+          runtimeProfile: snapshot.xslt.source.runtimeProfile,
+        };
+      }
+      const legacy = localStorage.getItem('xdebugx-session-v1');
+      return legacy ? JSON.parse(legacy) : null;
     });
   }
 
@@ -573,11 +587,19 @@ export class EditorPage {
    */
   async loadFromShareUrl(shareUrl) {
     await this.page.goto(shareUrl);
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
     // Wait for Monaco Editor to initialize
     await this.page.waitForSelector('.monaco-editor', { timeout: 15000 });
-    // Wait for Saxon to process the shared data (applyShareData is called after Saxon ready)
-    await this.page.waitForTimeout(3000);
+    const incoming = this.page.locator('#incomingShareBackdrop.open');
+    const invalid = this.page.locator('#invalidShareBackdrop.open');
+    const outcome = await Promise.race([
+      incoming.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'incoming'),
+      invalid.waitFor({ state: 'visible', timeout: 15000 }).then(() => 'invalid'),
+    ]).catch(() => null);
+    if (outcome === 'incoming') {
+      await this.page.getByRole('button', { name: 'Open temporarily' }).click();
+      await incoming.waitFor({ state: 'hidden', timeout: 5000 });
+    }
   }
 
   /**

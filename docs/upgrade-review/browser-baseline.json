@@ -1,0 +1,356 @@
+[
+  {
+    "target": "local",
+    "url": "http://localhost:8000/",
+    "viewport": "1920x1080",
+    "requests": [
+      "http://localhost:8000",
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-session-v1": "{\"xmlXslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>C-10042</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n  </Header>\\n  <Items>\\n    <Item>\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n    </Item>\\n    <Item>\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xmlXpath\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>ACME Corp</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n    <Status>OPEN</Status>\\n  </Header>\\n  <Items>\\n    <Item status=\\\"active\\\">\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"cancelled\\\">\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>30</LineNo>\\n      <Material>MAT-003</Material>\\n      <Qty>10</Qty>\\n      <UnitPrice>45.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>40</LineNo>\\n      <Material>MAT-004</Material>\\n      <Qty>2</Qty>\\n      <UnitPrice>380.00</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<xsl:stylesheet version=\\\"3.0\\\"\\n  xmlns:xsl=\\\"http://www.w3.org/1999/XSL/Transform\\\">\\n  <xsl:output method=\\\"xml\\\" indent=\\\"yes\\\"/>\\n\\n  <!--\\n    Identity Transform — copies every node and attribute unchanged.\\n    The foundation for all CPI mappings: start here, then override\\n    only the templates you need to modify.\\n  -->\\n\\n  <xsl:template match=\\\"@* | node()\\\">\\n    <xsl:copy>\\n      <xsl:apply-templates select=\\\"@* | node()\\\"/>\\n    </xsl:copy>\\n  </xsl:template>\\n\\n</xsl:stylesheet>\",\"headers\":[],\"properties\":[],\"leftCollapsed\":false,\"rightCollapsed\":false,\"centerCollapsed\":false,\"consoleHeight\":160,\"xpathExpr\":\"count(//*)\",\"xpathEnabled\":true,\"lastExampleKey\":null,\"savedAt\":1794388610245}",
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 3221225472,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 1920,
+        "documentWidth": 2208,
+        "viewportHeight": 1080,
+        "documentHeight": 1350
+      }
+    }
+  },
+  {
+    "target": "local",
+    "url": "http://localhost:8000/",
+    "viewport": "1366x768",
+    "requests": [
+      "http://localhost:8000",
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-session-v1": "{\"xmlXslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>C-10042</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n  </Header>\\n  <Items>\\n    <Item>\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n    </Item>\\n    <Item>\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xmlXpath\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>ACME Corp</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n    <Status>OPEN</Status>\\n  </Header>\\n  <Items>\\n    <Item status=\\\"active\\\">\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"cancelled\\\">\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>30</LineNo>\\n      <Material>MAT-003</Material>\\n      <Qty>10</Qty>\\n      <UnitPrice>45.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>40</LineNo>\\n      <Material>MAT-004</Material>\\n      <Qty>2</Qty>\\n      <UnitPrice>380.00</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<xsl:stylesheet version=\\\"3.0\\\"\\n  xmlns:xsl=\\\"http://www.w3.org/1999/XSL/Transform\\\">\\n  <xsl:output method=\\\"xml\\\" indent=\\\"yes\\\"/>\\n\\n  <!--\\n    Identity Transform — copies every node and attribute unchanged.\\n    The foundation for all CPI mappings: start here, then override\\n    only the templates you need to modify.\\n  -->\\n\\n  <xsl:template match=\\\"@* | node()\\\">\\n    <xsl:copy>\\n      <xsl:apply-templates select=\\\"@* | node()\\\"/>\\n    </xsl:copy>\\n  </xsl:template>\\n\\n</xsl:stylesheet>\",\"headers\":[],\"properties\":[],\"leftCollapsed\":false,\"rightCollapsed\":false,\"centerCollapsed\":false,\"consoleHeight\":160,\"xpathExpr\":\"count(//*)\",\"xpathEnabled\":true,\"lastExampleKey\":null,\"savedAt\":1794388614439}",
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 3221225472,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 1366,
+        "documentWidth": 1571,
+        "viewportHeight": 768,
+        "documentHeight": 960
+      }
+    }
+  },
+  {
+    "target": "local",
+    "url": "http://localhost:8000/",
+    "viewport": "390x844",
+    "requests": [
+      "http://localhost:8000",
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 3221225472,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 390,
+        "documentWidth": 1155,
+        "viewportHeight": 844,
+        "documentHeight": 1055
+      }
+    }
+  },
+  {
+    "target": "live",
+    "url": "https://xsltdebugx.pages.dev/",
+    "viewport": "1920x1080",
+    "requests": [
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://cloudflareinsights.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at",
+      "https://static.cloudflareinsights.com",
+      "https://xsltdebugx.goatcounter.com",
+      "https://xsltdebugx.pages.dev"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-session-v1": "{\"xmlXslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>C-10042</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n  </Header>\\n  <Items>\\n    <Item>\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n    </Item>\\n    <Item>\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xmlXpath\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<SalesOrder>\\n  <Header>\\n    <OrderId>SO-2024-001</OrderId>\\n    <Customer>ACME Corp</Customer>\\n    <OrderDate>2024-03-15</OrderDate>\\n    <Currency>USD</Currency>\\n    <Status>OPEN</Status>\\n  </Header>\\n  <Items>\\n    <Item status=\\\"active\\\">\\n      <LineNo>10</LineNo>\\n      <Material>MAT-001</Material>\\n      <Qty>5</Qty>\\n      <UnitPrice>120.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"cancelled\\\">\\n      <LineNo>20</LineNo>\\n      <Material>MAT-002</Material>\\n      <Qty>3</Qty>\\n      <UnitPrice>85.50</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>30</LineNo>\\n      <Material>MAT-003</Material>\\n      <Qty>10</Qty>\\n      <UnitPrice>45.00</UnitPrice>\\n      <Category>Pumps</Category>\\n    </Item>\\n    <Item status=\\\"active\\\">\\n      <LineNo>40</LineNo>\\n      <Material>MAT-004</Material>\\n      <Qty>2</Qty>\\n      <UnitPrice>380.00</UnitPrice>\\n      <Category>Valves</Category>\\n    </Item>\\n  </Items>\\n</SalesOrder>\",\"xslt\":\"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n<xsl:stylesheet version=\\\"3.0\\\"\\n  xmlns:xsl=\\\"http://www.w3.org/1999/XSL/Transform\\\">\\n  <xsl:output method=\\\"xml\\\" indent=\\\"yes\\\"/>\\n\\n  <!--\\n    Identity Transform — copies every node and attribute unchanged.\\n    The foundation for all CPI mappings: start here, then override\\n    only the templates you need to modify.\\n  -->\\n\\n  <xsl:template match=\\\"@* | node()\\\">\\n    <xsl:copy>\\n      <xsl:apply-templates select=\\\"@* | node()\\\"/>\\n    </xsl:copy>\\n  </xsl:template>\\n\\n</xsl:stylesheet>\",\"headers\":[],\"properties\":[],\"leftCollapsed\":false,\"rightCollapsed\":false,\"centerCollapsed\":false,\"consoleHeight\":160,\"xpathExpr\":\"count(//*)\",\"xpathEnabled\":true,\"lastExampleKey\":null,\"savedAt\":1794388622705}",
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 3221225472,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 1920,
+        "documentWidth": 2208,
+        "viewportHeight": 1080,
+        "documentHeight": 1350
+      }
+    }
+  },
+  {
+    "target": "live",
+    "url": "https://xsltdebugx.pages.dev/",
+    "viewport": "1366x768",
+    "requests": [
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://cloudflareinsights.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at",
+      "https://static.cloudflareinsights.com",
+      "https://xsltdebugx.goatcounter.com",
+      "https://xsltdebugx.pages.dev"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 3221225472,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 1366,
+        "documentWidth": 1571,
+        "viewportHeight": 768,
+        "documentHeight": 960
+      }
+    }
+  },
+  {
+    "target": "live",
+    "url": "https://xsltdebugx.pages.dev/",
+    "viewport": "390x844",
+    "requests": [
+      "https://cdn.jsdelivr.net",
+      "https://cdnjs.cloudflare.com",
+      "https://cloudflareinsights.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://gc.zgo.at",
+      "https://static.cloudflareinsights.com",
+      "https://xsltdebugx.goatcounter.com",
+      "https://xsltdebugx.pages.dev"
+    ],
+    "pageErrors": [],
+    "consoleErrors": [],
+    "browserState": {
+      "localStorage": {
+        "xdebugx-xpath-history": "[\"count(//*)\"]"
+      },
+      "sessionStorage": {},
+      "storageEstimate": {
+        "quota": 4294967296,
+        "usage": 0,
+        "usageDetails": {}
+      },
+      "storagePersisted": false,
+      "mode": "xpath",
+      "editorModels": [
+        {
+          "language": "xml",
+          "uri": "inmemory://model/1",
+          "length": 521
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/2",
+          "length": 1028
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/3",
+          "length": 510
+        },
+        {
+          "language": "xml",
+          "uri": "inmemory://model/4",
+          "length": 521
+        }
+      ],
+      "bodyClass": "light enable-motion underline-links",
+      "overflow": {
+        "viewportWidth": 390,
+        "documentWidth": 1221,
+        "viewportHeight": 844,
+        "documentHeight": 1055
+      }
+    }
+  }
+]

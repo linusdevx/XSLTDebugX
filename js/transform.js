@@ -446,7 +446,10 @@ function runTransform() {
 
     // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
     // Saxon evaluates all arguments (including dynamic ones) and calls our JS interceptors.
-    const { rewritten: _xsltRewritten, hasCPI } = rewriteCPICalls(xsltSrc);
+    const cpiRuntime = typeof isCpiRuntimeProfile !== 'function' || isCpiRuntimeProfile();
+    const { rewritten: _xsltRewritten, hasCPI } = cpiRuntime
+      ? rewriteCPICalls(xsltSrc)
+      : { rewritten: xsltSrc, hasCPI: false };
     const cpiCaptured = { headers: {}, properties: {} };
     let _prevCpiSetHeader, _prevCpiSetProperty;
 
@@ -474,12 +477,12 @@ function runTransform() {
     // Always exclude js: from output — mirrors CPI runtime behaviour.
     xsltSrc = ensureJsExcluded(xsltSrc);
 
-    const namedParams = [...kvData.headers, ...kvData.properties].filter(r => r.name.trim());
+    const namedParams = cpiRuntime ? [...kvData.headers, ...kvData.properties].filter(r => r.name.trim()) : [];
     if (namedParams.length) {
       clog(`Passing xsl:params: ${namedParams.map(r => r.name).join(', ')}`, 'info');
     }
 
-    const paramsXPath = buildParamsXPath();
+    const paramsXPath = cpiRuntime ? buildParamsXPath() : '';
 
     // Saxon-JS routes xsl:message to console.log("xsl:message: <text>").
     // Patch console.log to capture and route to clog.
@@ -543,12 +546,14 @@ function runTransform() {
       document.getElementById('outEdWrap')?.classList.toggle('has-content', !!_outValue);
 
       // CPI-captured values (dynamic + static) take priority, then pass-through inputs.
-      const outHdrs  = { ...cpiCaptured.headers };
-      const outProps = { ...cpiCaptured.properties };
-      kvData.headers.filter(r => r.name.trim() && !(r.name in outHdrs))
-                    .forEach(r => { outHdrs[r.name] = r.value; });
-      kvData.properties.filter(r => r.name.trim() && !(r.name in outProps))
-                       .forEach(r => { outProps[r.name] = r.value; });
+      const outHdrs  = cpiRuntime ? { ...cpiCaptured.headers } : {};
+      const outProps = cpiRuntime ? { ...cpiCaptured.properties } : {};
+      if (cpiRuntime) {
+        kvData.headers.filter(r => r.name.trim() && !(r.name in outHdrs))
+                      .forEach(r => { outHdrs[r.name] = r.value; });
+        kvData.properties.filter(r => r.name.trim() && !(r.name in outProps))
+                         .forEach(r => { outProps[r.name] = r.value; });
+      }
 
       if (hasCPI) {
         const _hc = Object.keys(cpiCaptured.headers).length;

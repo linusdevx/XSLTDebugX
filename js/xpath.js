@@ -126,9 +126,23 @@ function _xpathHistoryNavigate(direction, input) {
   scheduleSave();
 }
 
-function toggleXPath() {
+let modeSwitchPending = false;
+
+async function toggleXPath() {
+  if (modeSwitchPending) return false;
   const nextMode = modeManager.isXpath ? 'XSLT' : 'XPATH';
-  modeManager.setMode(nextMode);
+  modeSwitchPending = true;
+  try {
+    await flushPendingSave();
+  } catch (error) {
+    if (sessionController?.getCurrentSession()) {
+      clog(`Mode switch blocked until the current item is saved: ${error.message}`, 'error');
+      return false;
+    }
+  } finally {
+    modeSwitchPending = false;
+  }
+  return modeManager.setMode(nextMode);
 }
 
 function clearXPathHighlights() {

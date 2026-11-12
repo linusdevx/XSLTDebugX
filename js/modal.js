@@ -5,7 +5,7 @@ function renderExSidebar() {
   const sidebar = document.getElementById('exSidebar');
   if (!sidebar) return;
 
-  const allExamples = Object.values(EXAMPLES);
+  const allExamples = Object.values(EXAMPLES).filter(ex => isCpiRuntimeProfile() || ex.cat !== 'cpi');
   const total = allExamples.length;
 
   let html = '<div class="ex-sidebar-label">Categories</div>';
@@ -50,9 +50,20 @@ var handleModalBackdropClick = _makeBackdropClose('exModalBackdrop', closeExModa
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    closeExModal();
-    if (typeof closeShareModal === 'function') closeShareModal();
-    if (typeof closeHelpModal  === 'function') closeHelpModal();
+    const dialogs = [
+      ['explorerActionBackdrop', () => closeExplorerActionDialog()],
+      ['incomingShareBackdrop', () => { void cancelIncomingShare(); }],
+      ['invalidShareBackdrop', () => closeInvalidShareDialog()],
+      ['sessionConflictBackdrop', () => closeSessionConflictDialog()],
+      ['backupImportBackdrop', () => closeBackupImportDialog()],
+      ['workspaceSettingsBackdrop', () => closeWorkspaceSettings()],
+      ['aboutBackdrop', () => closeAboutDialog()],
+      ['shareModalBackdrop', () => closeShareModal()],
+      ['helpModalBackdrop', () => closeHelpModal()],
+      ['exModalBackdrop', () => closeExModal()],
+    ];
+    const active = dialogs.find(([id]) => document.getElementById(id)?.classList.contains('open'));
+    if (active) { e.preventDefault(); active[1](); }
     return;
   }
   // Ctrl+Enter / Cmd+Enter → mode-aware run (works even when KV inputs have focus).
@@ -134,6 +145,7 @@ function renderExGrid() {
   const keys = [];
   Object.keys(EXAMPLES).forEach(k => {
     const ex = EXAMPLES[k];
+    if (!isCpiRuntimeProfile() && ex.cat === 'cpi') return;
     if (exActiveCat !== 'all' && ex.cat !== exActiveCat) return;
     if (query && !ex.label.toLowerCase().includes(query) && !ex.desc.toLowerCase().includes(query)) return;
     keys.push(k);
@@ -184,9 +196,23 @@ function renderExGrid() {
 }
 
 // Load an example.
-function loadExample(key) {
+async function loadExample(key) {
   const ex = EXAMPLES[key];
   if (!ex) return;
+  const targetType = ex.xpathExpr ? 'xpath' : 'xslt';
+  const needsCpiProfile = ex.cat === 'cpi' && !isCpiRuntimeProfile();
+
+  // Commit the current item before detaching. The example itself is temporary
+  // and must never become an implicit edit to a named session or playground.
+  try {
+    await flushPendingSave();
+  } catch (error) {
+    clog(`Could not save the current item before opening the example: ${error.message}`, 'error');
+    return;
+  }
+  sessionController.beginTemporary(targetType, ex.label);
+  sessionController.resetSourceMetadata(targetType);
+  if (needsCpiProfile) setRuntimeProfile('cpi', { save: false, log: false });
 
   // Switch mode based on example type BEFORE loading content.
   try {
@@ -274,5 +300,5 @@ function loadExample(key) {
   }
 
   if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
-  scheduleSave();
+  setSaveIndicator('temporary');
 }

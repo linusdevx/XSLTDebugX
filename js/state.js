@@ -58,6 +58,30 @@ function _makeBackdropClose(backdropId, closeFn) {
   };
 }
 
+// Keep keyboard focus inside the top-most open dialog. Individual dialogs
+// still choose their most useful initial control when opened.
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Tab') return;
+  const dialogs = [...document.querySelectorAll('.ex-modal-backdrop.open[role="dialog"]')];
+  const dialog = dialogs.at(-1);
+  if (!dialog) return;
+  const focusable = [...dialog.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')]
+    .filter(element => !element.hidden && element.getClientRects().length > 0);
+  if (!focusable.length) { event.preventDefault(); return; }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!dialog.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}, true);
+
 function _layoutAfterTransition(el, fallbackMs = 400) {
   const relayout = () => {
     eds.xml?.layout();
@@ -156,7 +180,6 @@ function setStatus(txt, state = 'ok') {
   d.className = 'stat-dot ' + state;
 }
 
-const STORAGE_KEY = 'xdebugx-session-v1';
 let _saveTimer = null;
 
 const _suppress = { save: false, validation: false, xmlChange: false };
@@ -171,41 +194,38 @@ function _withSuppress(flags, fn) {
 function scheduleSave() {
   if (_suppress.save) { _suppress.save = false; return; }
   clearTimeout(_saveTimer);
+  setSaveIndicator('saving');
   _saveTimer = setTimeout(saveState, 800);
 }
 
 function saveState() {
-  try {
-    const state = {
-      xmlXslt:    xmlModelXslt?.getValue()  ?? '',
-      xmlXpath:   xmlModelXpath?.getValue() ?? '',
-      xslt:       eds.xslt?.getValue() ?? '',
-      headers:    kvData.headers.map(r => ({ name: r.name, value: r.value })),
-      properties: kvData.properties.map(r => ({ name: r.name, value: r.value })),
-      leftCollapsed:  document.getElementById('colLeft')?.classList.contains('collapsed')  ?? false,
-      rightCollapsed: document.getElementById('colRight')?.classList.contains('collapsed') ?? true,
-      centerCollapsed: !modeManager.isXpath && (document.getElementById('colCenter')?.classList.contains('collapsed') ?? false),
-      consoleHeight,
-      xpathExpr:    document.getElementById('xpathInput')?.value ?? '',
-      xpathEnabled: modeManager.isXpath,
-      lastExampleKey: window._lastExampleKey ?? null,
-      savedAt: Date.now(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    showSavedIndicator();
-  } catch (e) {
-    // localStorage full or unavailable — fail silently
-  }
+  if (!window.sessionController) return;
+  void sessionController.saveQuickDrafts().catch(() => {});
 }
 
-function loadSavedState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
+function flushPendingSave() {
+  if (_saveTimer) {
+    clearTimeout(_saveTimer);
+    _saveTimer = null;
+    return window.sessionController?.saveQuickDrafts() || Promise.resolve();
   }
+  return window.sessionController?.saveChain || Promise.resolve();
+}
+
+function cancelPendingSave() {
+  if (!_saveTimer) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = null;
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') void flushPendingSave().catch(() => {});
+});
+window.addEventListener('pagehide', () => { void flushPendingSave().catch(() => {}); });
+
+function loadSavedState() {
+  // Fresh workspace policy: do not import the legacy combined session.
+  return null;
 }
 
 function _resetXPathMode() {
@@ -214,6 +234,7 @@ function _resetXPathMode() {
   clearTimeout(xsltDebounce); xsltDebounce = null;
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
+  sessionController?.resetSourceMetadata('xpath');
 
   _withSuppress(['save'], () => {
     if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
@@ -239,6 +260,7 @@ function _resetXsltMode() {
   clearTimeout(xsltDebounce); xsltDebounce = null;
   if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; }
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
+  sessionController?.resetSourceMetadata('xslt');
 
   _withSuppress(['save'], () => {
     if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
@@ -272,7 +294,6 @@ function _resetXsltMode() {
 }
 
 function clearSavedState() {
-  localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem('xdebugx-xpath-history');
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
@@ -284,17 +305,70 @@ function clearSavedState() {
   } else {
     _resetXsltMode();
   }
-
-  const ind = document.getElementById('savedIndicator');
-  if (ind) ind.style.opacity = '0';
+  void sessionController?.clearCurrentDraft().catch(error => setSaveIndicator('failed', error));
 }
 
-// "● Saved" pill in the status bar.
+// Truthful local persistence state in the status bar.
 let _savedFadeTimer = null;
-function showSavedIndicator() {
+function setSaveIndicator(state, error = null) {
   const ind = document.getElementById('savedIndicator');
   if (!ind) return;
-  ind.style.opacity = '1';
+  const text = document.getElementById('savedIndicatorText');
+  const action = document.getElementById('saveIndicatorAction');
   clearTimeout(_savedFadeTimer);
-  _savedFadeTimer = setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+  ind.classList.remove('saving', 'saved', 'failed', 'temporary', 'conflict');
+  if (action) action.hidden = true;
+  if (state === 'idle') {
+    ind.style.opacity = '0';
+    return;
+  }
+  ind.classList.add(state);
+  ind.style.opacity = '1';
+  if (text) {
+    text.textContent = state === 'conflict'
+      ? 'Save conflict'
+      : state === 'temporary'
+      ? 'Temporary · not saved'
+      : state === 'saving'
+      ? 'Saving…'
+      : state === 'failed'
+        ? 'Save failed'
+        : 'Saved locally';
+  }
+  ind.title = state === 'conflict'
+    ? 'This item changed in another tab; choose how to preserve your edits'
+    : state === 'temporary'
+    ? 'This shared session is open temporarily and will not overwrite your Quick Playground'
+    : state === 'failed'
+    ? `Quick Playground could not be saved locally${error?.message ? ': ' + error.message : ''}`
+    : state === 'saving'
+      ? 'Saving Quick Playground locally'
+      : 'Quick Playground saved locally';
+  if (action) {
+    action.hidden = !['failed', 'conflict', 'temporary'].includes(state);
+    action.textContent = state === 'conflict' ? 'Resolve' : state === 'temporary' ? 'Save…' : 'Retry';
+  }
+  if (state === 'saved') {
+    _savedFadeTimer = setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+  }
+}
+
+function handleSaveIndicatorAction(event) {
+  event.stopPropagation();
+  const indicator = document.getElementById('savedIndicator');
+  if (indicator?.classList.contains('conflict')) {
+    openSessionConflictDialog();
+    return;
+  }
+  if (indicator?.classList.contains('failed')) {
+    void sessionController.saveQuickDrafts().catch(() => {});
+    return;
+  }
+  if (indicator?.classList.contains('temporary')) {
+    void saveCurrentAsCopy().catch(reportExplorerActionError);
+  }
+}
+
+function showSavedIndicator() {
+  setSaveIndicator('saved');
 }

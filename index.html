@@ -52,6 +52,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.2.0/pako.min.js" integrity="sha384-vH04Z+zI3w7R5bYp/CyMXrqL2G1nakpI6Sa1+0jVZGPBz42IYZJbJRRm9phihVLH" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@1.34.0/dist/umd/lucide.min.js" integrity="sha384-TkyaYJPudUfB9a60ZTQjPXXxBGDxeXJy48PDE1DeZnOdKs/QdAs3pP/B9ApNJIH8" crossorigin="anonymous"></script>
+  <script src="./node_modules/fflate/umd/index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js" integrity="sha384-tSPY4oVmbJKVAvy9W7NTVMqSrS/gYyJLECoFWtQ10h4qIDQTg1h3DSfF0eV2Bbbz" crossorigin="anonymous"></script>
   <script src="./lib/SaxonJS2.js"></script>
   <script>document.addEventListener('DOMContentLoaded', function() {
@@ -267,9 +268,32 @@
     <span class="logo-name">XSLTDebug<span class="logo-name-x">X</span></span>
   </div>
 
+  <button class="header-icon-btn explorer-toggle" id="explorerToggle" onclick="toggleExplorer()" aria-label="Toggle workspace Explorer" aria-expanded="true" title="Explorer (Ctrl+Shift+E)">
+    <i data-lucide="panel-left" width="15" height="15"></i>
+  </button>
+  <div class="current-item">
+    <button type="button" class="current-item-trigger" id="sessionMenuTrigger" onclick="toggleSessionMenu()" aria-haspopup="menu" aria-expanded="false" title="Current session actions">
+      <span class="current-item-title" id="currentItemTitle">Quick Playground</span><span aria-hidden="true">▾</span>
+    </button>
+    <div class="session-menu" id="sessionMenu" role="menu" hidden>
+      <button role="menuitem" onclick="toggleSessionMenu(false);createExplorerSession('xslt').catch(reportExplorerActionError)">New XSLT mapping</button>
+      <button role="menuitem" onclick="toggleSessionMenu(false);createExplorerSession('xpath').catch(reportExplorerActionError)">New XPath query</button>
+      <button role="menuitem" onclick="toggleSessionMenu(false);saveCurrentAsCopy().catch(reportExplorerActionError)">Save as copy…</button>
+      <button role="menuitem" id="sessionMenuDuplicate" onclick="toggleSessionMenu(false);duplicateCurrentSession().catch(reportExplorerActionError)">Duplicate current</button>
+      <span class="session-menu-separator"></span>
+      <button role="menuitem" onclick="toggleSessionMenu(false);openWorkspaceSettings()">Settings</button>
+      <button role="menuitem" onclick="toggleSessionMenu(false);openAboutDialog()">About</button>
+    </div>
+  </div>
+
   <div class="h-spacer"></div>
 
   <nav aria-label="Main actions">
+  <div class="workspace-view-switcher" id="workspaceViewSwitcher" aria-label="Workspace view">
+    <button type="button" data-workspace-view="edit" onclick="setWorkspaceView('edit')" aria-label="Focus editors" title="Editors"><i data-lucide="panels-top-left" width="13" height="13"></i></button>
+    <button type="button" data-workspace-view="all" onclick="setWorkspaceView('all')" aria-label="Show all panes" title="All panes"><i data-lucide="columns-3" width="13" height="13"></i></button>
+    <button type="button" data-workspace-view="output" onclick="setWorkspaceView('output')" aria-label="Focus output" title="Output"><i data-lucide="panel-right" width="13" height="13"></i></button>
+  </div>
   <button class="ex-btn xf-session-share" id="shareBtn" onclick="openShareModal()">
     <i data-lucide="share2" width="14" height="14"></i>
     Share
@@ -297,7 +321,11 @@
     <i data-lucide="moon" width="15" height="15" class="theme-icon-moon"></i>
   </button>
 
-  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" aria-label="Clear saved session" title="Clear saved session">
+  <button class="header-icon-btn settings-header-btn" onclick="openWorkspaceSettings()" aria-label="Settings" title="Settings">
+    <i data-lucide="settings" width="15" height="15"></i>
+  </button>
+
+  <button class="ex-btn clear-session-btn" id="clearSessionBtn" onclick="clearSavedState()" aria-label="Clear current content" title="Clear current content">
     <i data-lucide="trash2" width="14" height="14"></i>
     Clear
   </button>
@@ -315,8 +343,53 @@
   </nav>
 </header>
 
+<nav class="mobile-pane-nav" id="mobilePaneNav" aria-label="Editor panes">
+  <button type="button" data-pane="colLeft" onclick="focusMobilePane('colLeft')">Input</button>
+  <button type="button" data-pane="colCenter" onclick="focusMobilePane('colCenter')">Transform</button>
+  <button type="button" data-pane="colRight" onclick="focusMobilePane('colRight')">Output</button>
+</nav>
+
 <!-- 3-Column layout -->
 <main class="workspace">
+  <div class="explorer-backdrop" id="explorerBackdrop" onclick="toggleExplorer(false)"></div>
+  <aside class="workspace-explorer" id="workspaceExplorer" aria-label="Workspace Explorer">
+    <div class="explorer-header">
+      <span class="explorer-heading">Explorer</span>
+      <button class="explorer-close" onclick="toggleExplorer(false)" aria-label="Close Explorer">×</button>
+    </div>
+    <div class="explorer-create-row">
+      <button onclick="createExplorerSession('xslt').catch(reportExplorerActionError)">+ XSLT</button>
+      <button onclick="createExplorerSession('xpath').catch(reportExplorerActionError)">+ XPath</button>
+      <button onclick="createExplorerFolder().catch(reportExplorerActionError)">+ Folder</button>
+    </div>
+    <button class="explorer-save-as" type="button" onclick="saveCurrentAsCopy().catch(reportExplorerActionError)">Save current as…</button>
+    <input class="explorer-search" id="explorerSearch" type="search" placeholder="Search saved items…" aria-label="Search saved mappings and queries">
+    <div class="explorer-filters" aria-label="Explorer views">
+      <button class="explorer-filter active" data-view="all" aria-pressed="true" onclick="setExplorerView('all')">All</button>
+      <button class="explorer-filter" data-view="recent" aria-pressed="false" onclick="setExplorerView('recent')">Recent</button>
+      <button class="explorer-filter" data-view="favorites" aria-pressed="false" onclick="setExplorerView('favorites')">Favorites</button>
+      <button class="explorer-filter" data-view="trash" aria-pressed="false" onclick="setExplorerView('trash')">Trash</button>
+    </div>
+    <div class="explorer-workspace-label">Saved sessions</div>
+    <div class="explorer-list" id="explorerList" aria-live="polite"></div>
+    <label class="explorer-runtime-profile">
+      <span>Runtime</span>
+      <select id="runtimeProfileSelect" onchange="setRuntimeProfile(this.value)" aria-label="XSLT runtime profile">
+        <option value="cpi">SAP CPI</option>
+        <option value="standard">Standard XSLT</option>
+      </select>
+    </label>
+    <div class="explorer-storage-status" id="explorerStorageStatus" title="Local browser storage status">Checking local storage…</div>
+    <div class="explorer-backup-actions">
+      <button type="button" onclick="downloadWorkspaceBackup()" title="Export a validated ZIP backup">Backup</button>
+      <button type="button" onclick="document.getElementById('backupImportInput').click()" title="Import a ZIP backup as new copies">Import</button>
+      <input type="file" class="file-input-hidden" id="backupImportInput" accept=".zip,application/zip" aria-label="Import workspace backup" onchange="prepareWorkspaceBackupImport(this.files[0])">
+    </div>
+    <div class="explorer-product-actions">
+      <button type="button" onclick="openWorkspaceSettings()">Settings</button>
+      <button type="button" onclick="openAboutDialog()">About</button>
+    </div>
+  </aside>
   <!-- Inter-column flow lines: rendered absolutely over the workspace gutters.
        Hairline by default; on Run, the .flowing class sends a bright dot left→right
        to visualize the XML → XSLT → Output transformation. JS toggles .flowing
@@ -348,7 +421,7 @@
           <span class="xpath-header-count" id="xpathHeaderCount" style="display:none"></span>
           <div class="pane-actions" onclick="event.stopPropagation()">
             <span class="lang-badge">XQuery</span>
-            <button class="pane-icon-btn" aria-label="Copy XPath expression" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Copy XPath expression" title="Copy XPath expression" onclick="copyXPathInput()"><i data-lucide="copy" width="14" height="14"></i></button>
             <button class="pane-icon-btn" aria-label="Clear XPath expression" title="Clear XPath expression" onclick="clearXPathInput()"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="pane-icon-btn" onclick="_xpathHistoryNavigate('up', document.getElementById('xpathInput'))" aria-label="Previous expression (↑)" title="Previous expression (↑)"><i data-lucide="chevron-up" width="14" height="14"></i></button>
@@ -384,7 +457,7 @@
         <div class="pane-actions" onclick="event.stopPropagation()">
           <span class="lang-badge">XML</span>
           <button class="pane-icon-btn" aria-label="Format XML" title="Format XML" onclick="fmtEditor('xml')"><i data-lucide="align-left" width="14" height="14"></i></button>
-          <button class="pane-icon-btn" aria-label="Copy XML" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+          <button class="pane-icon-btn" aria-label="Copy XML" title="Copy XML" onclick="copyPane('xml')"><i data-lucide="copy" width="14" height="14"></i></button>
           <button class="pane-icon-btn" aria-label="Clear XML" title="Clear XML" onclick="clearPane('xml')"><i data-lucide="eraser" width="14" height="14"></i></button>
           <div class="pane-divider"></div>
           <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXml" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('xml')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
@@ -434,6 +507,8 @@
     </div>
   </div>
 
+  <div class="pane-splitter" id="paneSplitterPrimary" role="separator" aria-orientation="vertical" aria-label="Resize input and XSLT panes" tabindex="0" title="Drag to resize · double-click to reset"></div>
+
   <!-- CENTER: XSLT Editor (full height) -->
   <div class="col col-center" id="colCenter">
     <div class="pane-bar">
@@ -443,7 +518,7 @@
       <div class="pane-actions">
         <span class="lang-badge">XSLT</span>
         <button class="pane-icon-btn" aria-label="Format XSLT" title="Format XSLT" onclick="fmtEditor('xslt')"><i data-lucide="align-left" width="14" height="14"></i></button>
-        <button class="pane-icon-btn" aria-label="Copy XSLT" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+        <button class="pane-icon-btn" aria-label="Copy XSLT" title="Copy XSLT" onclick="copyPane('xslt')"><i data-lucide="copy" width="14" height="14"></i></button>
         <button class="pane-icon-btn" aria-label="Clear XSLT" title="Clear XSLT" onclick="clearPane('xslt')"><i data-lucide="eraser" width="14" height="14"></i></button>
         <div class="pane-divider"></div>
         <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleXslt" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('xslt')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
@@ -482,6 +557,8 @@
     </div>
   </div>
 
+  <div class="pane-splitter" id="paneSplitterSecondary" role="separator" aria-orientation="vertical" aria-label="Resize XSLT and output panes" tabindex="0" title="Drag to resize · double-click to reset"></div>
+
   <!-- RIGHT: XPath bar + Results + Output -->
   <div class="col col-side collapsed" id="colRight">
     <!-- Collapsed tab -->
@@ -502,7 +579,7 @@
           <span class="xpath-results-title">XPath Results</span>
           <span class="xpath-match-count" id="xpathMatchCount">0 matches</span>
           <div class="xpath-results-actions" onclick="event.stopPropagation()">
-            <button class="pane-icon-btn" onclick="copyXPathResults()" aria-label="Copy all results" title="Copy all results"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" onclick="copyXPathResults()" aria-label="Copy all results" title="Copy all results"><i data-lucide="copy" width="14" height="14"></i></button>
             <button class="pane-icon-btn" onclick="clearXPathResults()" aria-label="Clear results" title="Clear results"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
@@ -531,14 +608,14 @@
           <span class="pane-num">03</span>
           <span class="pane-title">Output</span>
           <div class="pane-actions" onclick="event.stopPropagation()">
-            <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
-            <div class="pane-divider"></div>
             <span class="lang-badge" id="outLangBadge">XML</span>
-            <button class="pane-icon-btn" aria-label="Copy output" title="Copy output" onclick="copyPane('out')"><i data-lucide="clipboard" width="14" height="14"></i></button>
+            <button class="pane-icon-btn" aria-label="Copy output" title="Copy output" onclick="copyPane('out')"><i data-lucide="copy" width="14" height="14"></i></button>
             <button class="pane-icon-btn" aria-label="Clear output" title="Clear output" onclick="clearPane('out')"><i data-lucide="eraser" width="14" height="14"></i></button>
             <div class="pane-divider"></div>
             <button class="pane-icon-btn wrap-toggle-btn" id="wrapToggleOut" aria-label="Toggle word wrap" title="Toggle word wrap" onclick="toggleWordWrap('out')"><i data-lucide="wrap-text" width="14" height="14"></i></button>
             <button class="pane-icon-btn" id="outDownloadBtn" aria-label="Download output as XML" title="Download output as XML" onclick="downloadPane('out','output.xml')"><i data-lucide="download" width="14" height="14"></i></button>
+            <div class="pane-divider"></div>
+            <button class="collapse-btn" aria-label="Collapse panel" title="Collapse panel" onclick="toggleSideCol('right')"><i data-lucide="chevron-right" width="14" height="14"></i></button>
           </div>
         </div>
         <div class="editor-wrap" id="outEdWrap">
@@ -593,12 +670,12 @@
 </main>
 
 <!-- Share Modal -->
-<div class="ex-modal-backdrop" id="shareModalBackdrop" onclick="handleShareBackdropClick(event)">
+<div class="ex-modal-backdrop" id="shareModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle" onclick="handleShareBackdropClick(event)">
   <div class="share-modal">
     <div class="share-modal-header">
       <i data-lucide="share2" width="16" height="16"></i>
-      <span class="share-modal-title">Share Session</span>
-      <button class="ex-modal-close" onclick="closeShareModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
+      <span class="share-modal-title" id="shareModalTitle">Share Session</span>
+      <button class="ex-modal-close" onclick="closeShareModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
 
     <div class="share-modal-body">
@@ -606,7 +683,173 @@
         <input class="share-url-input" id="shareUrlInput" readonly aria-label="Share URL" onclick="this.select()">
         <button class="share-copy-btn" id="shareCopyBtn" onclick="_copyShareUrl(document.getElementById('shareUrlInput').value, false)">Copy URL</button>
       </div>
-      <div class="share-hint">Includes XML, XSLT, headers and properties · recipient opens the link to restore this session</div>
+      <div class="share-hint">Your XML, XSLT, headers, properties, and runtime profile are embedded directly in this URL. Anyone with the link can read them, and the URL may remain in browser history, chat systems, logs, or screenshots. The recipient chooses whether to open temporarily or save a copy.</div>
+      <div class="incoming-share-error" id="shareLengthWarning" role="status" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- Incoming shared session confirmation -->
+<div class="ex-modal-backdrop" id="incomingShareBackdrop" role="dialog" aria-modal="true" aria-labelledby="incomingShareTitle" onclick="handleIncomingShareBackdropClick(event)">
+  <div class="share-modal incoming-share-modal">
+    <div class="share-modal-header">
+      <i data-lucide="link" width="16" height="16"></i>
+      <span class="share-modal-title" id="incomingShareTitle">Open shared XSLT?</span>
+      <button class="ex-modal-close" onclick="cancelIncomingShare()" aria-label="Cancel opening shared XSLT" title="Cancel"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body">
+      <p class="incoming-share-intro">Someone shared an XSLT mapping with you. Review the summary, then open it temporarily or save it as a separate copy.</p>
+      <div class="incoming-share-summary" id="incomingShareSummary"></div>
+      <div class="incoming-share-safety"><strong>Your Quick Playground is safe.</strong> This link will not overwrite it unless you later copy content yourself.</div>
+      <label class="incoming-share-label" for="incomingShareTitleInput">Copy name</label>
+      <input class="incoming-share-input" id="incomingShareTitleInput" maxlength="200" autocomplete="off" value="Shared XSLT Mapping">
+      <div class="incoming-share-error" id="incomingShareError" role="alert" hidden></div>
+      <div class="incoming-share-actions">
+        <button class="incoming-share-btn secondary" onclick="cancelIncomingShare()">Cancel</button>
+        <button class="incoming-share-btn secondary" id="incomingShareSaveBtn" onclick="saveSharedCopy()">Save a copy</button>
+        <button class="incoming-share-btn primary" id="incomingShareTemporaryBtn" onclick="openSharedTemporarily()">Open temporarily</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invalid shared-link notice -->
+<div class="ex-modal-backdrop" id="invalidShareBackdrop" role="dialog" aria-modal="true" aria-labelledby="invalidShareTitle" onclick="handleInvalidShareBackdropClick(event)">
+  <div class="share-modal incoming-share-modal">
+    <div class="share-modal-header">
+      <i data-lucide="link-2-off" width="16" height="16"></i>
+      <span class="share-modal-title" id="invalidShareTitle">Shared link could not be opened</span>
+      <button class="ex-modal-close" onclick="closeInvalidShareDialog()" aria-label="Close invalid link notice"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body">
+      <p class="incoming-share-intro" id="invalidShareMessage">The link is corrupted, unsupported, or too large.</p>
+      <div class="incoming-share-safety"><strong>Your local work was not changed.</strong> XSLTDebugX restored the content already saved in this browser.</div>
+      <div class="incoming-share-actions"><button class="incoming-share-btn primary" onclick="closeInvalidShareDialog()">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Concurrent edit conflict -->
+<div class="ex-modal-backdrop" id="sessionConflictBackdrop" role="dialog" aria-modal="true" aria-labelledby="sessionConflictTitle" onclick="handleSessionConflictBackdropClick(event)">
+  <div class="share-modal incoming-share-modal">
+    <div class="share-modal-header">
+      <i data-lucide="git-compare" width="16" height="16"></i>
+      <span class="share-modal-title" id="sessionConflictTitle">Saved item changed in another tab</span>
+      <button class="ex-modal-close" onclick="closeSessionConflictDialog()" aria-label="Close conflict dialog"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body">
+      <p class="incoming-share-intro">Your local edits are still in the editor. Reload the newer saved version, or preserve your edits as a separate copy.</p>
+      <label class="incoming-share-label" for="sessionConflictCopyTitle">Copy name</label>
+      <input class="incoming-share-input" id="sessionConflictCopyTitle" maxlength="200" autocomplete="off">
+      <div class="incoming-share-error" id="sessionConflictError" role="alert" hidden></div>
+      <div class="incoming-share-actions">
+        <button class="incoming-share-btn secondary" onclick="closeSessionConflictDialog()">Keep editing</button>
+        <button class="incoming-share-btn secondary" onclick="reloadSessionConflict()">Reload saved</button>
+        <button class="incoming-share-btn primary" onclick="saveSessionConflictCopy()">Save as copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Backup import preview -->
+<div class="ex-modal-backdrop" id="backupImportBackdrop" role="dialog" aria-modal="true" aria-labelledby="backupImportTitle" onclick="handleBackupImportBackdropClick(event)">
+  <div class="share-modal incoming-share-modal">
+    <div class="share-modal-header">
+      <i data-lucide="archive-restore" width="16" height="16"></i>
+      <span class="share-modal-title" id="backupImportTitle">Import workspace backup</span>
+      <button class="ex-modal-close" onclick="closeBackupImportDialog()" aria-label="Close backup import"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body">
+      <p class="incoming-share-intro">The entire ZIP is validated before anything is written. Imported workspaces, folders, and sessions receive new IDs; existing work is never replaced.</p>
+      <div class="incoming-share-summary" id="backupImportSummary">Validating backup…</div>
+      <div class="incoming-share-error" id="backupImportError" role="alert" hidden></div>
+      <div class="incoming-share-actions">
+        <button class="incoming-share-btn secondary" onclick="closeBackupImportDialog()">Cancel</button>
+        <button class="incoming-share-btn primary" id="backupImportConfirmBtn" onclick="confirmWorkspaceBackupImport()">Import as copies</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Local workspace settings -->
+<div class="ex-modal-backdrop" id="workspaceSettingsBackdrop" role="dialog" aria-modal="true" aria-labelledby="workspaceSettingsTitle" onclick="handleWorkspaceSettingsBackdropClick(event)">
+  <div class="share-modal settings-modal">
+    <div class="share-modal-header">
+      <i data-lucide="settings" width="16" height="16"></i>
+      <span class="share-modal-title" id="workspaceSettingsTitle">Settings</span>
+      <button class="ex-modal-close" onclick="closeWorkspaceSettings()" aria-label="Close settings"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body settings-body">
+      <label class="settings-row"><span><strong>Theme</strong><small>Applied immediately and remembered locally.</small></span>
+        <select id="settingsTheme" onchange="setWorkspaceTheme(this.value)"><option value="dark">Dark</option><option value="light">Light</option></select>
+      </label>
+      <label class="settings-row"><span><strong>XSLT runtime</strong><small>SAP CPI enables headers/properties; Standard keeps a plain XSLT workflow.</small></span>
+        <select id="settingsRuntimeProfile" onchange="setRuntimeProfile(this.value)"><option value="cpi">SAP CPI</option><option value="standard">Standard XSLT</option></select>
+      </label>
+      <label class="settings-row"><span><strong>Open Explorer on startup</strong><small>Keep saved sessions visible on wider screens.</small></span>
+        <input id="settingsExplorerOpen" type="checkbox" onchange="setExplorerStartupPreference(this.checked)">
+      </label>
+      <div class="settings-row"><span><strong>Pane layout</strong><small>Restore the default Input, Transform, and Output widths.</small></span>
+        <button type="button" class="settings-action" onclick="resetAllPaneLayouts()">Reset layout</button>
+      </div>
+      <div class="settings-row"><span><strong>Browser storage</strong><small id="settingsStorageStatus">Checking…</small></span>
+        <button type="button" class="settings-action" onclick="requestWorkspacePersistence()">Request persistence</button>
+      </div>
+      <div class="settings-row"><span><strong>Workspace backup</strong><small>Export or merge a validated ZIP as new copies.</small></span>
+        <span class="settings-inline-actions"><button type="button" class="settings-action" onclick="downloadWorkspaceBackup()">Backup</button><button type="button" class="settings-action" onclick="document.getElementById('backupImportInput').click()">Import</button></span>
+      </div>
+      <div class="settings-row"><span><strong>Trash</strong><small id="settingsTrashStatus">Checking…</small></span>
+        <button type="button" class="settings-action danger" onclick="emptyWorkspaceTrash()">Empty Trash</button>
+      </div>
+      <div class="settings-row settings-danger-row"><span><strong>Delete local workspace data</strong><small>Removes sessions, drafts, folders, Trash, and workspace settings from this browser.</small></span>
+        <button type="button" class="settings-action danger" onclick="deleteAllWorkspaceData()">Delete data</button>
+      </div>
+      <div class="incoming-share-error" id="workspaceSettingsError" role="alert" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- Explorer naming, moving, and confirmation dialog -->
+<div class="ex-modal-backdrop" id="explorerActionBackdrop" role="dialog" aria-modal="true" aria-labelledby="explorerActionTitle" onclick="handleExplorerActionBackdropClick(event)">
+  <div class="share-modal incoming-share-modal">
+    <div class="share-modal-header">
+      <i data-lucide="folder-pen" width="16" height="16"></i>
+      <span class="share-modal-title" id="explorerActionTitle">Explorer action</span>
+      <button class="ex-modal-close" onclick="closeExplorerActionDialog()" aria-label="Cancel Explorer action"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <form class="share-modal-body" onsubmit="submitExplorerActionDialog(event)">
+      <p class="incoming-share-intro" id="explorerActionMessage" hidden></p>
+      <label class="incoming-share-label" id="explorerActionInputLabel" for="explorerActionInput">Name</label>
+      <input class="incoming-share-input" id="explorerActionInput" maxlength="200" autocomplete="off">
+      <label class="incoming-share-label" id="explorerActionSelectLabel" for="explorerActionSelect" hidden>Location</label>
+      <select class="incoming-share-input" id="explorerActionSelect" hidden></select>
+      <div class="incoming-share-error" id="explorerActionError" role="alert" hidden></div>
+      <div class="incoming-share-actions">
+        <button type="button" class="incoming-share-btn secondary" onclick="closeExplorerActionDialog()">Cancel</button>
+        <button type="submit" class="incoming-share-btn primary" id="explorerActionConfirm">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Product and privacy information -->
+<div class="ex-modal-backdrop" id="aboutBackdrop" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" onclick="handleAboutBackdropClick(event)">
+  <div class="share-modal settings-modal">
+    <div class="share-modal-header">
+      <i data-lucide="info" width="16" height="16"></i>
+      <span class="share-modal-title" id="aboutTitle">About XSLTDebugX</span>
+      <button class="ex-modal-close" onclick="closeAboutDialog()" aria-label="Close About"><i data-lucide="x" width="18" height="18"></i></button>
+    </div>
+    <div class="share-modal-body about-body">
+      <p><strong>XSLTDebugX 1.0.0</strong><br><span id="aboutBuildInfo">Local dev</span></p>
+      <p>A browser-based XSLT 3.0 and XPath 3.1 debugger with optional SAP CPI simulation. Licensed under <strong>AGPL-3.0-or-later</strong>.</p>
+      <p><strong>Privacy and network:</strong> XML, XSLT, headers, properties, sessions, and backups stay in your browser unless you explicitly create and send a share URL. The page still requests CDN-hosted editor/UI assets and anonymous GoatCounter page analytics; source content is not attached to those analytics requests.</p>
+      <p>Built by Sunil Pharswan. SAP® is a trademark of SAP SE; this project is not affiliated with or endorsed by SAP SE.</p>
+      <div class="about-links">
+        <a href="https://github.com/linusdevx/XSLTDebugX" target="_blank" rel="noopener">Source</a>
+        <a href="https://github.com/linusdevx/XSLTDebugX/issues" target="_blank" rel="noopener">Issues / Feedback</a>
+        <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
+      </div>
     </div>
   </div>
 </div>
@@ -625,7 +868,7 @@
         <input type="checkbox" id="exAutoRunCheckbox" aria-label="Auto-run loaded examples" onchange="exAutoRunChecked = this.checked; localStorage.setItem('xdebugx-auto-run-examples', this.checked)">
         Auto-run
       </label>
-      <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
+      <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
     <div class="ex-modal-body">
       <div class="ex-sidebar" id="exSidebar">
@@ -650,9 +893,11 @@
   <div class="stat-mode" id="statMode" title="Current editor mode">
     <span class="mode-pill mode-xslt" id="modePill">XSLT</span>
   </div>
+  <div class="stat" id="runtimeProfileStatus" title="Current XSLT runtime profile">SAP CPI</div>
   <div class="stat-spacer"></div>
-  <div id="savedIndicator" class="saved-indicator" title="Session auto-saved to browser storage">
-    <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3.5"/></svg>Saved
+  <div id="savedIndicator" class="saved-indicator" title="Quick Playground is saved locally" aria-live="polite">
+    <svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3.5"/></svg><span id="savedIndicatorText">Saved locally</span>
+    <button type="button" id="saveIndicatorAction" hidden onclick="handleSaveIndicatorAction(event)">Retry</button>
   </div>
   <div class="stat stat-author">
     <span>Built by</span>
@@ -672,16 +917,16 @@
 </footer>
 
 <!-- Help Modal -->
-<div class="ex-modal-backdrop" id="helpModalBackdrop" onclick="handleHelpBackdropClick(event)">
+<div class="ex-modal-backdrop" id="helpModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle" onclick="handleHelpBackdropClick(event)">
   <div class="help-modal">
     <div class="help-modal-header">
       <i data-lucide="circle-help" width="16" height="16"></i>
-      <span class="help-modal-title">Help</span>
+      <span class="help-modal-title" id="helpModalTitle">Help</span>
       <div class="help-tabs">
         <button class="help-tab active" data-tab="features" onclick="switchHelpTab('features')">Features</button>
         <button class="help-tab" data-tab="shortcuts" onclick="switchHelpTab('shortcuts')">Shortcuts</button>
       </div>
-      <button class="ex-modal-close" onclick="closeHelpModal()" aria-label="Close" title="Close"><i data-lucide="cross" width="18" height="18"></i></button>
+      <button class="ex-modal-close" onclick="closeHelpModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
 
     <!-- Features Tab -->
@@ -756,9 +1001,11 @@
 
       <div class="help-section">
         <div class="help-section-title">Session & Share</div>
-        <div class="help-row"><span class="help-key">Auto-save</span><span>Everything saved to browser storage 800ms after you stop typing</span></div>
-        <div class="help-row"><span class="help-key">Clear session</span><span>Mode-aware — resets only what's relevant to current mode, stays in same mode</span></div>
-        <div class="help-row"><span class="help-key">Share</span><span>Encodes XML + XSLT + headers + properties into a single shareable URL</span></div>
+        <div class="help-row"><span class="help-key">Auto-save</span><span>Quick Playground and named sessions save locally 800ms after you stop typing</span></div>
+        <div class="help-row"><span class="help-key">Explorer</span><span>Create, reopen, rename, duplicate, favorite, trash, restore, back up, and import local sessions</span></div>
+        <div class="help-row"><span class="help-key">Runtime</span><span>SAP CPI enables header/property simulation; Standard XSLT runs without CPI injection</span></div>
+        <div class="help-row"><span class="help-key">Clear content</span><span>Mode-aware reset; named records remain saved</span></div>
+        <div class="help-row"><span class="help-key">Share</span><span>Recipient chooses temporary open or a separately saved copy; existing work is not overwritten</span></div>
       </div>
     </div>
 
@@ -768,6 +1015,9 @@
         <div class="help-section-title">Running</div>
         <div class="help-row"><kbd>Ctrl+Enter</kbd><span>Run XSLT transform (XSLT mode) · Run XPath expression (XPath mode)</span></div>
         <div class="help-row"><kbd>Enter</kbd><span>Run XPath expression (when cursor is in the XPath bar)</span></div>
+        <div class="help-row"><kbd>Ctrl+S</kbd><span>Save now; names the current Quick Playground when needed</span></div>
+        <div class="help-row"><kbd>Ctrl+Shift+S</kbd><span>Save current work as a new copy</span></div>
+        <div class="help-row"><kbd>Ctrl+Shift+E</kbd><span>Toggle the workspace Explorer</span></div>
       </div>
       <div class="help-section">
         <div class="help-section-title">XPath History</div>
@@ -776,7 +1026,7 @@
       </div>
       <div class="help-section">
         <div class="help-section-title">Modals</div>
-        <div class="help-row"><kbd>Escape</kbd><span>Close any open modal (Examples, Share, Help)</span></div>
+        <div class="help-row"><kbd>Escape</kbd><span>Close any open modal or Explorer drawer</span></div>
       </div>
       <div class="help-section">
         <div class="help-section-title">Editor (right-click menu)</div>
@@ -791,9 +1041,12 @@
   </div>
 </div>
 
-<!-- JS modules — load order matters: state → domain logic → UI → editor init -->
+<!-- JS modules — load order matters: storage/state → domain logic → UI → editor init -->
+<script src="js/workspace-store.js"></script>
 <script src="js/state.js"></script>
 <script src="js/mode-manager.js"></script>
+<script src="js/runtime-profile.js"></script>
+<script src="js/session-controller.js"></script>
 <script src="js/validate.js"></script>
 <script src="js/panes.js"></script>
 <script src="js/transform.js"></script>
@@ -804,6 +1057,9 @@
 <script data-goatcounter="https://xsltdebugx.goatcounter.com/count"
         async src="https://gc.zgo.at/count.js"></script>
 <script src="js/share.js"></script>
+<script src="js/explorer.js"></script>
+<script src="js/pane-layout.js"></script>
+<script src="js/backup.js"></script>
 <script src="js/xpath.js"></script>
 <script src="js/themes.js"></script>
 <script src="js/editor.js"></script>
