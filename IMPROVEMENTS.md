@@ -37,11 +37,13 @@ This file is the handoff for future implementation work. The local-first workspa
 ## Priority 4 — UI/UX polish: header, footer, Explorer sidebar ✅ Done
 
 - ✅ Consolidated scattered controls: Clear moved to Session menu, Settings/About promoted to header icon buttons with tooltip shortcuts.
-- ✅ Footer redesigned: LinkedIn + GitHub icons, version button (opens About dialog), "Not affiliated with SAP SE" trademark notice.
+- ✅ Footer keeps LinkedIn personal branding, GitHub, version/About, and the "Not affiliated with SAP SE" trademark notice.
 - ✅ About dialog enriched with version, build info, and LinkedIn attribution link.
 - ✅ Explorer "+ New" dropdown replaced with 3 direct inline buttons: `+ XSLT` (blue), `+ XPath` (gold), folder icon — no menu-within-sidebar.
 - ✅ Explorer row actions consolidated into a `···` overflow menu (position:fixed, flip-up when near bottom, arrow-key navigation).
 - ✅ Explorer empty state replaced with a simple hint pointing to the create buttons.
+- ✅ New mapping/query and Save as copy dialogs offer an optional folder location when folders exist.
+- ✅ New XSLT mappings start with a compact runnable payload and XSLT 3 identity stylesheet instead of the large SalesOrder sample.
 - ✅ Runtime profile selector, storage status, and Backup/Import moved from Explorer sidebar into Settings modal — Explorer now shows only the file list.
 - ✅ Dead `refreshExplorerStorageStatus` function removed; `refreshWorkspaceSettingsStatus` in Settings covers it.
 - ✅ `workspace-storage-blocked` now shows a persistent error toast so users see it whether or not Settings is open.
@@ -51,6 +53,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ Ctrl+B shortcut added to toggle Explorer (VS Code convention), with Monaco focus guard; `Ctrl+Shift+E` kept as alias.
 - ✅ Ctrl+, shortcut wired to open Settings; documented in Help modal Shortcuts tab.
 - ✅ Help modal "Clear content" entry updated to say it's in the Session menu.
+- ✅ Session menu kept focused on New, Save/Duplicate, and Clear; Backup/Import remain in Settings.
 - ✅ Help modal Explorer and Runtime rows updated to match new 3-button layout and Settings location.
 - ✅ `aria-keyshortcuts` attributes added to Explorer toggle, Settings, and Help header buttons.
 - ✅ Ctrl+/ shortcut added to open Help modal (guarded against Monaco editor focus).
@@ -88,7 +91,7 @@ This file is the handoff for future implementation work. The local-first workspa
 ## Follow-up verification
 
 - [ ] In the deployed build, smoke-test Move to Trash, restore, empty Trash, and permanent delete with disposable sessions.
-- [ ] Review the compact footer branding in production; GitHub, version/About, and the SAP disclaimer are functional, while the LinkedIn link is optional branding.
+- [ ] Review the compact footer branding in production at desktop and constrained widths.
 - [ ] Recheck the first-visit starter in a fresh browser profile; existing users correctly continue seeing their saved session instead.
 - [ ] Recheck Explorer overflow menus, toasts, and folder buttons in both themes after deployment.
 

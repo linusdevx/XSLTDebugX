@@ -9,7 +9,7 @@ let explorerRefreshToken = 0;
 let explorerActionResolve = null;
 let explorerActionReturnFocus = null;
 
-function requestExplorerAction({ title, message = '', label = 'Name', value = '', options = null, includeInput = false, confirmLabel = 'Save', danger = false }) {
+function requestExplorerAction({ title, message = '', label = 'Name', value = '', options = null, optionValue = '', includeInput = false, confirmLabel = 'Save', danger = false }) {
   closeExplorerActionDialog();
   explorerActionReturnFocus = document.activeElement;
   document.getElementById('explorerActionTitle').textContent = title;
@@ -28,6 +28,7 @@ function requestExplorerAction({ title, message = '', label = 'Name', value = ''
   select.hidden = !usesSelect;
   selectLabel.hidden = !usesSelect;
   select.replaceChildren(...(options || []).map(option => new Option(option.label, option.value)));
+  if (usesSelect) select.value = optionValue;
   const error = document.getElementById('explorerActionError');
   error.textContent = '';
   error.hidden = true;
@@ -742,14 +743,29 @@ async function saveCurrentAsCopy() {
   const active = sessionController.activeSessions[type];
   const temporaryTitle = sessionController.getTemporaryTitle(type);
   const suggested = active ? `${active.title} Copy` : temporaryTitle || (type === 'xpath' ? 'Untitled XPath Query' : 'Untitled XSLT Mapping');
-  const title = await requestExplorerAction({ title: 'Save current work', label: 'Name', value: suggested, confirmLabel: 'Save' });
-  if (title == null) return null;
+  const workspaceId = active?.workspaceId || 'workspace-default';
+  const folders = await workspaceStore.listFolders(workspaceId);
+  const result = await requestExplorerAction({
+    title: 'Save current work',
+    label: 'Name',
+    value: suggested,
+    options: folders.length ? [
+      { value: '', label: 'Workspace root' },
+      ...folders.map(folder => ({ value: folder.id, label: explorerFolderPath(folder, folders) })),
+    ] : null,
+    optionValue: active?.folderId || '',
+    includeInput: folders.length > 0,
+    confirmLabel: 'Save',
+  });
+  if (result == null) return null;
+  const title = typeof result === 'object' ? result.value : result;
+  const folderId = typeof result === 'object' ? result.option || null : active?.folderId || null;
   await flushPendingSave();
   const source = sessionController.serializeDrafts()[type].source;
   const record = await workspaceStore.createSession({
     type,
-    workspaceId: active?.workspaceId || 'workspace-default',
-    folderId: active?.folderId || null,
+    workspaceId,
+    folderId,
     title,
     source,
   });
