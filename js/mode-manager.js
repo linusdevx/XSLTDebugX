@@ -143,8 +143,14 @@ class ModeManager {
     const btnXpath = document.getElementById('modeBtnXpath');
     const switcher = document.getElementById('modeSwitcher');
 
-    if (btnXslt) btnXslt.classList.toggle('active', this.isXslt);
-    if (btnXpath) btnXpath.classList.toggle('active', this.isXpath);
+    if (btnXslt) {
+      btnXslt.classList.toggle('active', this.isXslt);
+      btnXslt.setAttribute('aria-pressed', String(this.isXslt));
+    }
+    if (btnXpath) {
+      btnXpath.classList.toggle('active', this.isXpath);
+      btnXpath.setAttribute('aria-pressed', String(this.isXpath));
+    }
     if (switcher) switcher.classList.toggle('xpath-mode', this.isXpath);
   }
 
@@ -214,11 +220,13 @@ class ModeManager {
         if (typeof runXPath === 'function') runXPath();
       };
       runBtn.innerHTML = _runBtnHtml('XPATH');
+      runBtn.setAttribute('aria-label', 'Run XPath');
     } else {
       runBtn.onclick = () => {
         if (typeof runTransform === 'function') runTransform();
       };
       runBtn.innerHTML = _runBtnHtml('XSLT');
+      runBtn.setAttribute('aria-label', 'Run XSLT transform');
     }
     reinitIcons(runBtn);
   }

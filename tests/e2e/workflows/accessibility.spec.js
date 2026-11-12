@@ -158,7 +158,7 @@ test.describe('accessibility improvements', () => {
   // ── Run button accessible name excludes kbd shortcut ──────────────────────
 
   test('Run button has aria-label that excludes keyboard hint', async ({ page }) => {
-    await expect(page.locator('#runBtn')).toHaveAttribute('aria-label', 'Run transform');
+    await expect(page.locator('#runBtn')).toHaveAttribute('aria-label', 'Run XSLT transform');
   });
 
   // ── Example cards keyboard navigation ────────────────────────────────────
