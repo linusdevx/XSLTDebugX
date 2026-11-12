@@ -85,11 +85,18 @@ This file is the handoff for future implementation work. The local-first workspa
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
 
+## Follow-up verification
+
+- [ ] In the deployed build, smoke-test Move to Trash, restore, empty Trash, and permanent delete with disposable sessions.
+- [ ] Review the compact footer branding in production; GitHub, version/About, and the SAP disclaimer are functional, while the LinkedIn link is optional branding.
+- [ ] Recheck the first-visit starter in a fresh browser profile; existing users correctly continue seeing their saved session instead.
+- [ ] Recheck Explorer overflow menus, toasts, and folder buttons in both themes after deployment.
+
 ## Final gate for any improvement batch — complete
 
 - ✅ Production build succeeds (`npm run build` clean, 8.7s).
 - ✅ Focused tests for changed behavior pass (runtime-profile × 2, safe-ingress × 5, accessibility × 14 confirmed passing — 13 original + 1 new example card keyboard test).
 - ✅ `git diff --check` is clean (only line-ending warning on humans.txt, not whitespace errors).
-- ✅ Full regression: 170/174 passed. 4 pre-existing flaky tests (mode-switching rapid, session-conflict two-tab, session-controller timeout, Ctrl+B viewport — Ctrl+B fixed; others pass in isolation, fail only under parallel worker load).
+- ✅ Latest upstream CI regression: 175/175 passed with 4 workers.
 - ✅ No source content is uploaded unexpectedly.
-- ❌ Deployment or merge — awaiting explicit approval.
+- ✅ Workspace PR #89 merged into `dev`; production deployment / `dev` → `main` remains an explicit release decision.

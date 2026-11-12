@@ -289,7 +289,7 @@
       padding: 11px 10px 11px 12px;
       border: 1px solid var(--border-bright);
       border-radius: var(--r-sm);
-      background: var(--surface);
+      background: var(--bg-modal);
       box-shadow: 0 4px 14px rgba(0,0,0,0.28);
       font: 12px var(--font-mono);
       opacity: 0;
@@ -585,7 +585,7 @@
     }
     .explorer-new-btn.xpath:hover { background: rgba(245,165,36,0.20); }
     .explorer-new-btn.folder {
-      border: 1px solid var(--border); background: var(--surface);
+      border: 1px solid var(--border); background: var(--bg-panel);
       color: var(--text-secondary); padding: 3px 5px;
     }
     .explorer-new-btn.folder:hover { background: var(--hover-bg); color: var(--text-primary); }
@@ -650,7 +650,7 @@
     .explorer-row-menu-trigger { letter-spacing: 1px; font-size: 11px !important; }
     .explorer-row-menu {
       position: fixed; z-index: 200;
-      background: var(--surface); border: 1px solid var(--border-bright);
+      background: var(--bg-modal); border: 1px solid var(--border-bright);
       border-radius: var(--r-sm); box-shadow: 0 4px 16px rgba(0,0,0,0.25);
       min-width: 150px; padding: 3px;
       display: flex; flex-direction: column;
