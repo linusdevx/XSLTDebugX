@@ -275,15 +275,6 @@ class ModeManager {
     this.models.xpath = xpathModel;
   }
 
-  restoreFromSession(savedSession) {
-    const targetMode = savedSession?.xpathEnabled === true ? 'XPATH' : 'XSLT';
-    const wasAlreadyInMode = this.mode === targetMode;
-    this.setMode(targetMode);
-    // setMode is a no-op if already in the target mode, so updateUI (and its
-    // updatePanelVisibility call) is skipped — apply it explicitly for initial load.
-    if (wasAlreadyInMode) this.updatePanelVisibility();
-  }
-
   toJSON() {
     return {
       mode: this.mode,

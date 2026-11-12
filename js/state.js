@@ -223,11 +223,6 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', () => { void flushPendingSave().catch(() => {}); });
 
-function loadSavedState() {
-  // Fresh workspace policy: do not import the legacy combined session.
-  return null;
-}
-
 function _resetXPathMode() {
   // Cancel pending validation/save timers so they don't fire against the freshly-reset content.
   clearTimeout(xmlDebounce);  xmlDebounce  = null;

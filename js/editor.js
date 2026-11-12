@@ -52,17 +52,13 @@ require(['vs/editor/editor.main'], () => {
     }
   };
 
-  // Legacy combined-session restore is intentionally disabled. Quick Playground
-  // drafts restore asynchronously from IndexedDB after Saxon-JS is ready.
-  const _savedSession = window._pendingShareData ? null : loadSavedState();
-
   xmlModelXslt = monaco.editor.createModel(
-    _savedSession?.xmlXslt ?? EXAMPLES.identityTransform.xml,
+    EXAMPLES.identityTransform.xml,
     'xml'
   );
 
   xmlModelXpath = monaco.editor.createModel(
-    _savedSession?.xmlXpath ?? EXAMPLES.xpathNavigation.xml,
+    EXAMPLES.xpathNavigation.xml,
     'xml'
   );
 
@@ -73,7 +69,7 @@ require(['vs/editor/editor.main'], () => {
 
   eds.xslt = monaco.editor.create(
     document.getElementById('xsltEd'),
-    { ...shared, language: 'xml', value: _savedSession?.xslt ?? EXAMPLES.identityTransform.xslt }
+    { ...shared, language: 'xml', value: EXAMPLES.identityTransform.xslt }
   );
 
   eds.out = monaco.editor.create(
@@ -780,64 +776,6 @@ require(['vs/editor/editor.main'], () => {
       // Share link takes priority over saved session.
       if (window._pendingShareData) {
         openIncomingShareDialog(window._pendingShareData);
-      } else if (_savedSession) {
-        if (Array.isArray(_savedSession.headers)) {
-          _savedSession.headers.forEach(r => {
-            kvIdSeq++;
-            kvData.headers.push({ id: kvIdSeq, name: r.name, value: r.value });
-          });
-        }
-        if (Array.isArray(_savedSession.properties)) {
-          _savedSession.properties.forEach(r => {
-            kvIdSeq++;
-            kvData.properties.push({ id: kvIdSeq, name: r.name, value: r.value });
-          });
-        }
-        if (_savedSession.leftCollapsed)  document.getElementById('colLeft')?.classList.add('collapsed');
-        if (!_savedSession.rightCollapsed) document.getElementById('colRight')?.classList.remove('collapsed');
-        if (typeof _savedSession.consoleHeight === 'number') {
-          setConsoleHeight(_savedSession.consoleHeight);
-        }
-
-        {
-          const _expr = _savedSession.xpathExpr || (EXAMPLES.xpathNavigation?.xpathExpr ?? '');
-          if (typeof _syncXPathInput === 'function') _syncXPathInput(_expr);
-          else { const xi = document.getElementById('xpathInput'); if (xi) xi.value = _expr; }
-        }
-
-        modeManager.restoreFromSession(_savedSession);
-
-        if (eds.xml && typeof _updateCursorStat === 'function') {
-          _updateCursorStat(eds.xml, modeManager.isXpath ? 'XML Source' : 'XML Input');
-        }
-
-        if (modeManager.isXpath) {
-          const _ta = document.getElementById('xpathInput');
-          if (_ta) { _ta.style.height = 'auto'; _ta.style.height = _ta.scrollHeight + 'px'; }
-        }
-
-        setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 260);
-
-        const ago = _savedSession.savedAt
-          ? (() => {
-              const diff = Math.round((Date.now() - _savedSession.savedAt) / 1000);
-              if (diff < 60)   return `${diff}s ago`;
-              if (diff < 3600) return `${Math.round(diff/60)}m ago`;
-              return `${Math.round(diff/3600)}h ago`;
-            })()
-          : '';
-        clog(`Session restored${ago ? ' · saved ' + ago : ''} · ${modeManager.isXpath ? 'XPath' : 'XSLT'} mode ✓`, 'success');
-
-        if (modeManager.isXpath && _savedSession.lastExampleKey) {
-          window._lastExampleKey = _savedSession.lastExampleKey;
-          const _ex = EXAMPLES[_savedSession.lastExampleKey];
-          if (_ex?.xpathHints && typeof renderXPathHints === 'function') {
-            renderXPathHints(_ex.xpathHints);
-          }
-        }
-        if (modeManager.isXpath) {
-          setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 400);
-        }
       } else {
         clog('Identity Transform loaded. Use Examples menu to load CPI scenarios.', 'info');
         // Pre-load default XPath so the bar is ready when user switches to XPath mode.
