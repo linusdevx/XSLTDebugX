@@ -310,11 +310,11 @@
 
   <div class="mode-switcher" id="modeSwitcher">
     <div class="mode-pill"></div>
-    <button class="mode-btn mode-btn-xslt active" id="modeBtnXslt" onclick="if(modeManager.isXpath)toggleXPath()" aria-pressed="true"  aria-label="XSLT Transform mode" title="XSLT Transform mode">
+    <button class="mode-btn mode-btn-xslt active" id="modeBtnXslt" onclick="if(modeManager.isXpath)toggleXPath()" aria-label="XSLT Transform mode" title="XSLT Transform mode">
       <i data-lucide="code-xml" width="12" height="12"></i>
       XSLT
     </button>
-    <button class="mode-btn mode-btn-xpath" id="modeBtnXpath" onclick="if(!modeManager.isXpath)toggleXPath()" aria-pressed="false" aria-label="XPath evaluator mode" title="XPath evaluator mode">
+    <button class="mode-btn mode-btn-xpath" id="modeBtnXpath" onclick="if(!modeManager.isXpath)toggleXPath()" aria-label="XPath evaluator mode" title="XPath evaluator mode">
       <i data-lucide="braces" width="12" height="12"></i>
       XPath
     </button>
@@ -339,7 +339,7 @@
     <i data-lucide="info" width="15" height="15"></i>
   </button>
 
-  <button class="run-btn" id="runBtn" aria-label="Run XSLT transform" onclick="createRipple(event); runTransform()">
+  <button class="run-btn" id="runBtn" aria-label="Run transform" onclick="createRipple(event); runTransform()">
     <i data-lucide="zap" width="14" height="14"></i>
     Run
     <span class="kbd">Ctrl+↵</span>
