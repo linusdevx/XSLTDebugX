@@ -421,10 +421,9 @@
             <div class="xpath-overlay" id="xpathOverlay"></div>
             <textarea class="xpath-input" id="xpathInput" rows="1"
               placeholder="e.g. //Order[@status='OPEN'] or count(//Item)"
-              aria-label="XPath expression"
               onkeydown="if(event.key==='Enter'){event.preventDefault();runXPath();}else if(event.key==='ArrowUp'){event.preventDefault();_xpathHistoryNavigate('up',this);}else if(event.key==='ArrowDown'){event.preventDefault();_xpathHistoryNavigate('down',this);}"
               oninput="_xpathHistoryCursor=-1;scheduleSave();this.style.height='auto';this.style.height=this.scrollHeight+'px';_highlightXPath(this.value);"
-              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+              autocomplete="off" spellcheck="false"></textarea>
           </div>
         </div>
         <!-- ── XPath Hints Strip ── -->
@@ -526,10 +525,10 @@
         <span class="console-err-badge" id="consoleErrBadge">0</span>
         <div class="console-bar-actions" onclick="event.stopPropagation()">
           <div class="console-filters">
-            <button class="console-filter-btn active" data-filter="all"   onclick="setConsoleFilter('all')"   aria-pressed="true"  aria-label="Show all messages" title="Show all messages"><i data-lucide="list-filter" width="11" height="11"></i></button>
-            <button class="console-filter-btn"         data-filter="info"  onclick="setConsoleFilter('info')"  aria-pressed="false" aria-label="Info only" title="Info only"><i data-lucide="info" width="11" height="11"></i></button>
-            <button class="console-filter-btn"         data-filter="warn"  onclick="setConsoleFilter('warn')"  aria-pressed="false" aria-label="Warnings only" title="Warnings only"><i data-lucide="alert-triangle" width="11" height="11"></i></button>
-            <button class="console-filter-btn"         data-filter="error" onclick="setConsoleFilter('error')" aria-pressed="false" aria-label="Errors only" title="Errors only"><i data-lucide="x-circle" width="11" height="11"></i></button>
+            <button class="console-filter-btn active" data-filter="all"   onclick="setConsoleFilter('all')"   aria-label="Show all messages" title="Show all messages"><i data-lucide="list-filter" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="info"  onclick="setConsoleFilter('info')"  aria-label="Info only" title="Info only"><i data-lucide="info" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="warn"  onclick="setConsoleFilter('warn')"  aria-label="Warnings only" title="Warnings only"><i data-lucide="alert-triangle" width="11" height="11"></i></button>
+            <button class="console-filter-btn"         data-filter="error" onclick="setConsoleFilter('error')" aria-label="Errors only" title="Errors only"><i data-lucide="x-circle" width="11" height="11"></i></button>
           </div>
           <div class="pane-divider"></div>
           <input class="console-search" id="consoleSearch" type="text" placeholder="search…" aria-label="Search console output" oninput="applyConsoleSearch(this.value)" title="Filter console by text"/>
@@ -858,7 +857,7 @@
       <span class="ex-modal-count" id="exModalCount"></span>
       <div class="ex-search-wrap">
         <i data-lucide="search" width="14" height="14" class="ex-search-icon"></i>
-        <input class="ex-modal-search" id="exModalSearch" placeholder="Search examples…" oninput="filterExamples()" aria-label="Search examples" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input class="ex-modal-search" id="exModalSearch" placeholder="Search examples…" oninput="filterExamples()" autocomplete="off">
       </div>
       <button class="ex-modal-close" onclick="closeExModal()" aria-label="Close" title="Close"><i data-lucide="x" width="18" height="18"></i></button>
     </div>
