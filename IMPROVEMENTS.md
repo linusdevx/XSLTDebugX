@@ -66,6 +66,10 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ `clearSession()` POM helper fixed — now uses Session menu (`#sessionMenuTrigger` + "Clear current content") instead of stale `#clearSessionBtn`.
 - ✅ `runtime-profile.spec.js` and `safe-ingress.spec.js` updated to interact with `#settingsRuntimeProfile` via Settings modal instead of removed `#runtimeProfileSelect` sidebar element.
 - ✅ 14th accessibility test added: example card keyboard navigation (role=button, tabindex=0, aria-label, Enter key activates and closes modal).
+- ✅ Examples now run immediately when selected; the redundant Auto-run preference and its stale helper/test coverage were removed.
+- ✅ Editor `Copy XPath — Exact/General` actions are copy-only in both modes and no longer replace or execute the active XPath query.
+- ✅ Global dialogs now layer above the narrow-screen Explorer drawer; About, Help, Settings, Share, and Examples remain usable while Explorer is open.
+- ✅ About feedback now links directly to GitHub's new-issue form.
 
 ## Priority 7 — Accessibility pass: keyboard on interactive divs ✅ Done
 
@@ -87,6 +91,9 @@ This file is the handoff for future implementation work. The local-first workspa
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
+- UI terminology cleanup: keep internal `cpi` compatibility identifiers, but gradually use **Cloud Integration** or **Runtime** in user-facing copy where that is clearer.
+- Standard XSLT positioning: validate that the Standard runtime profile, simplified Input → XSLT → Output workflow, examples, and SEO copy are understandable to users outside SAP Cloud Integration before expanding it further.
+- Toolbar and pane-action simplification: revisit only after usage feedback; prefer removing duplicate actions over adding more menus or icons.
 
 ## Follow-up verification
 
@@ -94,6 +101,12 @@ This file is the handoff for future implementation work. The local-first workspa
 - [ ] Review the compact footer branding in production at desktop and constrained widths.
 - [ ] Recheck the first-visit starter in a fresh browser profile; existing users correctly continue seeing their saved session instead.
 - [ ] Recheck Explorer overflow menus, toasts, and folder buttons in both themes after deployment.
+- [ ] Smoke-test one XSLT and one XPath example to confirm selection closes the library and executes immediately without an Auto-run setting.
+- [ ] In XPath mode, right-click XML and verify both Copy XPath actions only copy the path and do not alter or execute the current query.
+- [ ] With Explorer open at constrained width, open About, Help, Settings, Share, and Examples and confirm each dialog is above the drawer and returns focus correctly.
+- [ ] Confirm the About feedback link opens the upstream repository's pre-filled new-issue page in a separate tab.
+- [ ] Validate the CPI Helper Chrome extension data-transfer/share contract against the deployed build before the final release.
+- [ ] Perform a final light/dark theme and responsive-layout visual pass after Cloudflare Pages deploys the release candidate.
 
 ## Final gate for any improvement batch — complete
 
