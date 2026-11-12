@@ -169,6 +169,7 @@ function startConsoleResize(e) {
     panel.classList.remove('dragging');
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
+    void workspaceStore?.setSetting('consoleHeight', consoleHeight).catch(() => {});
     scheduleSave();
   }
   window.addEventListener('pointermove', onMove);
