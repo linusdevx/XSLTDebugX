@@ -219,7 +219,7 @@ async function refreshWorkspaceSettingsStatus() {
     const format = bytes => bytes == null ? 'unknown usage' : `${(bytes / 1024 / 1024).toFixed(1)} MB used`;
     storage.textContent = status.blocked
       ? 'Upgrade blocked by another tab · close it, then reload'
-      : `${format(status.usage)} · ${status.persisted === true ? 'persistent' : status.persisted === false ? 'browser-managed' : 'persistence unknown'}`;
+      : `${format(status.usage)} · clearing browser site data removes this workspace`;
     const items = await workspaceStore.listTrash();
     trash.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
   } catch (error) {
@@ -236,20 +236,6 @@ function setWorkspaceTheme(theme) {
 async function setExplorerStartupPreference(open) {
   await workspaceStore.setSetting('explorerOpen', Boolean(open));
   toggleExplorer(Boolean(open));
-}
-
-async function requestWorkspacePersistence() {
-  const error = document.getElementById('workspaceSettingsError');
-  try {
-    if (!navigator.storage?.persist) throw new Error('Persistent storage requests are not supported by this browser.');
-    const granted = await navigator.storage.persist();
-    if (!granted) throw new Error('The browser kept storage under automatic management. Backups remain recommended.');
-    error.hidden = true;
-    await refreshWorkspaceSettingsStatus();
-  } catch (cause) {
-    error.textContent = cause.message;
-    error.hidden = false;
-  }
 }
 
 async function emptyWorkspaceTrash() {

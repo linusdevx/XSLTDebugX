@@ -210,7 +210,7 @@ test.describe('Examples Library Workflow', () => {
   • Examples modal opens/closes
   • Examples load and populate editors
   • Search and filtering work
-  • Auto-run preference persists
+  • Selecting an example runs it immediately
 `);
   });
 });

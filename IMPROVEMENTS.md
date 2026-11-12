@@ -70,6 +70,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ Editor `Copy XPath — Exact/General` actions are copy-only in both modes and no longer replace or execute the active XPath query.
 - ✅ Global dialogs now layer above the narrow-screen Explorer drawer; About, Help, Settings, Share, and Examples remain usable while Explorer is open.
 - ✅ About feedback now links directly to GitHub's new-issue form.
+- ✅ Settings explains that workspace data is saved automatically on-device; the confusing persistent-storage request and browser-management jargon were removed.
 
 ## Priority 7 — Accessibility pass: keyboard on interactive divs ✅ Done
 
