@@ -515,6 +515,7 @@ function runTransform() {
       if (_badge) _badge.textContent = _labelMap[_outLang] ?? 'TEXT';
       if (_dlBtn) {
         _dlBtn.title = `Download output as ${_ext.toUpperCase()}`;
+        _dlBtn.setAttribute('aria-label', `Download output as ${_ext.toUpperCase()}`);
         _dlBtn.onclick = () => downloadPane('out', `output.${_ext}`);
       }
 

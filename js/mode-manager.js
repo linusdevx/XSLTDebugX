@@ -214,11 +214,13 @@ class ModeManager {
         if (typeof runXPath === 'function') runXPath();
       };
       runBtn.innerHTML = _runBtnHtml('XPATH');
+      runBtn.setAttribute('aria-label', 'Run XPath');
     } else {
       runBtn.onclick = () => {
         if (typeof runTransform === 'function') runTransform();
       };
       runBtn.innerHTML = _runBtnHtml('XSLT');
+      runBtn.setAttribute('aria-label', 'Run XSLT transform');
     }
     reinitIcons(runBtn);
   }

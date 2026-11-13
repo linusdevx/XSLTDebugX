@@ -46,6 +46,7 @@ function _resetOutputPane(lang, defaultName) {
   const dl = document.getElementById('outDownloadBtn');
   if (dl) {
     dl.title   = `Download output as ${lang.toUpperCase()}`;
+    dl.setAttribute('aria-label', `Download output as ${lang.toUpperCase()}`);
     dl.onclick = () => downloadPane('out', defaultName);
   }
   eds.out.updateOptions({ readOnly: false });

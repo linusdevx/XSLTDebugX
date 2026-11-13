@@ -164,6 +164,13 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`_xpathHistoryCursor = -1` at `js/xpath.js:432` is redundant** — `_xpathHistoryPush()` already resets the cursor to -1 at line 90; the explicit reset on line 432 immediately after the push call was a no-op. Removed.
 
+## Priority 16 — Accessibility and consistency fixes (survey 2026-11-13 batch 9)
+
+### Bugs / Consistency
+
+- ✅ **`outDownloadBtn` `aria-label` not updated when output language changes** (`js/transform.js`, `js/state.js`) — `title` was updated dynamically after each transform run (to reflect XML/JSON/TEXT), but `aria-label` stayed at the static "Download output as XML" set in `index.html`. Fixed: both `_resetOutputPane` and the post-transform label update now set `aria-label` to match `title`.
+- ✅ **`runBtn` `aria-label="Run transform"` never changes with mode** (`js/mode-manager.js`) — `aria-label` takes precedence over button text for the accessible name, so screen readers announced "Run transform" even in XPath mode. `updateRunButton()` now sets `aria-label="Run XPath"` or `aria-label="Run XSLT transform"` on each mode switch.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
