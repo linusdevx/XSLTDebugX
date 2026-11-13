@@ -207,6 +207,14 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`mode-manager.js` uses `console.error`/`console.warn` after full app init** (`js/mode-manager.js:19,45,50`) — `setMode()` fires well after `clog` and `logError` are available. Invalid mode error now uses `clog(..., 'error')`, mode persist failure and mode switch error use `logError(context, err)` (which also calls `console.warn` for DevTools). Errors now appear in the in-app console.
 - ✅ **`window.goatcounter?.count` in `runTransform` has wrong indentation** (`js/transform.js:427`) — the GoatCounter analytics call was indented 2 spaces (function-body level) but sits inside the `try` block which uses 4-space indentation. No behaviour change.
 
+## Priority 22 — Code quality fixes (survey 2026-11-13 batch 15)
+
+### Consistency
+
+- ✅ **`beginTemporary` silently swallows `setSetting` failure** (`js/session-controller.js:259`) — `setSetting('activeSession:type', null)` used `.catch(() => {})`, so if the IndexedDB write fails the active-session pointer stays stale and the wrong session restores on next page load. Changed to `.catch(error => logError(...))` so the failure appears in the in-app console.
+- ✅ **`activateNamedSession` silently swallows `setSetting` failure** (`js/session-controller.js:273`) — same pattern; newly-activated session ID would not persist across reload. Same fix.
+- ✅ **`handleRemoteTrash` silently swallows `setSetting` failure** (`js/session-controller.js:362`) — same pattern after a session is trashed in another tab. Same fix.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

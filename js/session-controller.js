@@ -256,10 +256,7 @@
       this._clearDerivedState(type);
       setSaveIndicator('temporary');
       this._updateCurrentItemLabel();
-      void this.store.setSetting(`activeSession:${type}`, null).catch(() => {});
-    }
-
-    activateNamedSession(record) {
+      void this.store.setSetting(`activeSession:${type}`, null).catch(error => logError('Could not clear active session pointer', error));
       if (!record || (record.type !== 'xslt' && record.type !== 'xpath')) {
         throw new Error('A valid saved session is required.');
       }
@@ -270,7 +267,7 @@
       this.setSourceMetadata(record.type, record.source);
       setSaveIndicator('saved');
       this._updateCurrentItemLabel();
-      void this.store.setSetting(`activeSession:${record.type}`, record.id).catch(() => {});
+      void this.store.setSetting(`activeSession:${record.type}`, record.id).catch(error => logError('Could not persist active session', error));
       if (typeof refreshExplorer === 'function') void refreshExplorer();
     }
 
@@ -359,7 +356,7 @@
         this.pendingConflicts[type] = null;
         this.temporaryModes.add(type);
         this.temporaryTitles[type] = `${active.title} (Recovered)`;
-        void this.store.setSetting(`activeSession:${type}`, null).catch(() => {});
+        void this.store.setSetting(`activeSession:${type}`, null).catch(error => logError('Could not clear active session pointer', error));
         if ((modeManager.isXpath ? 'xpath' : 'xslt') === type) {
           setSaveIndicator('temporary');
           this._updateCurrentItemLabel();
