@@ -165,7 +165,7 @@ true
 "cpi"  // or "standard"
 
 // Check active session (null = quick playground)
-> sessionController._activeSession
+> sessionController.getCurrentSession()
 { id: "sess_abc", title: "My Mapping", ... }
 
 // Check IndexedDB sessions
@@ -334,6 +334,9 @@ Before committing or submitting a PR, verify:
 - [ ] Comments explain complex logic
 - [ ] Variable names are clear and follow conventions (camelCase, `_privatePrefix`)
 - [ ] No hardcoded values — use constants defined at module top
+- [ ] Programmatic `setValue` calls wrapped with `_withSuppress(['save', 'validation'], fn)` (not bare `setValue`)
+- [ ] IndexedDB failures (`.catch`) use `logError(context, err)` for data-affecting operations, not `.catch(() => {})`
+- [ ] `scheduleSave()` not called for CSS-only layout state (column collapse, view mode)
 
 ### ✅ Examples Library
 

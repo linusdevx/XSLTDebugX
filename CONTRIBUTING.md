@@ -59,6 +59,9 @@ Before submitting:
 - [ ] No new unprefixed globals — check `state.js` first
 - [ ] `console.log` restored, Monaco models disposed (no memory leaks)
 - [ ] Debounce timing unchanged (800ms validation)
+- [ ] Programmatic `setValue` calls wrapped with `_withSuppress(['save', 'validation'], fn)`
+- [ ] IndexedDB `.catch` uses `logError(context, err)` for data-affecting operations, not `.catch(() => {})`
+- [ ] `scheduleSave()` only called when session content changes — NOT for CSS-only layout state (column collapse, view switching)
 - [ ] Manual browser test — no DevTools console errors
 - [ ] `npm run test:e2e` passes (Chromium — the only project enabled in `playwright.config.js` / CI)
 - [ ] Firefox manual smoke (optional) — Firefox/WebKit projects are commented out
@@ -96,10 +99,10 @@ xsltDebounce = setTimeout(() => validateXslt(), 800);
 xsltDebounce = setTimeout(() => validateXslt(), 800);
 ```
 
-### Error Handling — Use `clog()`
+### Error Handling — Use `clog()` and `logError()`
 
 ```javascript
-// ✅ Good
+// ✅ Good — user-visible error via in-app console
 try {
   const result = SaxonJS.transform({
     stylesheetText: xslt,
@@ -111,10 +114,16 @@ try {
   return null;
 }
 
-// ❌ Bad — silent failure or raw console
+// ✅ Good — IndexedDB failure surfaced in-app + DevTools
+void store.setSetting('key', val).catch(error => logError('Could not persist X', error));
+
+// ❌ Bad — silent failure or raw console (use logError instead for IndexedDB)
 try { ... } catch (err) { return null; }
 console.error('Something went wrong');
+void store.setSetting('key', val).catch(() => {});  // ❌ swallows data loss
 ```
+
+**When `.catch(() => {})` is acceptable:** fire-and-forget UI preferences (theme, console height) that default gracefully. Never for session data or anything affecting what restores on reload.
 
 ### Memory — Always Clean Up
 

@@ -211,8 +211,8 @@ if (hasCPI) {
 - Only applied if Saxon was actually invoked (not on pre-flight failures)
 
 **Debouncing:**
-- Validation debounced at 800ms (handled by `panes.js`)
-- `persistSession()` also debounced at 800ms
+- Validation debounced at 800ms (handled by `editor.js` listeners)
+- `scheduleSave()` is only triggered when session content changes — NOT from the transform itself (column auto-expand, output rendering)
 - Don't add transform debouncing (user expects immediate execution)
 
 ### Memory Management

@@ -24,12 +24,12 @@ XSLTDebugX is a **vanilla JavaScript application** deployed as a static site on 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        index.html                             │
-│  (loads CSS + 17 JS modules + Monaco Editor + Saxon-JS + pako + Lucide Icons)│
+│  (loads CSS + 19 JS modules + Monaco Editor + Saxon-JS + pako + fflate + Lucide Icons)│
 └──────────────────────────────────────────────────────────────┘
                               ↓
               ┌─────────────────────────────────┐
               │   Vanilla ES6+ JavaScript       │
-              │   (17 modules)                  │
+              │   (19 modules)                  │
               └─────────────────────────────────┘
                               ↓
         ┌─────────────────────────────────────────────┐
@@ -306,7 +306,8 @@ On user edit (temporary/draft session):
     ↓
     Persisted fields: xml, xslt (or expression), headers, properties,
     runtimeProfile, activeMode, savedAt.
-    (Note: rendered output is NOT persisted — it's recomputed on demand.)
+    NOT persisted: rendered output (recomputed on demand),
+    column collapsed state (CSS-only), console messages.
     ↓
     Complete
 ```
@@ -532,19 +533,25 @@ window.cpiSetHeader = (exchange, name, value) => {
 
 **Why**: Allows Saxon to evaluate complex XPath expressions (including `concat()`, variables, functions) before calling the interceptor with computed values. No regex extraction, 100% fidelity.
 
-### 4. Suppression Flags for Synthetic Changes
+### 4. `_withSuppress` for Programmatic Changes
 
-**Pattern**: Use flags to skip validation after programmatic edits that shouldn't trigger error checking.
+**Pattern**: Wrap all programmatic `setValue` calls with `_withSuppress(['save', 'validation'], fn)` to prevent spurious validation debounces and save cycles.
 
 ```javascript
+// Inside session-controller.js when restoring a session:
+_withSuppress(['save', 'validation'], () => xmlModelXslt?.setValue(source.xml ?? ''));
+_withSuppress(['save', 'validation'], () => eds.xslt?.setValue(source.xslt ?? ''));
+
 // Inside ModeManager.setup() before swapping the XML model:
-_suppressNextXmlChange = true;       // arm the flag
+_suppressNextXmlChange = true;       // arm the flag for the model swap
 eds.xml.setModel(targetModel);       // synthetic onDidChangeModelContent fires
 // editor.js's listener checks _suppressNextXmlChange, skips validation,
-// and resets it back to false — do NOT clear it here on the same line.
+// and resets it — do NOT clear it here on the same line.
 ```
 
-**Why**: Prevents stale error markers after loading examples or switching modes.
+`_withSuppress` is one-shot: the flags auto-clear on the next `onDidChangeModelContent`, so exceptions can never leave them stuck at `true`.
+
+**Why**: Prevents stale error markers and spurious save cycles after programmatic editor changes (loading examples, restoring sessions, clearing panes, format/minify).
 
 ### 5. Generation Counters to Handle Async Completion
 
@@ -711,19 +718,55 @@ Always guard Saxon calls with `if (!saxonReady)`. Saxon loads async from CDN —
 
 `rewriteCPICalls()` in `transform.js` shifts error line numbers. Don't modify it without running the full CPI test suite (`npx playwright test --grep "CPI"`).
 
-### 5. Validation Debouncing
+### 5. Programmatic Editor Changes — `_withSuppress`
 
-Validation is debounced at 800ms. When making programmatic editor changes, set `_suppressNextValidation = true` first to avoid spurious error markers.
+Always wrap programmatic `setValue` calls with `_withSuppress(['save', 'validation'], fn)` to avoid spurious validation debounces and save cycles:
 
-### 6. Share URL Limit
+```javascript
+// ✅ Correct — both flags suppressed
+_withSuppress(['save', 'validation'], () => eds.xslt?.setValue(newContent));
+
+// ❌ Wrong — fires validation debounce + save cycle immediately
+eds.xslt.setValue(newContent);
+```
+
+`_withSuppress` is a one-shot suppressor: the flag clears automatically on the next `onDidChangeModelContent` event, so exceptions can't leave the flag stuck.
+
+### 6. IndexedDB Error Handling — `logError`
+
+Never swallow IndexedDB failures silently for data-affecting operations. Use `logError(context, err)`:
+
+```javascript
+// ✅ Correct — failure appears in the in-app console + DevTools
+void this.store.setSetting('key', value).catch(error => logError('Could not persist X', error));
+
+// ❌ Wrong — failure silently lost; stale state restores on reload
+void this.store.setSetting('key', value).catch(() => {});
+```
+
+Silent `.catch(() => {})` is acceptable only for fire-and-forget UI preferences (theme, console height) that can safely fall back to defaults.
+
+### 7. What IS and ISN'T Persisted via `serializeDrafts()`
+
+`serializeDrafts()` (in `session-controller.js`) saves: `xmlModelXslt`/`xmlModelXpath`, `eds.xslt`, XPath expression, headers/properties, runtimeProfile.
+
+**NOT persisted** (CSS-only or derived state):
+- Column collapsed state (`colLeft`, `colCenter`, `colRight`)
+- `eds.out` content (recomputed on next transform run)
+- Console messages
+- Pane splitter positions (persisted separately to IndexedDB by `pane-layout.js`)
+
+**Implication**: Do not call `scheduleSave()` from code that only changes CSS-only layout state (column collapse, view mode). This is the source of many past spurious save cycles.
+
+### 8. Share URL Limit
 
 URLs cap at ~2,000 chars. Large XSLT + XML silently fail to encode. No warning is shown — users discover on load.
 
-### 7. Storage Versioning
+### 9. Storage Versioning
 
 Primary persistence is IndexedDB (`xdebugx-workspace-v1` database). `localStorage['xdebugx-session-v1']` is kept as a quick-playground draft fallback only. If you change the IndexedDB schema, bump the `_DB_VERSION` constant in `workspace-store.js` and provide an `onupgradeneeded` migration path. If you change the localStorage schema, bump to `v2` — old data is silently ignored.
 
-### 8. Mode Switch Timing
+### 10. Mode Switch Timing
 
 Mode switches trigger UI animations (~1.5s). XPath-specific DOM elements don't exist in XSLT mode. Wait for `#xpathInput` before interacting:
 
@@ -736,7 +779,9 @@ await page.waitForSelector('#xpathInput'); // in tests
 
 - [ ] No new unprefixed globals — check `state.js`
 - [ ] Saxon calls guarded with `saxonReady`
-- [ ] Programmatic editor changes use `_suppressNextValidation`
+- [ ] Programmatic editor changes wrapped with `_withSuppress(['save', 'validation'], fn)`
+- [ ] IndexedDB failures use `logError()`, not `.catch(() => {})`
+- [ ] `scheduleSave()` only called when session content (not CSS layout state) changes
 - [ ] localStorage schema unchanged, or version bumped
 - [ ] `rewriteCPICalls()` untouched, or CPI tests run
 

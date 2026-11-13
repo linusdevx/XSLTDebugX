@@ -114,7 +114,7 @@ Tests switching between XSLT and XPath modes - 13 tests (12 real + 1 SUMMARY):
 **Run**: `npx playwright test tests/e2e/workflows/mode-switching.spec.js`
 
 ### 3. Session Management (`workflows/session-management.spec.js`)
-Tests localStorage persistence - 8 tests (7 real + 1 SUMMARY):
+Tests IndexedDB/localStorage persistence - 8 tests (7 real + 1 SUMMARY):
 - ✅ should auto-save session to localStorage
 - ✅ should persist session after page reload
 - ✅ should store output when transform runs
@@ -309,6 +309,7 @@ const mode = await page.getModeIndicator();
 - **`clearSession()`** uses the Session menu (`#sessionMenuTrigger`), not a direct button. The old `#clearSessionBtn` element no longer exists.
 - **`getStoredSession()`** returns a legacy-shaped object using `sessionController.serializeDrafts()` — it maps IndexedDB draft fields to the old localStorage field names for backwards compatibility with existing workflow specs.
 - **`loadFromShareUrl()`** handles the safe-ingress flow automatically: if `#incomingShareBackdrop` appears, it clicks "Open temporarily".
+- **`sessionController.getCurrentSession()`** returns the active named session for the current mode, or `null` for Quick Playground. Do not access `sessionController._activeSession` directly — use the public accessor.
 
 ---
 

@@ -302,10 +302,11 @@ applyTo:
 - See **Section 9** (Workspace & Session Management) for the full API
 
 ### Quick Playground Auto-Save (IndexedDB draft)
-- **scheduleSave()** → debounced 800ms (`state.js`)
-- **_suppressNextSave** → guards programmatic changes (`state.js`)
+- **scheduleSave()** → debounced 800ms (`state.js`); only call when session content changes — NOT for CSS-only layout state
+- **_withSuppress(flags, fn)** → one-shot suppressor for programmatic `setValue` calls; flags: `'save'`, `'validation'`, `'xmlChange'` (`state.js`)
 - Draft keys: `draft-xslt`, `draft-xpath`
 - Source fields: `xmlXslt`, `xmlXpath`, `xslt`, `headers`, `properties`, `xpathExpr`, `runtimeProfile`
+- **NOT persisted**: column collapsed state, `eds.out` content, console messages
 
 ### Named Session Auto-Save
 - **sessionController.saveChain** → persists active named session (`session-controller.js`)
@@ -328,6 +329,7 @@ applyTo:
 
 ### Console
 - **clog(msg, type)** → main logging function (`state.js`)
+- **logError(context, err)** → calls `clog(context + ': ' + msg, 'error')` AND `console.warn('[XSLTDebugX]', context, err)` — use for IndexedDB failures and unexpected errors (`state.js`)
 - **Types**: `'info'`, `'warn'`, `'error'`, `'success'`
 - **Icons per type**: ℹ️, ⚠️, ❌, ✅
 - **escHtml(s)** → XSS protection for log messages (`state.js`)
@@ -409,15 +411,18 @@ applyTo:
 - **Overlay/drawer** on viewports < 900px; inline sidebar above
 
 ### Session Lifecycle
-- **sessionController.restoreSession(record)** → load saved session (`session-controller.js`)
-- **sessionController.saveChain** → flush + persist active session (`session-controller.js`)
-- **sessionController.beginTemporary(data)** → open detached draft (examples/imports) (`session-controller.js`)
+- **sessionController.restoreSession(record)** → load saved session, flush pending save first (`session-controller.js`)
+- **sessionController.activateNamedSession(record)** → mark session as active after save-as-copy / duplicate / conflict-copy; sets save indicator to 'saved', persists pointer to IndexedDB (`session-controller.js`)
+- **sessionController.saveChain** → promise chain; all saves serialized through it (`session-controller.js`)
+- **sessionController.beginTemporary(type, title)** → open detached draft (examples/file imports); clears active session pointer from IndexedDB (`session-controller.js`)
+- **sessionController.getCurrentSession()** → returns active named session for current mode, or `null` for Quick Playground (`session-controller.js`)
+- **flushPendingSave()** → flush any pending scheduled save immediately (`session-controller.js`)
 - **Quick Playground** → unnamed draft stored as `draft-xslt` / `draft-xpath` in IndexedDB
 - **Named sessions** → full records with title, folders, revision, source
 
 ### Storage
 - **workspaceStore.createSession(opts)** → create record (`workspace-store.js`)
-- **workspaceStore.updateSession(id, patch)** → update record (`workspace-store.js`)
+- **workspaceStore.updateSession(id, revision, patch)** → revision-based compare-and-set; throws `{ code: 'CONFLICT' }` if revision mismatches (`workspace-store.js`)
 - **workspaceStore.listSessions(filter)** → query with type/folder/search (`workspace-store.js`)
 - **workspaceStore.getDraft(key)** → get draft-xslt or draft-xpath (`workspace-store.js`)
 - **workspaceStore.putDraft(key, source)** → save draft (`workspace-store.js`)
