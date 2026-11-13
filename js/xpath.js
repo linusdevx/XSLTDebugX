@@ -684,7 +684,7 @@ function restoreOutputSection() {
 function clearXPathInput() {
   _xpathHistoryCursor = -1;
   const input = document.getElementById('xpathInput');
-  if (input) { input.value = ''; input.style.height = 'auto'; _highlightXPath(''); input.focus(); scheduleSave(); }
+  if (input) { input.value = ''; input.style.height = 'auto'; _highlightXPath(''); input.focus(); }
   clearXPathResults();
   renderXPathHints(null);
 }

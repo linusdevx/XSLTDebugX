@@ -141,6 +141,14 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`closeWorkspaceSettings` returns focus synchronously without `requestAnimationFrame` or `isConnected` guard** (`js/explorer.js:206`) — all 9 other modals use `requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus())`; Settings was the only outlier and could call `.focus()` on a detached element.
 
+## Priority 13 — Code quality fixes (survey 2026-11-13 batch 6)
+
+### Bugs / Consistency
+
+- ✅ **`_resetXsltMode` suppresses only `save`, not `validation`** (`js/state.js:264`) — after `setValue` for XML and XSLT models, the `onDidChangeModelContent` handler fires and schedules an 800 ms validation debounce on the just-reset default content. Added `'validation'` to the `_withSuppress` flags so the debounce is suppressed.
+- ✅ **`_resetXPathMode` suppresses only `save`, not `validation`** (`js/state.js:238`) — same issue; `xmlModelXpath.setValue` triggers the XML validation debounce. Fixed to suppress `'validation'` as well.
+- ✅ **`clearXPathInput` calls `scheduleSave()` spuriously** (`js/xpath.js:687`) — XPath input is a plain textarea, not persisted independently; only the last *run* expression is saved. Clearing the input box doesn't change any session data, so `scheduleSave()` is a no-op save cycle. Removed.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

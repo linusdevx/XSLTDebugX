@@ -235,7 +235,7 @@ function _resetXPathMode() {
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
   sessionController?.resetSourceMetadata('xpath');
 
-  _withSuppress(['save'], () => {
+  _withSuppress(['save', 'validation'], () => {
     if (xmlModelXpath) xmlModelXpath.setValue(EXAMPLES.xpathNavigation.xml);
   });
 
@@ -261,7 +261,7 @@ function _resetXsltMode() {
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
   sessionController?.resetSourceMetadata('xslt');
 
-  _withSuppress(['save'], () => {
+  _withSuppress(['save', 'validation'], () => {
     if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
     if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
   });
