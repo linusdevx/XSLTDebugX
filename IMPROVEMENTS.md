@@ -86,6 +86,24 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ `TESTING.md`: added 4 new spec file entries (workspace-explorer, runtime-profile, safe-ingress, accessibility), updated `clearSession()` POM note, updated `getStoredSession()` note, updated Current Status section to 14 spec files.
 - ✅ `DEVELOPMENT.md`: replaced localStorage-only storage description with IndexedDB + localStorage dual model, updated Inspecting State console commands (added `workspaceStore`, `sessionController`, `runtimeProfile`), updated Storage Tab section to show IndexedDB + localStorage, updated Useful DevTools Console Commands, updated "Storage won't restore" troubleshooting, updated localStorage issue section to describe IndexedDB-based persistence.
 
+## Priority 8 — Code quality and UX fixes (survey 2026-11-13)
+
+### Bugs
+
+- [ ] **`runTransform` resets `btn.onclick` to itself after every run** (`js/transform.js` near `resetBtn` closure) — the XSLT path hardcodes `btn.onclick = runTransform`, so switching to XPath mode while a transform is running leaves the Run button wired to the wrong action. The XPath path already delegates to `modeManager.updateRunButton()`; the XSLT path must do the same.
+- [ ] **`Ctrl+S` on named sessions calls `saveQuickDrafts()` instead of `flushPendingSave()`** (`js/explorer.js:891-895`) — named-session flush on save shortcut goes to the Quick Playground save method rather than the named-session commit path.
+
+### UX improvements
+
+- [ ] **Download filenames ignore session title** — `downloadPane('xml','input.xml')`, `downloadPane('xslt','stylesheet.xslt')`, `downloadPane('out','output.xml')` are hardcoded at every call site in `index.html` and `js/files.js`. Derive filename from `sessionController.getCurrentSession()?.title` + sanitization so "Invoice PO Map" downloads as `invoice-po-map.xslt`.
+- [ ] **`downloadPane` logs hardcoded name, not actual filename** (`js/files.js:84`) — console always says `output.xml` even after a JSON transform changes the button to `output.json`. Log the resolved filename.
+- [ ] **`formatFileSize` always shows KB** (`js/state.js`) — `(bytes / 1024).toFixed(1)` shows "15360.0 KB" for a 15 MB file. Add MB tier: bytes < 1 KB → "N B", < 1 MB → "N KB", else "N MB".
+
+### Consistency
+
+- [ ] **XPath history still in localStorage** (`js/xpath.js:82,95`, key `xdebugx-xpath-history`) — everything else moved to `workspaceStore` (IndexedDB). History is stranded in localStorage and is removed by `clearSavedState()` independently of the workspace reset flow.
+- [ ] **KV delete buttons have no `aria-label` or `title`** (`js/transform.js` `deleteKVRow` call sites) — the `×` glyph is the only label; screen readers announce "button ×". Add `aria-label` and `title` on each generated delete button.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

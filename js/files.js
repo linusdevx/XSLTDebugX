@@ -25,7 +25,7 @@ async function _applyFileContent(text, file, pane, verb) {
     reportFileIngressError(file, new Error('Only text XML/XSLT files are supported.'));
     return;
   }
-  const sizeKB = formatFileSize(file.size);
+  const fileSize = formatFileSize(file.size);
   try {
     await flushPendingSave();
   } catch (error) {
@@ -48,7 +48,7 @@ async function _applyFileContent(text, file, pane, verb) {
     return;
   }
   setSaveIndicator('temporary');
-  clog(`${verb}: ${file.name} (${sizeKB} KB) → ${pane.toUpperCase()} pane`, 'success');
+  clog(`${verb}: ${file.name} (${fileSize}) → ${pane.toUpperCase()} pane`, 'success');
 }
 
 function handleUpload(event, pane) {
@@ -66,22 +66,36 @@ function handleUpload(event, pane) {
   reader.readAsText(file);
 }
 
+function _sessionDownloadName(defaultName) {
+  const title = window.sessionController?.getCurrentSession()?.title
+    || window.sessionController?._quickTitle?.();
+  if (!title) return defaultName;
+  const ext = defaultName.split('.').pop() || 'xml';
+  const slug = title.trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return slug ? `${slug}.${ext}` : defaultName;
+}
+
 function downloadPane(pane, defaultName) {
   const ed = _getPaneEd(pane);
   const text = ed?.getValue()?.trim();
   if (!text) { clog(`${pane.toUpperCase()} pane is empty — nothing to download`, 'warn'); return; }
-  const ext = defaultName.split('.').pop() || 'xml';
+  const filename = _sessionDownloadName(defaultName);
+  const ext = filename.split('.').pop() || 'xml';
   const mimeMap = { xml: 'application/xml', xsl: 'application/xml', xslt: 'application/xml', json: 'application/json', txt: 'text/plain' };
   const mime = mimeMap[ext] || 'text/plain';
   const blob = new Blob([text], { type: mime });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
-  a.download = defaultName;
+  a.download = filename;
   a.click();
   // Defer for Safari: synchronous revocation can cancel the download.
   setTimeout(() => URL.revokeObjectURL(url), 0);
-  clog(`Downloaded: ${defaultName}`, 'success');
+  clog(`Downloaded: ${filename}`, 'success');
 }
 
 function setupDragDrop(editorWrapId, pane) {

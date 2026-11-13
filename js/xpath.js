@@ -73,16 +73,12 @@ function _syncXPathInput(value) {
 
 const _xpathHistory = [];        // most-recent-first
 const _xpathHistoryMax = 20;
-const _xpathHistoryKey = 'xdebugx-xpath-history';
 let   _xpathHistoryCursor = -1;  // -1 = not browsing history
 let   _xpathDraftExpr     = '';  // saves current typed text while browsing
 
-(function() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(_xpathHistoryKey) || '[]');
-    if (Array.isArray(saved)) _xpathHistory.push(...saved.slice(0, _xpathHistoryMax));
-  } catch(_) {}
-})();
+workspaceStore.getSetting('xpathHistory', []).then(saved => {
+  if (Array.isArray(saved)) _xpathHistory.push(...saved.slice(0, _xpathHistoryMax));
+}).catch(() => {});
 
 function _xpathHistoryPush(expr) {
   if (!expr) return;
@@ -92,7 +88,7 @@ function _xpathHistoryPush(expr) {
   _xpathHistory.unshift(expr);
   if (_xpathHistory.length > _xpathHistoryMax) _xpathHistory.length = _xpathHistoryMax;
   _xpathHistoryCursor = -1;
-  try { localStorage.setItem(_xpathHistoryKey, JSON.stringify(_xpathHistory)); } catch(_) {}
+  void workspaceStore.setSetting('xpathHistory', [..._xpathHistory]).catch(() => {});
 }
 
 function _xpathHistoryNavigate(direction, input) {

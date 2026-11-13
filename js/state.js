@@ -1,5 +1,9 @@
 function _escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-function formatFileSize(bytes) { return (bytes / 1024).toFixed(1); }
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 function logError(context, err) {
   const msg = err?.message || String(err);
   clog(context + ': ' + msg, 'error');
@@ -289,9 +293,9 @@ function _resetXsltMode() {
 }
 
 function clearSavedState() {
-  localStorage.removeItem('xdebugx-xpath-history');
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   _xpathHistoryCursor = -1;
+  void workspaceStore?.setSetting('xpathHistory', []).catch(() => {});
 
   if (typeof setConsoleHeight === 'function') setConsoleHeight(160);
 
