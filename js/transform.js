@@ -424,7 +424,7 @@ function runTransform() {
     const t0 = performance.now();
     _transformStarted = true;
     clog(`Starting XSLT transform — XML ${xmlSrc.length} chars · XSLT ${xsltSrc.length} chars`, 'info');
-  window.goatcounter?.count({ path: 'run-xslt', title: 'Run XSLT' });
+    window.goatcounter?.count({ path: 'run-xslt', title: 'Run XSLT' });
 
     // Rewrite cpi:setHeader/setProperty → js:cpiSetHeader/cpiSetProperty so
     // Saxon evaluates all arguments (including dynamic ones) and calls our JS interceptors.
