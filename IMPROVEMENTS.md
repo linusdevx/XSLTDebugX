@@ -226,6 +226,7 @@ This file is the handoff for future implementation work. The local-first workspa
 ### Consistency
 
 - ✅ **`_xpathHistoryPush` silently swallows `setSetting` failure** (`js/xpath.js:91`) — `workspaceStore.setSetting('xpathHistory', ...)` used `.catch(() => {})`, so a failed IndexedDB write silently loses the history entry; on next reload the history will be incomplete. Changed to `.catch(error => logError(...))` to surface the failure in the in-app console.
+- ✅ **`setRuntimeProfile` silently swallows `saveQuickDrafts` failure in XPath mode** (`js/runtime-profile.js:24`) — when switching runtime profile while in XPath mode, `saveQuickDrafts` failure was silently swallowed; the profile change would not persist. Changed to `.catch(error => logError(...))`.
 
 ## Deferred ideas — validate before building
 

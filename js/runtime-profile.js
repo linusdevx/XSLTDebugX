@@ -21,7 +21,7 @@ function setRuntimeProfile(profile, options = {}) {
   }
   if (options.save !== false && window.sessionController) {
     if (modeManager?.isXpath) {
-      void sessionController.saveQuickDrafts({ types: ['xslt'] }).catch(() => {});
+      void sessionController.saveQuickDrafts({ types: ['xslt'] }).catch(error => logError('Could not save runtime profile change', error));
     } else {
       scheduleSave();
     }
