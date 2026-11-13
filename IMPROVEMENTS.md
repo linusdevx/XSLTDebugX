@@ -215,6 +215,12 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`activateNamedSession` silently swallows `setSetting` failure** (`js/session-controller.js:273`) — same pattern; newly-activated session ID would not persist across reload. Same fix.
 - ✅ **`handleRemoteTrash` silently swallows `setSetting` failure** (`js/session-controller.js:362`) — same pattern after a session is trashed in another tab. Same fix.
 
+## Priority 23 — Code quality fixes (survey 2026-11-13 batch 16)
+
+### Consistency
+
+- ✅ **`toggleSideCol` calls `scheduleSave()` spuriously** (`js/ui.js:95`) — column collapsed state is CSS-only and not part of the saved session (not in `serializeDrafts()`). Collapsing the output column triggered a full session save for nothing. Removed the `scheduleSave()` call.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

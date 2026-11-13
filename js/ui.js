@@ -92,7 +92,6 @@ function toggleSideCol(side) {
   syncWorkspaceViewButtons();
   if (typeof updatePaneSplitters === 'function') updatePaneSplitters();
   if (typeof restorePaneLayout === 'function') void restorePaneLayout();
-  scheduleSave();
   _layoutAfterTransition(col, 400);
 }
 
