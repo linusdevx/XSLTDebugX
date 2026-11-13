@@ -275,6 +275,7 @@ let _shareReturnFocus = null;
 function openShareModal() {
   _shareReturnFocus = document.activeElement;
   document.getElementById('shareModalBackdrop').classList.add('open');
+  document.body.classList.add('modal-open');
   const input = document.getElementById('shareUrlInput');
   const warning = document.getElementById('shareLengthWarning');
   try {
@@ -298,6 +299,7 @@ function openShareModal() {
 
 function closeShareModal() {
   document.getElementById('shareModalBackdrop').classList.remove('open');
+  document.body.classList.remove('modal-open');
   const returnFocus = _shareReturnFocus;
   _shareReturnFocus = null;
   requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());

@@ -107,6 +107,19 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **KV delete buttons have no `aria-label` or `title`** — added to generated markup in `renderKV`.
 - ✅ **`sessionMenuTrigger` has no `aria-label`** (`index.html`) — added `aria-label="Current session actions"`.
 
+## Priority 9 — Code quality and UX fixes (survey 2026-11-13 batch 2)
+
+### Bugs
+
+- ✅ **`openShareModal` missing `modal-open` on `<body>`** (`js/share.js`) — added; background scroll now locked while share dialog is open.
+- ✅ **`openHelpModal` missing `modal-open` on `<body>`** (`js/ui.js`) — added; matches every other modal.
+- ✅ **`clearXPathInput` doesn't reset `_xpathHistoryCursor`** (`js/xpath.js`) — cursor reset to -1 at the top of the function.
+
+### Consistency
+
+- ✅ **`refreshWorkspaceSettingsStatus` uses inline `/ 1024 / 1024`** (`js/explorer.js:219`) — replaced with `formatFileSize`.
+- ✅ **`_xpathHistoryNavigate` calls `scheduleSave()`** (`js/xpath.js:122`) — removed; browsing history is read-only and must not trigger a save cycle.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

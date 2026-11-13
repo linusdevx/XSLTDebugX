@@ -270,10 +270,12 @@ let _helpReturnFocus = null;
 function openHelpModal() {
   _helpReturnFocus = document.activeElement;
   document.getElementById('helpModalBackdrop').classList.add('open');
+  document.body.classList.add('modal-open');
 }
 
 function closeHelpModal() {
   document.getElementById('helpModalBackdrop').classList.remove('open');
+  document.body.classList.remove('modal-open');
   const returnFocus = _helpReturnFocus;
   _helpReturnFocus = null;
   requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());

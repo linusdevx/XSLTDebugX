@@ -119,7 +119,6 @@ function _xpathHistoryNavigate(direction, input) {
       clog(`ƒx  History ${_xpathHistoryCursor + 1}/${_xpathHistory.length}: ${_xpathHistory[_xpathHistoryCursor]}`, 'info');
     }
   }
-  scheduleSave();
 }
 
 let modeSwitchPending = false;
@@ -683,6 +682,7 @@ function restoreOutputSection() {
 }
 
 function clearXPathInput() {
+  _xpathHistoryCursor = -1;
   const input = document.getElementById('xpathInput');
   if (input) { input.value = ''; input.style.height = 'auto'; _highlightXPath(''); input.focus(); scheduleSave(); }
   clearXPathResults();

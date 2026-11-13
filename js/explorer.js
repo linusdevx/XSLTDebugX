@@ -216,7 +216,7 @@ async function refreshWorkspaceSettingsStatus() {
   const trash = document.getElementById('settingsTrashStatus');
   try {
     const status = await workspaceStore.getStorageStatus();
-    const format = bytes => bytes == null ? 'unknown usage' : `${(bytes / 1024 / 1024).toFixed(1)} MB used`;
+    const format = bytes => bytes == null ? 'unknown usage' : formatFileSize(bytes);
     storage.textContent = status.blocked
       ? 'Upgrade blocked by another tab · close it, then reload'
       : `${format(status.usage)} · clearing browser site data removes this workspace`;
