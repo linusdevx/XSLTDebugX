@@ -135,6 +135,12 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`navigator.platform` deprecated in `ui.js:245`** — replaced with `navigator.userAgent.includes('Mac')` (same check already used in `transform.js:3`).
 - ✅ **`startConsoleResize` `onUp` calls `scheduleSave()` spuriously** (`js/ui.js:173`) — console height is persisted directly to IndexedDB on the line above; the `scheduleSave()` triggered a full session save unnecessarily.
 
+## Priority 12 — Code quality fixes (survey 2026-11-13 batch 5)
+
+### Consistency
+
+- ✅ **`closeWorkspaceSettings` returns focus synchronously without `requestAnimationFrame` or `isConnected` guard** (`js/explorer.js:206`) — all 9 other modals use `requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus())`; Settings was the only outlier and could call `.focus()` on a detached element.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

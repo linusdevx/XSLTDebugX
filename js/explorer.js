@@ -206,7 +206,9 @@ async function openWorkspaceSettings() {
 function closeWorkspaceSettings() {
   document.getElementById('workspaceSettingsBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
-  workspaceSettingsReturnFocus?.focus?.();
+  const returnFocus = workspaceSettingsReturnFocus;
+  workspaceSettingsReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 var handleWorkspaceSettingsBackdropClick = _makeBackdropClose('workspaceSettingsBackdrop', closeWorkspaceSettings);
