@@ -128,6 +128,13 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`fmtEditor` sets `_suppress.validation = true` directly** (`js/panes.js:194`) — replaced with `_withSuppress(['validation'], ...)` so exceptions can't leave suppress stuck at `true`.
 - ✅ **`_ensureCpiNamespace` sets `_suppress.validation = true` directly** (`js/editor.js:456`) — same fix as fmtEditor.
 
+## Priority 11 — Code quality fixes (survey 2026-11-13 batch 4)
+
+### Bugs / Consistency
+
+- ✅ **`navigator.platform` deprecated in `ui.js:245`** — replaced with `navigator.userAgent.includes('Mac')` (same check already used in `transform.js:3`).
+- ✅ **`startConsoleResize` `onUp` calls `scheduleSave()` spuriously** (`js/ui.js:173`) — console height is persisted directly to IndexedDB on the line above; the `scheduleSave()` triggered a full session save unnecessarily.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

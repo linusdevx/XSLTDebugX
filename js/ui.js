@@ -170,7 +170,6 @@ function startConsoleResize(e) {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
     void workspaceStore?.setSetting('consoleHeight', consoleHeight).catch(() => {});
-    scheduleSave();
   }
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
@@ -242,7 +241,7 @@ function applyConsoleSearch(query) {
 
 // Patch Run button kbd label for non-Mac platforms — ⌘ is Mac-only.
 (function () {
-  if (/Mac|iPhone|iPad|iPod/.test(navigator.platform)) return;
+  if (navigator.userAgent.includes('Mac')) return;
   const kbd = document.querySelector('#runBtn .kbd');
   if (kbd) kbd.textContent = 'Ctrl+↵';
 })();
