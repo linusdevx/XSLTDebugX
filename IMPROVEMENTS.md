@@ -10,6 +10,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - Avoid duplicating controls or introducing floating-window complexity.
 - Add focused tests for changed behavior. Run the full E2E suite only at a final integration gate.
 - Update this file when an item is completed, deferred, or materially changed.
+- **Do NOT invest further effort in screen-reader / ARIA accessibility work** — this has diminishing returns for this developer tool's audience. Focus on bugs, consistency, and performance.
 
 ## Priority 1 — existing product and workflow refinement ✅ Done
 
