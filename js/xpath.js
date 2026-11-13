@@ -88,7 +88,7 @@ function _xpathHistoryPush(expr) {
   _xpathHistory.unshift(expr);
   if (_xpathHistory.length > _xpathHistoryMax) _xpathHistory.length = _xpathHistoryMax;
   _xpathHistoryCursor = -1;
-  void workspaceStore.setSetting('xpathHistory', [..._xpathHistory]).catch(() => {});
+  void workspaceStore.setSetting('xpathHistory', [..._xpathHistory]).catch(error => logError('Could not save XPath history', error));
 }
 
 function _xpathHistoryNavigate(direction, input) {

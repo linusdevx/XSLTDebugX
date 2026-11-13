@@ -221,6 +221,12 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`toggleSideCol` calls `scheduleSave()` spuriously** (`js/ui.js:95`) — column collapsed state is CSS-only and not part of the saved session (not in `serializeDrafts()`). Collapsing the output column triggered a full session save for nothing. Removed the `scheduleSave()` call.
 
+## Priority 24 — Code quality fixes (survey 2026-11-13 batch 17)
+
+### Consistency
+
+- ✅ **`_xpathHistoryPush` silently swallows `setSetting` failure** (`js/xpath.js:91`) — `workspaceStore.setSetting('xpathHistory', ...)` used `.catch(() => {})`, so a failed IndexedDB write silently loses the history entry; on next reload the history will be incomplete. Changed to `.catch(error => logError(...))` to surface the failure in the in-app console.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
