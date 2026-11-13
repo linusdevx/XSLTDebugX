@@ -35,8 +35,12 @@ function _restoreWordWrap() {
 function clearPane(which) {
   if (which === 'xml') {
     // Clear both XML models — content otherwise reappears on mode switch.
-    if (xmlModelXslt) xmlModelXslt.setValue('');
-    if (xmlModelXpath) xmlModelXpath.setValue('');
+    // Suppress handlers: validation on empty content is a no-op and the
+    // explicit scheduleSave() below is the intended save trigger.
+    _withSuppress(['save', 'validation'], () => {
+      if (xmlModelXslt) xmlModelXslt.setValue('');
+      if (xmlModelXpath) xmlModelXpath.setValue('');
+    });
     if (xmlModelXslt)  monaco.editor.setModelMarkers(xmlModelXslt,  'xsltdebugx', []);
     if (xmlModelXpath) monaco.editor.setModelMarkers(xmlModelXpath, 'xsltdebugx', []);
     if (xmlDecorations)  { xmlDecorations.clear();  xmlDecorations  = null; }
@@ -50,7 +54,8 @@ function clearPane(which) {
   if (!ed) return;
   const wasReadOnly = ed.getRawOptions().readOnly;
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
-  ed.setValue('');
+  // Suppress validation on the empty clear — scheduleSave() below is the save trigger.
+  _withSuppress(['validation'], () => ed.setValue(''));
   if (wasReadOnly) ed.updateOptions({ readOnly: true });
   if (which === 'xslt' && eds.xslt) {
     monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
