@@ -891,7 +891,7 @@ document.addEventListener('keydown', event => {
   if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 's') {
     event.preventDefault();
     const active = sessionController.getCurrentSession();
-    if (active) void sessionController.saveQuickDrafts().catch(() => {});
+    if (active) void flushPendingSave().catch(() => {});
     else void saveCurrentAsCopy();
   }
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLocaleLowerCase() === 's') {

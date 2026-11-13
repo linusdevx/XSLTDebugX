@@ -365,7 +365,7 @@ function renderKV(type) {
               oninput="updateKV('${type}',${r.id},'name',this.value)"/>
             <input value="${escHtml(r.value)}" placeholder="value" aria-label="${isHdr ? 'Header' : 'Property'} value"
               oninput="updateKV('${type}',${r.id},'value',this.value)"/>
-            <button class="kv-del-btn" onclick="deleteKVRow('${type}',${r.id})">×</button>
+            <button class="kv-del-btn" aria-label="Delete ${isHdr ? 'header' : 'property'} row" title="Delete row" onclick="deleteKVRow('${type}',${r.id})">×</button>
           </div>
           <div class="kv-error-msg" style="display: none;"></div>
         </div>`).join('');
@@ -393,14 +393,7 @@ function runTransform() {
     const elapsed = performance.now() - _runStart;
     const restore = () => {
       btn.disabled = false;
-      if (modeManager.isXpath) {
-        btn.onclick = runXPath;
-        btn.innerHTML = _runBtnHtml('XPATH');
-      } else {
-        btn.onclick = runTransform;
-        btn.innerHTML = _runBtnHtml('XSLT');
-      }
-      reinitIcons(btn);
+      modeManager.updateRunButton();
     };
     const remaining = _transformStarted ? _MIN_SPINNER_MS - elapsed : 0;
     if (remaining > 0) setTimeout(restore, remaining);
