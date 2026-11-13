@@ -258,7 +258,8 @@ async function prepareWorkspaceBackupImport(file) {
     if (!Number.isFinite(file.size) || file.size > BACKUP_MAX_ZIP_BYTES) throw new Error('Backup ZIP is too large.');
     pendingBackupImport = await validateWorkspaceBackup(await file.arrayBuffer());
     const { counts } = pendingBackupImport.manifest;
-    document.getElementById('backupImportSummary').textContent = `${counts.workspaces} workspace${counts.workspaces === 1 ? '' : 's'} · ${counts.folders} folder${counts.folders === 1 ? '' : 's'} · ${counts.sessions} saved item${counts.sessions === 1 ? '' : 's'}`;
+    const summary = document.getElementById('backupImportSummary');
+    if (summary) summary.textContent = `${counts.workspaces} workspace${counts.workspaces === 1 ? '' : 's'} · ${counts.folders} folder${counts.folders === 1 ? '' : 's'} · ${counts.sessions} saved item${counts.sessions === 1 ? '' : 's'}`;
     document.getElementById('backupImportBackdrop')?.classList.add('open');
     document.body.classList.add('modal-open');
   } catch (validationError) {
@@ -268,11 +269,11 @@ async function prepareWorkspaceBackupImport(file) {
     if (summary) summary.textContent = 'Backup validation failed — nothing was imported.';
     document.getElementById('backupImportBackdrop')?.classList.add('open');
     document.body.classList.add('modal-open');
-    document.getElementById('backupImportConfirmBtn').disabled = true;
+    document.getElementById('backupImportConfirmBtn')?.toggleAttribute('disabled', true);
     requestAnimationFrame(() => document.querySelector('#backupImportBackdrop .ex-modal-close')?.focus());
     return;
   }
-  if (pendingBackupImport) document.getElementById('backupImportConfirmBtn').disabled = false;
+  if (pendingBackupImport) document.getElementById('backupImportConfirmBtn')?.toggleAttribute('disabled', false);
   requestAnimationFrame(() => document.getElementById('backupImportConfirmBtn')?.focus());
 }
 

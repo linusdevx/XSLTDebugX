@@ -198,6 +198,20 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`const restore` in `_extractInsensitiveRegions` has wrong indentation** (`js/transform.js:63`) — `const restore` was indented 4 spaces (callback level) but is at function-body scope and should be 2 spaces. No behaviour change.
 
+## Priority 21 — Code quality fixes (survey 2026-11-13 batch 14)
+
+### Consistency
+
+- ✅ **`backupImportSummary` set without null guard in success path** (`js/backup.js:261`) — the error path (line 267) uses `const summary = ...; if (summary)` but the success path called `.textContent` directly. Fixed to use the same guarded pattern.
+- ✅ **`backupImportConfirmBtn.disabled` unguarded in both paths** (`js/backup.js:271,275`) — `.disabled` was set directly without optional chaining, inconsistent with every other element access in the same function. Fixed to use `?.toggleAttribute('disabled', bool)`.
+- ✅ **`mode-manager.js` uses `console.error`/`console.warn` after full app init** (`js/mode-manager.js:19,45,50`) — `setMode()` fires well after `clog` and `logError` are available. Invalid mode error now uses `clog(..., 'error')`, mode persist failure and mode switch error use `logError(context, err)` (which also calls `console.warn` for DevTools). Errors now appear in the in-app console.
+
+## Priority 21 — Code quality fixes (survey 2026-11-13 batch 14)
+
+### Cosmetic / Consistency
+
+- ✅ **`window.goatcounter?.count` in `runTransform` has wrong indentation** (`js/transform.js:427`) — the GoatCounter analytics call was indented 2 spaces (function-body level) but sits inside the `try` block which uses 4-space indentation. No behaviour change.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

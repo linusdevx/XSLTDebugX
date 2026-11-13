@@ -16,7 +16,7 @@ class ModeManager {
 
   setMode(newMode) {
     if (!this.isValidMode(newMode)) {
-      console.error(`Invalid mode: ${newMode}. Must be 'XSLT' or 'XPATH'`);
+      clog(`Invalid mode: ${newMode}. Must be 'XSLT' or 'XPATH'`, 'error');
       return false;
     }
 
@@ -42,12 +42,12 @@ class ModeManager {
       this.trackModeChange(previousMode, newMode);
       if (window.sessionController?.persistModeSelection) {
         void window.sessionController.persistModeSelection(newMode).catch(error => {
-          console.warn('Could not remember the selected mode:', error);
+          logError('Could not remember the selected mode', error);
         });
       }
       return true;
     } catch (error) {
-      console.error('❌ Error switching mode:', error);
+      logError('Error switching mode', error);
       this.mode = previousMode;
       return false;
     }
