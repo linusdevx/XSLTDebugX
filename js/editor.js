@@ -318,10 +318,10 @@ require(['vs/editor/editor.main'], () => {
       const src = ed.getValue();
       if (!src.trim()) { clog('XML pane is empty — nothing to format', 'warn'); return; }
       const fmt = prettyXML(src);
-      ed.executeEdits('format-xml', [{
-        range: ed.getModel().getFullModelRange(), text: fmt
-      }]);
-      clog('XML formatted ✓', 'success');
+      try {
+        ed.executeEdits('format-xml', [{ range: ed.getModel().getFullModelRange(), text: fmt }]);
+        clog('XML formatted ✓', 'success');
+      } catch (error) { logError('Format XML failed', error); }
     }
   });
 
@@ -334,10 +334,10 @@ require(['vs/editor/editor.main'], () => {
       const src = ed.getValue().trim();
       if (!src) return;
       const minified = _minifyXml(src);
-      ed.executeEdits('minify-xml', [{
-        range: ed.getModel().getFullModelRange(), text: minified
-      }]);
-      clog('XML minified ✓', 'success');
+      try {
+        ed.executeEdits('minify-xml', [{ range: ed.getModel().getFullModelRange(), text: minified }]);
+        clog('XML minified ✓', 'success');
+      } catch (error) { logError('Minify XML failed', error); }
     }
   });
 
@@ -396,10 +396,10 @@ require(['vs/editor/editor.main'], () => {
       const src = ed.getValue();
       if (!src.trim()) { clog('XSLT pane is empty — nothing to format', 'warn'); return; }
       const fmt = prettyXML(src);
-      ed.executeEdits('format-xml', [{
-        range: ed.getModel().getFullModelRange(), text: fmt
-      }]);
-      clog('XSLT formatted ✓', 'success');
+      try {
+        ed.executeEdits('format-xml', [{ range: ed.getModel().getFullModelRange(), text: fmt }]);
+        clog('XSLT formatted ✓', 'success');
+      } catch (error) { logError('Format XSLT failed', error); }
     }
   });
 
@@ -412,10 +412,10 @@ require(['vs/editor/editor.main'], () => {
       const src = ed.getValue().trim();
       if (!src) return;
       const minified = _minifyXml(src);
-      ed.executeEdits('minify-xslt', [{
-        range: ed.getModel().getFullModelRange(), text: minified
-      }]);
-      clog('XSLT minified ✓', 'success');
+      try {
+        ed.executeEdits('minify-xslt', [{ range: ed.getModel().getFullModelRange(), text: minified }]);
+        clog('XSLT minified ✓', 'success');
+      } catch (error) { logError('Minify XSLT failed', error); }
     }
   });
 

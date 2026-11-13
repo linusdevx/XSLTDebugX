@@ -228,6 +228,13 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`_xpathHistoryPush` silently swallows `setSetting` failure** (`js/xpath.js:91`) — `workspaceStore.setSetting('xpathHistory', ...)` used `.catch(() => {})`, so a failed IndexedDB write silently loses the history entry; on next reload the history will be incomplete. Changed to `.catch(error => logError(...))` to surface the failure in the in-app console.
 - ✅ **`setRuntimeProfile` silently swallows `saveQuickDrafts` failure in XPath mode** (`js/runtime-profile.js:24`) — when switching runtime profile while in XPath mode, `saveQuickDrafts` failure was silently swallowed; the profile change would not persist. Changed to `.catch(error => logError(...))`.
 
+## Priority 25 — Code quality fixes (survey 2026-11-13 batch 18)
+
+### Consistency
+
+- ✅ **`openShareModal` does not move focus into the dialog** (`js/share.js`) — every other modal uses `requestAnimationFrame(() => el?.focus())` on open; Share was the only outlier. Added focus to `#shareCopyBtn` (the primary action) on open.
+- ✅ **`executeEdits` in XML/XSLT context menu actions has no try/catch** (`js/editor.js:321,337,398,411`) — Format XML, Minify XML, Format XSLT, and Minify XSLT ran `ed.executeEdits(...)` without error handling; a thrown exception would be silently lost. Wrapped each in `try/catch` with `logError(...)`.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

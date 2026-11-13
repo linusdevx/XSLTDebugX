@@ -295,6 +295,7 @@ function openShareModal() {
     }
     clog('Failed to generate share URL: ' + e.message, 'error');
   }
+  requestAnimationFrame(() => document.getElementById('shareCopyBtn')?.focus());
 }
 
 function closeShareModal() {
