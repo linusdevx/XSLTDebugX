@@ -236,7 +236,15 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`openShareModal` does not move focus into the dialog** (`js/share.js`) — every other modal uses `requestAnimationFrame(() => el?.focus())` on open; Share was the only outlier. Added focus to `#shareCopyBtn` (the primary action) on open.
 - ✅ **`executeEdits` in XML/XSLT context menu actions has no try/catch** (`js/editor.js:321,337,398,411`) — Format XML, Minify XML, Format XSLT, and Minify XSLT ran `ed.executeEdits(...)` without error handling; a thrown exception would be silently lost. Wrapped each in `try/catch` with `logError(...)`.
 
-## Deferred ideas — validate before building
+## Priority 26 — Critical bug + quality fix (survey 2026-11-13 batch 19)
+
+### Critical bugs
+
+- ✅ **`activateNamedSession` was accidentally merged into `beginTemporary`** (`js/session-controller.js:260-272`) — commit `4d6eeac` introduced this regression: the closing `}` of `beginTemporary` and the opening `activateNamedSession(record)` declaration were deleted, so the entire body of `activateNamedSession` ran as dead code after the `setSetting` fire-and-forget in `beginTemporary`. This caused `activateNamedSession()` to throw `ReferenceError: record is not defined` at line 260. Every path that activates a named session (Save as copy, duplicate, rename, incoming share, conflict copy) was broken. Restored the function boundary.
+
+### Consistency
+
+- ✅ **`Ctrl+S` shortcut silently swallows `flushPendingSave` failure** (`js/explorer.js:896`) — the user explicitly pressed the save shortcut but a flush failure was silently swallowed. Changed to `.catch(error => logError('Could not save (Ctrl+S)', error))` so the failure surfaces in the in-app console.
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.

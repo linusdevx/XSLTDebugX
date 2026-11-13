@@ -257,6 +257,9 @@
       setSaveIndicator('temporary');
       this._updateCurrentItemLabel();
       void this.store.setSetting(`activeSession:${type}`, null).catch(error => logError('Could not clear active session pointer', error));
+    }
+
+    activateNamedSession(record) {
       if (!record || (record.type !== 'xslt' && record.type !== 'xpath')) {
         throw new Error('A valid saved session is required.');
       }

@@ -893,7 +893,7 @@ document.addEventListener('keydown', event => {
   if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLocaleLowerCase() === 's') {
     event.preventDefault();
     const active = sessionController.getCurrentSession();
-    if (active) void flushPendingSave().catch(() => {});
+    if (active) void flushPendingSave().catch(error => logError('Could not save (Ctrl+S)', error));
     else void saveCurrentAsCopy();
   }
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLocaleLowerCase() === 's') {
