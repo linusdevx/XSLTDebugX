@@ -68,10 +68,10 @@ function copyPane(which) {
   const label = which.toUpperCase();
   if (!v.trim()) return clog(`${label} pane is empty — nothing to copy`, 'warn');
 
-  const sizeKB = (v.length / 1024).toFixed(1);
+  const sizeStr = formatFileSize(new Blob([v]).size);
   _clipboardWrite(v, () => {
     clog(`${label} copied to clipboard ✓`, 'success');
-    showCopyToast(`✓ Copied ${label} (${sizeKB}KB)`);
+    showCopyToast(`✓ Copied ${label} (${sizeStr})`);
   });
 }
 
@@ -191,12 +191,11 @@ function fmtEditor(which) {
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
   const formatted = prettyXML(ed.getValue());
   // Formatting doesn't change validity — skip the live-validation debounce.
-  _suppress.validation = true;
-  // Use executeEdits, not setValue, so Format pushes a single bracketed step
-  // onto the undo stack and Ctrl+Z reverts only the format.
-  ed.pushUndoStop();
-  ed.executeEdits('format', [{ range: ed.getModel().getFullModelRange(), text: formatted }]);
-  ed.pushUndoStop();
+  _withSuppress(['validation'], () => {
+    ed.pushUndoStop();
+    ed.executeEdits('format', [{ range: ed.getModel().getFullModelRange(), text: formatted }]);
+    ed.pushUndoStop();
+  });
   if (wasReadOnly) ed.updateOptions({ readOnly: true });
   scheduleSave();
   clog(`${which.toUpperCase()} formatted`, 'info');

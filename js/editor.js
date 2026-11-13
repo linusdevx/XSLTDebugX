@@ -453,13 +453,14 @@ require(['vs/editor/editor.main'], () => {
       return;
     }
 
-    _suppress.validation = true;
-    ed.pushUndoStop();
-    ed.executeEdits('inject-cpi-ns', [{
-      range: ed.getModel().getFullModelRange(),
-      text: updated
-    }]);
-    ed.pushUndoStop();
+    _withSuppress(['validation'], () => {
+      ed.pushUndoStop();
+      ed.executeEdits('inject-cpi-ns', [{
+        range: ed.getModel().getFullModelRange(),
+        text: updated
+      }]);
+      ed.pushUndoStop();
+    });
     clog('xmlns:cpi="http://sap.com/it/" added to xsl:stylesheet ✓', 'success');
   }
 

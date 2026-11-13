@@ -120,6 +120,14 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`refreshWorkspaceSettingsStatus` uses inline `/ 1024 / 1024`** (`js/explorer.js:219`) — replaced with `formatFileSize`.
 - ✅ **`_xpathHistoryNavigate` calls `scheduleSave()`** (`js/xpath.js:122`) — removed; browsing history is read-only and must not trigger a save cycle.
 
+## Priority 10 — Code quality fixes (survey 2026-11-13 batch 3)
+
+### Bugs / Consistency
+
+- ✅ **`copyPane` shows size as `"2.5KB"` (no space, char count not byte count)** (`js/panes.js:71`) — replaced with `formatFileSize(new Blob([v]).size)` for correct bytes + unit.
+- ✅ **`fmtEditor` sets `_suppress.validation = true` directly** (`js/panes.js:194`) — replaced with `_withSuppress(['validation'], ...)` so exceptions can't leave suppress stuck at `true`.
+- ✅ **`_ensureCpiNamespace` sets `_suppress.validation = true` directly** (`js/editor.js:456`) — same fix as fmtEditor.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
