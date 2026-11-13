@@ -270,6 +270,7 @@ function openHelpModal() {
   _helpReturnFocus = document.activeElement;
   document.getElementById('helpModalBackdrop').classList.add('open');
   document.body.classList.add('modal-open');
+  requestAnimationFrame(() => document.querySelector('#helpModalBackdrop .ex-modal-close')?.focus());
 }
 
 function closeHelpModal() {

@@ -294,7 +294,7 @@ function _resetXsltMode() {
 
 function clearSavedState() {
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
-  _xpathHistoryCursor = -1;
+  if (typeof _xpathHistoryCursor !== 'undefined') _xpathHistoryCursor = -1;
   void workspaceStore?.setSetting('xpathHistory', []).catch(() => {});
 
   if (typeof setConsoleHeight === 'function') setConsoleHeight(160);
@@ -369,6 +369,3 @@ function handleSaveIndicatorAction(event) {
   }
 }
 
-function showSavedIndicator() {
-  setSaveIndicator('saved');
-}

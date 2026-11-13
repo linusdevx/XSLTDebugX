@@ -449,7 +449,6 @@ function runXPath() {
       // spinner window. Hardcoding _btn.onclick = runXPath would silently
       // break Run after the flip.
       modeManager.updateRunButton();
-      reinitIcons(_btn);
     };
     const remaining = _MIN_SPINNER_MS - elapsed;
     if (remaining > 0) setTimeout(restore, remaining);

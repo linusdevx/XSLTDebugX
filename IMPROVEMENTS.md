@@ -149,6 +149,15 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`_resetXPathMode` suppresses only `save`, not `validation`** (`js/state.js:238`) — same issue; `xmlModelXpath.setValue` triggers the XML validation debounce. Fixed to suppress `'validation'` as well.
 - ✅ **`clearXPathInput` calls `scheduleSave()` spuriously** (`js/xpath.js:687`) — XPath input is a plain textarea, not persisted independently; only the last *run* expression is saved. Clearing the input box doesn't change any session data, so `scheduleSave()` is a no-op save cycle. Removed.
 
+## Priority 14 — Code quality fixes (survey 2026-11-13 batch 7)
+
+### Dead code / Consistency
+
+- ✅ **`showSavedIndicator()` is dead code** (`js/state.js`) — defined as a one-liner wrapper around `setSaveIndicator('saved')` but never called anywhere in the codebase. Removed.
+- ✅ **`reinitIcons(_btn)` is redundant in `_resetXPathBtn`** (`js/xpath.js:452`) — `modeManager.updateRunButton()` already calls `reinitIcons(runBtn)` at the end; the extra call in the XPath run reset was a no-op double init.
+- ✅ **`_xpathHistoryCursor = -1` in `clearSavedState` has no guard** (`js/state.js:297`) — `_xpathHistory.length = 0` on the line above is guarded with `typeof !== 'undefined'` (because `_xpathHistory` is declared in `xpath.js` which loads later), but `_xpathHistoryCursor = -1` was unguarded, which would create a stray global if `clearSavedState` were called before `xpath.js` loaded. Added matching guard.
+- ✅ **`openHelpModal` does not move focus into the dialog** (`js/ui.js`) — every other modal opens with an explicit `requestAnimationFrame(() => el?.focus())` call; Help was the only one that left focus outside the dialog. Added focus to `.ex-modal-close` on open.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
