@@ -184,12 +184,18 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **KV panel accordion headers missing `aria-expanded`** (`index.html`, `js/transform.js`) — All four KV panel headers (`hdrPanel`, `propPanel`, `outHdrPanel`, `outPropPanel`) had `role="button"` but no `aria-expanded` attribute, so screen readers could not announce the expanded/collapsed state. Added `aria-expanded="true"` to all four headers in HTML (panels start expanded). `toggleKVPanel()` now reads the post-toggle collapsed state and sets `aria-expanded` accordingly on each call.
 
-## Priority 18 — Code quality fixes (survey 2026-11-13 batch 11)
+## Priority 19 — Code quality fixes (survey 2026-11-13 batch 12)
 
 ### Bugs / Consistency
 
 - ✅ **`clearPane('xml')` fires two spurious save cycles and two validation debounces** (`js/panes.js:38-39`) — `xmlModelXslt.setValue('')` and `xmlModelXpath.setValue('')` each fire `onDidChangeModelContent` which calls `scheduleSave()` and queues an 800ms validation debounce, before the explicit `scheduleSave()` at the end of the function. Wrapped both in `_withSuppress(['save', 'validation'], ...)` so the single explicit call is the sole save trigger and no-op empty-content validation is suppressed.
 - ✅ **`clearPane('xslt')` fires a spurious validation debounce** (`js/panes.js:53`) — `ed.setValue('')` fires `onDidChangeModelContent` → 800ms XSLT validation debounce on empty content. Wrapped in `_withSuppress(['validation'], ...)` to suppress the debounce; the explicit `scheduleSave()` below remains the save trigger.
+
+## Priority 20 — Code quality fixes (survey 2026-11-13 batch 13)
+
+### Cosmetic / Consistency
+
+- ✅ **`const restore` in `_extractInsensitiveRegions` has wrong indentation** (`js/transform.js:63`) — `const restore` was indented 4 spaces (callback level) but is at function-body scope and should be 2 spaces. No behaviour change.
 
 ## Deferred ideas — validate before building
 

@@ -60,7 +60,7 @@ function _extractInsensitiveRegions(xslt) {
     regions.push(match);
     return '' + idx + '' + '\n'.repeat(newlines);
   });
-    const restore = (s) => s.replace(/(\d+)/g, (full, idxStr) => {
+  const restore = (s) => s.replace(/(\d+)/g, (full, idxStr) => {
     return regions[Number(idxStr)] ?? full;
   });
   return { stripped, restore };
