@@ -170,6 +170,10 @@ function applyShareData(data) {
   if (_shdr)  _parts.push(`${_shdr} header${_shdr  > 1 ? 's' : ''}`);
   if (_sprop) _parts.push(`${_sprop} propert${_sprop > 1 ? 'ies' : 'y'}`);
   clog(`Shared session loaded — ${_parts.join(' · ')} ✓`, 'success');
+
+  renderKV('headers');
+  renderKV('properties');
+  if (typeof updateXMLValidationBadge === 'function') updateXMLValidationBadge();
 }
 
 function openIncomingShareDialog(data) {
@@ -298,6 +302,7 @@ function openShareModal() {
       warning.hidden = false;
     }
     clog('Failed to generate share URL: ' + e.message, 'error');
+    console.warn('[XSLTDebugX] generateShareUrl failed', e);
   }
   requestAnimationFrame(() => document.getElementById('shareCopyBtn')?.focus());
 }

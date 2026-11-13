@@ -293,6 +293,23 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`openWorkspaceSettings` `getSetting` call is uncaught** (`js/explorer.js:199`) — `workspaceStore.getSetting('explorerOpen', true)` was not given a `.catch()`. If IndexedDB is unavailable, the entire async function throws: the Settings modal never opens and the user sees a generic "Action failed" toast with no useful context. Added `.catch(() => true)` to default to the same value used at DOMContentLoaded, matching the established pattern for UI-preference reads.
 - ✅ **`setExplorerStartupPreference` blocks toggle on save failure** (`js/explorer.js:238`) — `toggleExplorer` was called only after `await workspaceStore.setSetting(...)`. If the IndexedDB write fails, the Explorer toggle never fires — the checkbox state changes but the sidebar stays as-is. Reordered to call `toggleExplorer(Boolean(open))` first (always fires), then persist asynchronously with `.catch(error => logError(...))` so a failed save surfaces in the in-app console but does not prevent the UI update.
 
+## Priority 33 — UX inconsistencies: missing renderKV + missing console.warn (2026-11-13)
+
+### Bug
+
+- ✅ **`applyShareData` never calls `renderKV` after populating `kvData`** (`js/share.js:159-162`) — after a shared session loads, `kvData.headers` and `kvData.properties` are populated but `renderKV('headers')` and `renderKV('properties')` are never called. The header/property tables in the UI show stale data from the previous session until the next action forces a re-render. Added `renderKV('headers')` + `renderKV('properties')` + `updateXMLValidationBadge()` at the end of `applyShareData`, consistent with every other code path that populates `kvData`.
+
+### Consistency
+
+- ✅ **`downloadWorkspaceBackup` catch has no `console.warn`** (`js/backup.js:151`) — backup failure called `clog` + `showCopyToast` but never `console.warn`, so the stack trace was invisible in DevTools. Added `console.warn('[XSLTDebugX] Backup download failed', error)`.
+- ✅ **`resetAllPaneLayouts` catch has no `console.warn`** (`js/pane-layout.js:76`) — same pattern: `clog` but no stack trace in DevTools. Added `console.warn`.
+- ✅ **`restoreInitialSession` storage-unavailable catch has no `console.warn`** (`js/session-controller.js:223`) — the most critical storage failure path (IndexedDB unavailable on startup) logged to `clog` but not DevTools. Added `console.warn`.
+- ✅ **`openShareModal` generateShareUrl catch has no `console.warn`** (`js/share.js:300`) — share URL generation failure logged to `clog` but stack trace lost. Added `console.warn`.
+
+### CSS fix
+
+- ✅ **Example Library close button not at far right** (`css/style.css`) — `.ex-modal-search` has `flex: 1` but `.ex-search-wrap` has `max-width: 280px`; once the search hits that cap the close button sits right after it instead of at the modal edge. Added `margin-left: auto` to `.ex-modal-close` so it always pins to the far right.
+
  pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.

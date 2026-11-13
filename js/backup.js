@@ -149,6 +149,7 @@ async function downloadWorkspaceBackup() {
     showCopyToast('✓ Workspace backup downloaded');
   } catch (error) {
     clog(`Backup failed: ${error.message}`, 'error');
+    console.warn('[XSLTDebugX] Backup download failed', error);
     showCopyToast(`Backup failed: ${error.message}`, 3500, 'error');
   }
 }

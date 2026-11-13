@@ -1959,6 +1959,7 @@
       width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center;
       background: transparent; border: 1px solid transparent;
+      margin-left: auto;
       border-radius: var(--r-sm); color: var(--text-dim);
       cursor: pointer; font-size: 16px; transition: all var(--t-fast);
       flex-shrink: 0;

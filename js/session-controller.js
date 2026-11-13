@@ -221,6 +221,7 @@
       } catch (error) {
         setSaveIndicator('failed', error);
         clog(`Workspace storage unavailable — edits remain temporary: ${error.message}`, 'error');
+        console.warn('[XSLTDebugX] Workspace storage unavailable', error);
         return false;
       } finally {
         this.restoring = false;

@@ -74,6 +74,7 @@ async function resetAllPaneLayouts() {
     clog('Pane layout reset to defaults ✓', 'success');
   } catch (error) {
     clog(`Could not reset pane layout: ${error.message}`, 'error');
+    console.warn('[XSLTDebugX] resetAllPaneLayouts failed', error);
   }
 }
 
