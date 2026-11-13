@@ -344,7 +344,7 @@ function setWorkspaceView(view) {
   }
   syncWorkspaceViewButtons();
   if (typeof updatePaneSplitters === 'function') updatePaneSplitters();
-  scheduleSave();
+  if (typeof restorePaneLayout === 'function') void restorePaneLayout();
   setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 80);
 }
 

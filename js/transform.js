@@ -555,7 +555,6 @@ function runTransform() {
       const colRight = document.getElementById('colRight');
       if (colRight.classList.contains('collapsed')) {
         colRight.classList.remove('collapsed');
-        scheduleSave();
         _layoutAfterTransition(colRight, 400);
       }
 

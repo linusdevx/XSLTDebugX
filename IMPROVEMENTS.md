@@ -246,7 +246,14 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`Ctrl+S` shortcut silently swallows `flushPendingSave` failure** (`js/explorer.js:896`) — the user explicitly pressed the save shortcut but a flush failure was silently swallowed. Changed to `.catch(error => logError('Could not save (Ctrl+S)', error))` so the failure surfaces in the in-app console.
 
-- Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
+## Priority 27 — Spurious scheduleSave calls (survey 2026-11-13 batch 20)
+
+### Consistency
+
+- ✅ **`setWorkspaceView` calls `scheduleSave()` spuriously** (`js/ui.js:347`) — workspace view (which columns are collapsed) is CSS-only layout state, not part of `serializeDrafts()`. Toggling between Edit/Output/All views triggered a full session save for nothing. Removed `scheduleSave()` and added `restorePaneLayout()` to reapply saved pane ratios on view change (consistent with `toggleSideCol`).
+- ✅ **`runTransform` calls `scheduleSave()` when auto-expanding colRight** (`js/transform.js:558`) — when XSLT output arrives and the output column is collapsed, it auto-expands; the expand triggered a spurious `scheduleSave()`. Column collapsed state is CSS-only; removed.
+
+ pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
