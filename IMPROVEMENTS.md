@@ -90,19 +90,22 @@ This file is the handoff for future implementation work. The local-first workspa
 
 ### Bugs
 
-- [ ] **`runTransform` resets `btn.onclick` to itself after every run** (`js/transform.js` near `resetBtn` closure) — the XSLT path hardcodes `btn.onclick = runTransform`, so switching to XPath mode while a transform is running leaves the Run button wired to the wrong action. The XPath path already delegates to `modeManager.updateRunButton()`; the XSLT path must do the same.
-- [ ] **`Ctrl+S` on named sessions calls `saveQuickDrafts()` instead of `flushPendingSave()`** (`js/explorer.js:891-895`) — named-session flush on save shortcut goes to the Quick Playground save method rather than the named-session commit path.
+- ✅ **`runTransform` resets `btn.onclick` to itself after every run** — fixed; delegates to `modeManager.updateRunButton()`.
+- ✅ **`Ctrl+S` on named sessions calls `saveQuickDrafts()` instead of `flushPendingSave()`** — fixed.
 
 ### UX improvements
 
-- [ ] **Download filenames ignore session title** — `downloadPane('xml','input.xml')`, `downloadPane('xslt','stylesheet.xslt')`, `downloadPane('out','output.xml')` are hardcoded at every call site in `index.html` and `js/files.js`. Derive filename from `sessionController.getCurrentSession()?.title` + sanitization so "Invoice PO Map" downloads as `invoice-po-map.xslt`.
-- [ ] **`downloadPane` logs hardcoded name, not actual filename** (`js/files.js:84`) — console always says `output.xml` even after a JSON transform changes the button to `output.json`. Log the resolved filename.
-- [ ] **`formatFileSize` always shows KB** (`js/state.js`) — `(bytes / 1024).toFixed(1)` shows "15360.0 KB" for a 15 MB file. Add MB tier: bytes < 1 KB → "N B", < 1 MB → "N KB", else "N MB".
+- ✅ **Download filenames ignore session title** — `_sessionDownloadName()` helper derives slug from session title.
+- ✅ **`downloadPane` logs hardcoded name, not actual filename** — logs resolved filename.
+- ✅ **`formatFileSize` always shows KB** — now returns "N B / N KB / N MB" with unit.
+- ✅ **`downloadWorkspaceBackup` log uses hardcoded `/ 1024` KB** (`js/backup.js`) — fixed to use `formatFileSize()`.
+- ✅ **Dead `_quickTitle()` call in `_sessionDownloadName`** (`js/files.js`) — removed non-existent method reference.
 
 ### Consistency
 
-- [ ] **XPath history still in localStorage** (`js/xpath.js:82,95`, key `xdebugx-xpath-history`) — everything else moved to `workspaceStore` (IndexedDB). History is stranded in localStorage and is removed by `clearSavedState()` independently of the workspace reset flow.
-- [ ] **KV delete buttons have no `aria-label` or `title`** (`js/transform.js` `deleteKVRow` call sites) — the `×` glyph is the only label; screen readers announce "button ×". Add `aria-label` and `title` on each generated delete button.
+- ✅ **XPath history still in localStorage** — moved to `workspaceStore` (IndexedDB); clears with workspace reset.
+- ✅ **KV delete buttons have no `aria-label` or `title`** — added to generated markup in `renderKV`.
+- ✅ **`sessionMenuTrigger` has no `aria-label`** (`index.html`) — added `aria-label="Current session actions"`.
 
 ## Deferred ideas — validate before building
 

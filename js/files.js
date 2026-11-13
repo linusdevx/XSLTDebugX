@@ -67,8 +67,7 @@ function handleUpload(event, pane) {
 }
 
 function _sessionDownloadName(defaultName) {
-  const title = window.sessionController?.getCurrentSession()?.title
-    || window.sessionController?._quickTitle?.();
+  const title = window.sessionController?.getCurrentSession()?.title;
   if (!title) return defaultName;
   const ext = defaultName.split('.').pop() || 'xml';
   const slug = title.trim()

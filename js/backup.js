@@ -144,7 +144,7 @@ async function downloadWorkspaceBackup() {
     link.remove();
     // Safari can cancel a download when its object URL is revoked in the same task.
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    clog(`Workspace backup created · ${(blob.size / 1024).toFixed(1)} KB ✓`, 'success');
+    clog(`Workspace backup created · ${formatFileSize(blob.size)} ✓`, 'success');
     showCopyToast('✓ Workspace backup downloaded');
   } catch (error) {
     clog(`Backup failed: ${error.message}`, 'error');
