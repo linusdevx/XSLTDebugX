@@ -63,7 +63,7 @@ function clearPane(which) {
     setStatus('Ready', 'ok');
   }
   if (which === 'out') renderOutputKV({}, {});
-  scheduleSave();
+  if (which !== 'out') scheduleSave();
   clog(`${which.toUpperCase()} cleared`, 'info');
 }
 

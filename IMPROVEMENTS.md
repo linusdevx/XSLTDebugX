@@ -190,6 +190,7 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`clearPane('xml')` fires two spurious save cycles and two validation debounces** (`js/panes.js:38-39`) — `xmlModelXslt.setValue('')` and `xmlModelXpath.setValue('')` each fire `onDidChangeModelContent` which calls `scheduleSave()` and queues an 800ms validation debounce, before the explicit `scheduleSave()` at the end of the function. Wrapped both in `_withSuppress(['save', 'validation'], ...)` so the single explicit call is the sole save trigger and no-op empty-content validation is suppressed.
 - ✅ **`clearPane('xslt')` fires a spurious validation debounce** (`js/panes.js:53`) — `ed.setValue('')` fires `onDidChangeModelContent` → 800ms XSLT validation debounce on empty content. Wrapped in `_withSuppress(['validation'], ...)` to suppress the debounce; the explicit `scheduleSave()` below remains the save trigger.
+- ✅ **`clearPane('out')` calls `scheduleSave()` spuriously** (`js/panes.js:66`) — output pane content is never saved to a session (not in `serializeDrafts()`), so clearing it triggered a full session save for nothing. `scheduleSave()` now only fires when `which !== 'out'`.
 
 ## Priority 20 — Code quality fixes (survey 2026-11-13 batch 13)
 
