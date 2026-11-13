@@ -196,7 +196,7 @@ async function openWorkspaceSettings() {
   workspaceSettingsReturnFocus = document.activeElement;
   document.getElementById('settingsTheme').value = document.body.classList.contains('light') ? 'light' : 'dark';
   document.getElementById('settingsRuntimeProfile').value = runtimeProfile;
-  document.getElementById('settingsExplorerOpen').checked = await workspaceStore.getSetting('explorerOpen', true);
+  document.getElementById('settingsExplorerOpen').checked = await workspaceStore.getSetting('explorerOpen', true).catch(() => true);
   await refreshWorkspaceSettingsStatus();
   document.getElementById('workspaceSettingsBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
@@ -236,8 +236,8 @@ function setWorkspaceTheme(theme) {
 }
 
 async function setExplorerStartupPreference(open) {
-  await workspaceStore.setSetting('explorerOpen', Boolean(open));
   toggleExplorer(Boolean(open));
+  await workspaceStore.setSetting('explorerOpen', Boolean(open)).catch(error => logError('Could not save explorer preference', error));
 }
 
 async function emptyWorkspaceTrash() {

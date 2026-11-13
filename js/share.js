@@ -96,6 +96,7 @@ function closeInvalidShareDialog() {
   document.getElementById('invalidShareBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
   window._pendingShareError = null;
+  requestAnimationFrame(() => document.getElementById('runBtn')?.focus());
 }
 
 var handleInvalidShareBackdropClick = _makeBackdropClose('invalidShareBackdrop', closeInvalidShareDialog);

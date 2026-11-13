@@ -273,6 +273,26 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **Accessibility test expects stale `"Run transform"`** (`tests/e2e/workflows/accessibility.spec.js:161`) — test was written before Priority 16 changed the label to `"Run XSLT transform"`; updated to match the current value.
 - ✅ **`clearSavedState` draft-clear catch only sets indicator, not console** (`js/state.js:308`) — if `clearCurrentDraft()` threw, `setSaveIndicator('failed', error)` updated the visual indicator but the error was never logged to the in-app console. Now calls `logError(...)` first so it appears in clog/DevTools, then sets the indicator.
 
+## Priority 30 — Example loading preserves user column layout (2026-11-13)
+
+### UX fix
+
+- ✅ **Loading an XSLT example forces the output column closed, then transform re-opens it** (`js/modal.js:285-289`) — `loadExample()` unconditionally collapsed `colRight` before calling `runTransform()` 350ms later. Since `runTransform` auto-expands `colRight` when output arrives, the user saw a jarring close→open flash on every example load. Removed the forced collapse entirely; if `colRight` is already open the content updates in place, if already closed `runTransform` opens it when output is ready.
+- ✅ **Loading an XPath example forces the output column open** (`js/modal.js:273-275`) — `loadExample()` also unconditionally un-collapsed `colRight` before calling `runXPath()` 350ms later. `runXPath` already auto-expands `colRight` at line 406-409 in `xpath.js`, making the force-open redundant. Removed; the layout call that followed it was also removed (it fired before the example content was set).
+
+## Priority 31 — Remaining focus-return gap (2026-11-13)
+
+### Consistency
+
+- ✅ **`closeInvalidShareDialog` does not restore focus** (`js/share.js:95`) — the "corrupt/unsupported share link" dialog opens from a URL hash at page load (no trigger element to return to). Unlike `closeIncomingShareDialog` which was fixed in Priority 28, this sibling dialog had no focus return at all — focus dropped to body on close. Added `requestAnimationFrame(() => document.getElementById('runBtn')?.focus())` matching the incoming-share pattern.
+
+## Priority 32 — Settings dialog robustness (survey 2026-11-13 batch 23)
+
+### Consistency
+
+- ✅ **`openWorkspaceSettings` `getSetting` call is uncaught** (`js/explorer.js:199`) — `workspaceStore.getSetting('explorerOpen', true)` was not given a `.catch()`. If IndexedDB is unavailable, the entire async function throws: the Settings modal never opens and the user sees a generic "Action failed" toast with no useful context. Added `.catch(() => true)` to default to the same value used at DOMContentLoaded, matching the established pattern for UI-preference reads.
+- ✅ **`setExplorerStartupPreference` blocks toggle on save failure** (`js/explorer.js:238`) — `toggleExplorer` was called only after `await workspaceStore.setSetting(...)`. If the IndexedDB write fails, the Explorer toggle never fires — the checkbox state changes but the sidebar stays as-is. Reordered to call `toggleExplorer(Boolean(open))` first (always fires), then persist asynchronously with `.catch(error => logError(...))` so a failed save surfaces in the in-app console but does not prevent the UI update.
+
  pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.

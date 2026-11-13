@@ -270,9 +270,6 @@ async function loadExample(key) {
   window._lastExampleKey = key;
 
   if (ex.xpathExpr) {
-    const colRight = document.getElementById('colRight');
-    if (colRight.classList.contains('collapsed')) colRight.classList.remove('collapsed');
-    setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 250);
     const xpathInput = document.getElementById('xpathInput');
     if (xpathInput) {
       if (typeof _syncXPathInput === 'function') _syncXPathInput(ex.xpathExpr);
@@ -282,11 +279,6 @@ async function loadExample(key) {
     }
     if (typeof renderXPathHints === 'function') renderXPathHints(ex.xpathHints ?? null);
   } else {
-    const colRight = document.getElementById('colRight');
-    if (!colRight.classList.contains('collapsed')) {
-      colRight.classList.add('collapsed');
-      setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 250);
-    }
     if (typeof renderXPathHints === 'function') renderXPathHints(null);
     clog(`Example loaded: "${ex.label}" ✓ Running…`, 'success');
     setTimeout(() => { if (typeof runTransform === 'function') runTransform(); }, 350);
