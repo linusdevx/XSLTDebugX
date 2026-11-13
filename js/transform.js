@@ -220,7 +220,10 @@ function renderOutputKV(headers, properties) {
 }
 
 function toggleKVPanel(panelId) {
-  document.getElementById(panelId).classList.toggle('collapsed');
+  const panel = document.getElementById(panelId);
+  panel.classList.toggle('collapsed');
+  const header = panel.querySelector('.kv-header[role="button"]');
+  if (header) header.setAttribute('aria-expanded', String(!panel.classList.contains('collapsed')));
 }
 
 // panelId → { rowsId, childSelector }
