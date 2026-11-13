@@ -253,6 +253,18 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`setWorkspaceView` calls `scheduleSave()` spuriously** (`js/ui.js:347`) — workspace view (which columns are collapsed) is CSS-only layout state, not part of `serializeDrafts()`. Toggling between Edit/Output/All views triggered a full session save for nothing. Removed `scheduleSave()` and added `restorePaneLayout()` to reapply saved pane ratios on view change (consistent with `toggleSideCol`).
 - ✅ **`runTransform` calls `scheduleSave()` when auto-expanding colRight** (`js/transform.js:558`) — when XSLT output arrives and the output column is collapsed, it auto-expands; the expand triggered a spurious `scheduleSave()`. Column collapsed state is CSS-only; removed.
 
+## Priority 28 — Silent catch and focus-return fixes (survey 2026-11-13 batch 21)
+
+### Consistency
+
+- ✅ **`saveState()` swallows auto-save failure silently** (`js/state.js:208`) — the debounced session save used `.catch(() => {})`, so IndexedDB failures were completely invisible. Changed to `.catch(error => logError('Auto-save failed', error))`.
+- ✅ **`handleSaveIndicatorAction` manual retry swallows failure** (`js/state.js:365`) — user explicitly clicked the failed-save indicator to retry; failure was still silent. Changed to `.catch(error => logError('Manual save retry failed', error))`.
+- ✅ **`clearSavedState()` swallows XPath history clear failure** (`js/state.js:299`) — `setSetting('xpathHistory', [])` used `.catch(() => {})`; if it failed, history reappeared on reload. Changed to `.catch(error => logError(...))`.
+- ✅ **`pagehide`/`visibilitychange` flush swallows failure** (`js/state.js:227,229`) — last-ditch save before tab close was silent. Changed to `console.warn` (can't use `clog` at `pagehide` time as DOM may be gone).
+- ✅ **`flushPendingSave` in `setMode()` swallows failure** (`js/mode-manager.js:29`) — mode switch flushed the outgoing mode's draft but a failure was silent; content could be lost. Changed to `.catch(error => logError('Could not flush before mode switch', error))`.
+- ✅ **`closeBackupImportDialog()` never restores focus** (`js/backup.js:280`) — opened by file input, closed by user action, but focus dropped to body. Added `_backupImportReturnFocus` captured at open time; `closeBackupImportDialog` now restores it via `requestAnimationFrame` with `isConnected` guard.
+- ✅ **`closeIncomingShareDialog()` never restores focus** (`js/share.js:191`) — dialog opens from URL hash on page load (no trigger element). Added `requestAnimationFrame(() => document.getElementById('runBtn')?.focus())` fallback so focus lands on the primary action instead of body.
+
  pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
