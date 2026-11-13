@@ -170,6 +170,13 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **`outDownloadBtn` `aria-label` not updated when output language changes** (`js/transform.js`, `js/state.js`) — `title` was updated dynamically after each transform run (to reflect XML/JSON/TEXT), but `aria-label` stayed at the static "Download output as XML" set in `index.html`. Fixed: both `_resetOutputPane` and the post-transform label update now set `aria-label` to match `title`.
 - ✅ **`runBtn` `aria-label="Run transform"` never changes with mode** (`js/mode-manager.js`) — `aria-label` takes precedence over button text for the accessible name, so screen readers announced "Run transform" even in XPath mode. `updateRunButton()` now sets `aria-label="Run XPath"` or `aria-label="Run XSLT transform"` on each mode switch.
+- ✅ **`applyShareData` suppresses only `save` (not `validation`) for XML setValue** (`js/share.js:152`) — all other programmatic `setValue` calls on XML models use `['save', 'validation']` (in `session-controller.js`, `state.js`, `modal.js`, `files.js`); the share XML load was the only outlier and triggered a spurious 800 ms XML validation debounce immediately after loading foreign content. Fixed to match the pattern.
+
+## Priority 17 — Consistency fixes (survey 2026-11-13 batch 10)
+
+### Consistency
+
+- ✅ **Backup import dialog opens without auto-focusing** (`js/backup.js`) — `prepareWorkspaceBackupImport` opens `backupImportBackdrop` without calling `requestAnimationFrame(...focus())`. On validation success, focus now moves to the Import button; on validation failure, focus moves to the close button. Matches every other dialog in the codebase.
 
 ## Deferred ideas — validate before building
 

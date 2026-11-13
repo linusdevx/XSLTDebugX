@@ -149,7 +149,7 @@ function applyShareData(data) {
 
   // Suppress listener-driven autosave. The receiver chooses the persistence mode.
   if (data.xml !== undefined) {
-    _withSuppress(['save'], () => xmlModelXslt?.setValue(data.xml));
+    _withSuppress(['save', 'validation'], () => xmlModelXslt?.setValue(data.xml));
   }
   if (data.xslt !== undefined) {
     _withSuppress(['save', 'validation'], () => eds.xslt?.setValue(data.xslt));
