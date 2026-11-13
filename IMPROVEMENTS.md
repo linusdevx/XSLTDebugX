@@ -265,6 +265,14 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`closeBackupImportDialog()` never restores focus** (`js/backup.js:280`) — opened by file input, closed by user action, but focus dropped to body. Added `_backupImportReturnFocus` captured at open time; `closeBackupImportDialog` now restores it via `requestAnimationFrame` with `isConnected` guard.
 - ✅ **`closeIncomingShareDialog()` never restores focus** (`js/share.js:191`) — dialog opens from URL hash on page load (no trigger element). Added `requestAnimationFrame(() => document.getElementById('runBtn')?.focus())` fallback so focus lands on the primary action instead of body.
 
+## Priority 29 — Stale aria-label and silent catch (survey 2026-11-13 batch 22)
+
+### Bugs / Consistency
+
+- ✅ **`runBtn` initial `aria-label="Run transform"` is stale** (`index.html`) — Priority 16 updated `updateRunButton()` to set `aria-label="Run XSLT transform"` (or `"Run XPath"` in XPath mode), but the static HTML still had the old value `"Run transform"`. The initial value is now consistent with what JS sets; no brief incorrect accessible name before Monaco initializes.
+- ✅ **Accessibility test expects stale `"Run transform"`** (`tests/e2e/workflows/accessibility.spec.js:161`) — test was written before Priority 16 changed the label to `"Run XSLT transform"`; updated to match the current value.
+- ✅ **`clearSavedState` draft-clear catch only sets indicator, not console** (`js/state.js:308`) — if `clearCurrentDraft()` threw, `setSaveIndicator('failed', error)` updated the visual indicator but the error was never logged to the in-app console. Now calls `logError(...)` first so it appears in clog/DevTools, then sets the indicator.
+
  pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.

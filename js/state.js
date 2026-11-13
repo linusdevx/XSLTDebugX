@@ -305,7 +305,7 @@ function clearSavedState() {
   } else {
     _resetXsltMode();
   }
-  void sessionController?.clearCurrentDraft().catch(error => setSaveIndicator('failed', error));
+  void sessionController?.clearCurrentDraft().catch(error => { logError('Could not clear current draft', error); setSaveIndicator('failed', error); });
 }
 
 // Truthful local persistence state in the status bar.
