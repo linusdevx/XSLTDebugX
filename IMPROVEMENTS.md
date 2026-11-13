@@ -158,6 +158,12 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ **`_xpathHistoryCursor = -1` in `clearSavedState` has no guard** (`js/state.js:297`) — `_xpathHistory.length = 0` on the line above is guarded with `typeof !== 'undefined'` (because `_xpathHistory` is declared in `xpath.js` which loads later), but `_xpathHistoryCursor = -1` was unguarded, which would create a stray global if `clearSavedState` were called before `xpath.js` loaded. Added matching guard.
 - ✅ **`openHelpModal` does not move focus into the dialog** (`js/ui.js`) — every other modal opens with an explicit `requestAnimationFrame(() => el?.focus())` call; Help was the only one that left focus outside the dialog. Added focus to `.ex-modal-close` on open.
 
+## Priority 15 — Code quality fixes (survey 2026-11-13 batch 8)
+
+### Redundant code
+
+- ✅ **`_xpathHistoryCursor = -1` at `js/xpath.js:432` is redundant** — `_xpathHistoryPush()` already resets the cursor to -1 at line 90; the explicit reset on line 432 immediately after the push call was a no-op. Removed.
+
 ## Deferred ideas — validate before building
 
 - Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.

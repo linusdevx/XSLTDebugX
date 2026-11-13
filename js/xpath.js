@@ -429,7 +429,6 @@ function runXPath() {
   clog(`ƒx  ${expr}`, 'info');
   window.goatcounter?.count({ path: 'run-xpath', title: 'Run XPath' });
   _xpathHistoryPush(expr);
-  _xpathHistoryCursor = -1;
 
   // Show spinner immediately, keep for at least 300ms.
   const _btn = document.getElementById('runBtn');
