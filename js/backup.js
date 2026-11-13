@@ -269,8 +269,11 @@ async function prepareWorkspaceBackupImport(file) {
     document.getElementById('backupImportBackdrop')?.classList.add('open');
     document.body.classList.add('modal-open');
     document.getElementById('backupImportConfirmBtn').disabled = true;
+    requestAnimationFrame(() => document.querySelector('#backupImportBackdrop .ex-modal-close')?.focus());
+    return;
   }
   if (pendingBackupImport) document.getElementById('backupImportConfirmBtn').disabled = false;
+  requestAnimationFrame(() => document.getElementById('backupImportConfirmBtn')?.focus());
 }
 
 function closeBackupImportDialog() {
