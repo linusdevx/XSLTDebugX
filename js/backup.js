@@ -11,6 +11,7 @@ const BACKUP_MAX_ENTRIES = 5000;
 const BACKUP_MAX_RATIO = 1200;
 const BACKUP_RECORD_SCHEMA_VERSION = 1;
 let pendingBackupImport = null;
+let _backupImportReturnFocus = null;
 
 function backupJsonBytes(value) {
   return new TextEncoder().encode(JSON.stringify(value, null, 2) + '\n');
@@ -249,6 +250,7 @@ async function validateWorkspaceBackup(input) {
 }
 
 async function prepareWorkspaceBackupImport(file) {
+  _backupImportReturnFocus = document.activeElement;
   const input = document.getElementById('backupImportInput');
   if (input) input.value = '';
   if (!file) return;
@@ -281,6 +283,9 @@ function closeBackupImportDialog() {
   pendingBackupImport = null;
   document.getElementById('backupImportBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
+  const returnFocus = _backupImportReturnFocus;
+  _backupImportReturnFocus = null;
+  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
 }
 
 async function confirmWorkspaceBackupImport() {

@@ -26,7 +26,7 @@ class ModeManager {
     try {
       // Commit the outgoing mode before the mode flag changes. The save chain
       // serializes this with the new mode's subsequent autosave.
-      if (typeof flushPendingSave === 'function') void flushPendingSave().catch(() => {});
+      if (typeof flushPendingSave === 'function') void flushPendingSave().catch(error => logError('Could not flush before mode switch', error));
       this.cleanup();
       this.saveColumnState();
       this.mode = newMode;

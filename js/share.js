@@ -191,6 +191,9 @@ function openIncomingShareDialog(data) {
 function closeIncomingShareDialog() {
   document.getElementById('incomingShareBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
+  // Dialog opens from URL hash on page load — no trigger to return to.
+  // Fall back to Run button so focus doesn't drop to body.
+  requestAnimationFrame(() => document.getElementById('runBtn')?.focus());
 }
 
 function setIncomingShareError(message) {

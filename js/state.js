@@ -205,7 +205,7 @@ function scheduleSave() {
 
 function saveState() {
   if (!window.sessionController) return;
-  void sessionController.saveQuickDrafts().catch(() => {});
+  void sessionController.saveQuickDrafts().catch(error => logError('Auto-save failed', error));
 }
 
 function flushPendingSave() {
@@ -224,9 +224,9 @@ function cancelPendingSave() {
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') void flushPendingSave().catch(() => {});
+  if (document.visibilityState === 'hidden') void flushPendingSave().catch(error => console.warn('[XSLTDebugX] flush on hide failed', error));
 });
-window.addEventListener('pagehide', () => { void flushPendingSave().catch(() => {}); });
+window.addEventListener('pagehide', () => { void flushPendingSave().catch(error => console.warn('[XSLTDebugX] flush on pagehide failed', error)); });
 
 function _resetXPathMode() {
   // Cancel pending validation/save timers so they don't fire against the freshly-reset content.
@@ -296,7 +296,7 @@ function _resetXsltMode() {
 function clearSavedState() {
   if (typeof _xpathHistory !== 'undefined') _xpathHistory.length = 0;
   if (typeof _xpathHistoryCursor !== 'undefined') _xpathHistoryCursor = -1;
-  void workspaceStore?.setSetting('xpathHistory', []).catch(() => {});
+  void workspaceStore?.setSetting('xpathHistory', []).catch(error => logError('Could not clear XPath history', error));
 
   if (typeof setConsoleHeight === 'function') setConsoleHeight(160);
 
@@ -362,7 +362,7 @@ function handleSaveIndicatorAction(event) {
     return;
   }
   if (indicator?.classList.contains('failed')) {
-    void sessionController?.saveQuickDrafts().catch(() => {});
+    void sessionController?.saveQuickDrafts().catch(error => logError('Manual save retry failed', error));
     return;
   }
   if (indicator?.classList.contains('temporary')) {
