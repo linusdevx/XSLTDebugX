@@ -310,7 +310,20 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **Example Library close button not at far right** (`css/style.css`) — `.ex-modal-search` has `flex: 1` but `.ex-search-wrap` has `max-width: 280px`; once the search hits that cap the close button sits right after it instead of at the modal edge. Added `margin-left: auto` to `.ex-modal-close` so it always pins to the far right.
 
- pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
+## Priority 34 — Browser UI workflow review (2026-11-16)
+
+### UX fix
+
+- ✅ **Temporary-content tooltip incorrectly says every temporary item is a shared session** (`js/state.js`) — examples and uploaded files also use the temporary state. Reworded the tooltip generically so it accurately covers examples, uploads, and shared mappings.
+
+### Follow-up
+
+- [ ] **Narrow screens hide Share, Theme, Help, Settings, and About with no overflow path** (`css/style.css`) — retain the compact primary toolbar, but consider one small overflow button for secondary actions if mobile editing remains supported. Do not add multiple new header buttons.
+- [ ] **Fresh-profile mobile guidance** — verify the desktop/laptop recommendation once in a clean browser profile without clearing an existing user's workspace.
+
+## Deferred ideas — validate before building
+
+- Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
