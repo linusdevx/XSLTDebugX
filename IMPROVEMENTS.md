@@ -318,8 +318,8 @@ This file is the handoff for future implementation work. The local-first workspa
 
 ### Follow-up
 
-- [ ] **Narrow screens hide Share, Theme, Help, Settings, and About with no overflow path** (`css/style.css`) — retain the compact primary toolbar, but consider one small overflow button for secondary actions if mobile editing remains supported. Do not add multiple new header buttons.
-- [ ] **Fresh-profile mobile guidance** — verify the desktop/laptop recommendation once in a clean browser profile without clearing an existing user's workspace.
+- ✅ **Narrow screens hid Share, Theme, Help, Settings, and About with no overflow path** (`css/style.css`) — the existing session control now becomes a compact ellipsis menu on phones and exposes those secondary actions without adding another header button.
+- ✅ **Fresh-profile mobile guidance** — added a focused touch-profile test confirming the desktop/laptop recommendation appears once, dismisses cleanly, and stays dismissed after reload without touching an existing user's workspace.
 
 ## Deferred ideas — validate before building
 

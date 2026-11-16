@@ -488,6 +488,7 @@
     .session-menu button:hover, .session-menu button:focus { outline: none; background: var(--hover-bg-strong); color: var(--text-primary); }
     .session-menu button:disabled { opacity: .4; cursor: default; }
     .session-menu-separator { display: block; margin: 4px 3px; border-top: 1px solid var(--border); }
+    .session-menu-mobile { display: none !important; }
     .workspace-view-switcher {
       display: flex; padding: 2px; gap: 2px; border: 1px solid var(--border);
       border-radius: var(--r-sm); background: var(--bg-base);
@@ -3018,6 +3019,13 @@ body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { bord
   .header #shareBtn, .header .theme-toggle,
   .header .help-btn, .header #settingsBtn, .header #aboutBtn { display: none; }
   .header .explorer-toggle { margin-left: 0; }
+  .header .current-item { display: block; width: 32px; min-width: 32px; border-left: 0; }
+  .header .current-item-trigger { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  .header .current-item-title { display: none; }
+  .header .current-item-trigger > span:last-child { font-size: 0; }
+  .header .current-item-trigger > span:last-child::after { content: '\2026'; font-size: 18px; line-height: 1; }
+  .session-menu { width: 210px; }
+  .session-menu-mobile { display: block !important; }
   .header #exBtn {
     width: 32px;
     padding: 0;

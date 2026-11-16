@@ -284,6 +284,12 @@
       <button role="menuitem" id="sessionMenuDuplicate" onclick="toggleSessionMenu(false);duplicateCurrentSession().catch(reportExplorerActionError)">Duplicate current</button>
       <span class="session-menu-separator"></span>
       <button role="menuitem" onclick="toggleSessionMenu(false);clearSavedState()">Clear current content</button>
+      <span class="session-menu-separator session-menu-mobile" aria-hidden="true"></span>
+      <button class="session-menu-mobile" role="menuitem" id="sessionMenuShare" onclick="toggleSessionMenu(false);openShareModal()">Share current XSLT</button>
+      <button class="session-menu-mobile" role="menuitem" onclick="toggleSessionMenu(false);toggleTheme()">Toggle light / dark theme</button>
+      <button class="session-menu-mobile" role="menuitem" onclick="toggleSessionMenu(false);openHelpModal()">Help &amp; shortcuts</button>
+      <button class="session-menu-mobile" role="menuitem" onclick="toggleSessionMenu(false);openWorkspaceSettings()">Settings</button>
+      <button class="session-menu-mobile" role="menuitem" onclick="toggleSessionMenu(false);openAboutDialog()">About XSLTDebugX</button>
     </div>
   </div>
 

@@ -789,6 +789,11 @@ async function duplicateCurrentSession() {
 function syncSessionMenuState() {
   const duplicate = document.getElementById('sessionMenuDuplicate');
   if (duplicate) duplicate.disabled = !sessionController?.getCurrentSession();
+  const share = document.getElementById('sessionMenuShare');
+  if (share) {
+    share.disabled = modeManager.isXpath;
+    share.title = modeManager.isXpath ? 'Sharing is only available in XSLT mode' : '';
+  }
 }
 
 function toggleSessionMenu(force) {
