@@ -358,3 +358,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ Latest upstream CI regression: 175/175 passed with 4 workers.
 - ✅ No source content is uploaded unexpectedly.
 - ✅ Workspace PR #89 merged into `dev`; production deployment / `dev` → `main` remains an explicit release decision.
+# Theme contrast review (completed)
+
+- Reviewed editor syntax, XML/XSLT tokens, console levels, filters, timestamps, and supporting labels in dark and light themes.
+- Increased dark-theme secondary contrast, made inactive console filters recognizable, strengthened light-theme warning contrast, and improved Monaco line-number readability in both themes.
