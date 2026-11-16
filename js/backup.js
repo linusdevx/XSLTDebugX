@@ -12,6 +12,7 @@ const BACKUP_MAX_RATIO = 1200;
 const BACKUP_RECORD_SCHEMA_VERSION = 1;
 let pendingBackupImport = null;
 let _backupImportReturnFocus = null;
+let _backupImportReturnToSettings = false;
 
 function backupJsonBytes(value) {
   return new TextEncoder().encode(JSON.stringify(value, null, 2) + '\n');
@@ -251,10 +252,15 @@ async function validateWorkspaceBackup(input) {
 }
 
 async function prepareWorkspaceBackupImport(file) {
-  _backupImportReturnFocus = document.activeElement;
   const input = document.getElementById('backupImportInput');
   if (input) input.value = '';
   if (!file) return;
+  const settings = document.getElementById('workspaceSettingsBackdrop');
+  _backupImportReturnToSettings = Boolean(settings?.classList.contains('open'));
+  _backupImportReturnFocus = _backupImportReturnToSettings
+    ? document.getElementById('settingsBtn')
+    : document.activeElement;
+  if (_backupImportReturnToSettings) closeWorkspaceSettings();
   const error = document.getElementById('backupImportError');
   if (error) { error.hidden = true; error.textContent = ''; }
   try {
@@ -285,9 +291,20 @@ function closeBackupImportDialog() {
   document.getElementById('backupImportBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
   const returnFocus = _backupImportReturnFocus;
+  const returnToSettings = _backupImportReturnToSettings;
   _backupImportReturnFocus = null;
-  requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
+  _backupImportReturnToSettings = false;
+  if (returnToSettings && typeof openWorkspaceSettings === 'function') {
+    void openWorkspaceSettings();
+  } else {
+    requestAnimationFrame(() => returnFocus?.isConnected && returnFocus.focus());
+  }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('backupImportCloseBtn')?.addEventListener('click', closeBackupImportDialog);
+  document.getElementById('backupImportCancelBtn')?.addEventListener('click', closeBackupImportDialog);
+});
 
 async function confirmWorkspaceBackupImport() {
   if (!pendingBackupImport) return;

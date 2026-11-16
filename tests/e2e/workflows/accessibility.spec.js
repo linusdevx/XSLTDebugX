@@ -145,6 +145,37 @@ test.describe('accessibility improvements', () => {
     await expect(region).toHaveAttribute('aria-live', 'polite');
   });
 
+  test('console filters expose their selected state', async ({ page }) => {
+    const all = page.getByRole('button', { name: 'Show all messages' });
+    const info = page.getByRole('button', { name: 'Info only' });
+    await expect(all).toHaveAttribute('aria-pressed', 'true');
+    await expect(info).toHaveAttribute('aria-pressed', 'false');
+    await info.click();
+    await expect(all).toHaveAttribute('aria-pressed', 'false');
+    await expect(info).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('backup import preview replaces Settings and returns after cancel', async ({ page }) => {
+    const dialog = page.locator('#backupImportBackdrop');
+    const settings = page.locator('#workspaceSettingsBackdrop');
+    await page.evaluate(() => document.getElementById('workspaceSettingsBackdrop').classList.add('open'));
+    await page.locator('#backupImportInput').setInputFiles({
+      name: 'invalid-backup.zip',
+      mimeType: 'application/zip',
+      buffer: Buffer.from('not a zip'),
+    });
+    await expect(dialog).toHaveClass(/open/);
+    await expect(settings).not.toHaveClass(/open/);
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dialog).not.toHaveClass(/open/);
+    await expect(settings).toHaveClass(/open/);
+    await settings.getByRole('button', { name: 'Close settings' }).click();
+
+    await page.evaluate(() => document.getElementById('backupImportBackdrop').classList.add('open'));
+    await page.getByRole('button', { name: 'Close backup import' }).click();
+    await expect(dialog).not.toHaveClass(/open/);
+  });
+
   // ── Explorer create buttons accessible names ───────────────────────────────
 
   test('Explorer create buttons have accessible names', async ({ page }) => {
