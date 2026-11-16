@@ -899,11 +899,11 @@ document.addEventListener('keydown', event => {
     event.preventDefault();
     const active = sessionController.getCurrentSession();
     if (active) void flushPendingSave().catch(error => logError('Could not save (Ctrl+S)', error));
-    else void saveCurrentAsCopy();
+    else void saveCurrentAsCopy().catch(reportExplorerActionError);
   }
   if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLocaleLowerCase() === 's') {
     event.preventDefault();
-    void saveCurrentAsCopy();
+    void saveCurrentAsCopy().catch(reportExplorerActionError);
   }
 });
 
