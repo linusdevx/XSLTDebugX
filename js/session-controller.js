@@ -416,6 +416,7 @@
         return restored;
       } catch (error) {
         clog(`Could not restore the last saved item: ${error.message}`, 'warn');
+        console.warn('[XSLTDebugX] restoreInitialSession failed', error);
         return this.restoreQuickDrafts();
       } finally {
         this.restoring = false;
