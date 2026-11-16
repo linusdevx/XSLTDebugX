@@ -385,8 +385,6 @@ function renderExplorerSessions(list, sessions, search, workspaces = [], folders
       folderRow.setAttribute('aria-expanded', String(!collapsed));
       const name = document.createElement('span');
       name.textContent = `${collapsed ? '▸' : '▾'} ${folder.name}`;
-      const rename = explorerAction('✎', `Rename folder ${folder.name}`, () => renameExplorerFolder(folder));
-      const remove = explorerAction('×', `Move folder ${folder.name} to Trash`, () => trashExplorerFolder(folder));
       const actions = document.createElement('span');
       actions.className = 'explorer-folder-actions';
       actions.appendChild(_explorerRowMenu([
