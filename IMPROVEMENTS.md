@@ -310,7 +310,26 @@ This file is the handoff for future implementation work. The local-first workspa
 
 - ✅ **Example Library close button not at far right** (`css/style.css`) — `.ex-modal-search` has `flex: 1` but `.ex-search-wrap` has `max-width: 280px`; once the search hits that cap the close button sits right after it instead of at the modal edge. Added `margin-left: auto` to `.ex-modal-close` so it always pins to the far right.
 
- pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
+## Priority 34 — Browser UI workflow review (2026-11-16)
+
+### UX fix
+
+- ✅ **Temporary-content tooltip incorrectly says every temporary item is a shared session** (`js/state.js`) — examples and uploaded files also use the temporary state. Reworded the tooltip generically so it accurately covers examples, uploads, and shared mappings.
+
+### Follow-up
+
+- ✅ **Narrow screens hid Share, Theme, Help, Settings, and About with no overflow path** (`css/style.css`) — the existing session control now becomes a compact ellipsis menu on phones and exposes those secondary actions without adding another header button.
+- ✅ **Fresh-profile mobile guidance** — added a focused touch-profile test confirming the desktop/laptop recommendation appears once, dismisses cleanly, and stays dismissed after reload without touching an existing user's workspace.
+
+## Priority 35 — Full UI control audit (2026-11-16)
+
+- ✅ **Backup import preview opened behind Settings, making Cancel and close appear broken** — Settings now closes before validation preview and reopens after cancel/close; focused coverage verifies the full invalid-ZIP flow and both visible close controls. Escape continues to work.
+- ✅ **Console filter selection was visual-only** — filter buttons now expose synchronized `aria-pressed` state so assistive technology can identify All, Info, Warning, or Error as the active filter.
+- ✅ Verified Settings theme/runtime/Explorer preference/layout reset, backup validation preview, destructive confirmations, About/footer links, workspace views, Share, Examples, Help tabs, mode switching, Run, pane format/copy/wrap/upload/download/collapse, header/property add/filter, and responsive secondary actions.
+
+## Deferred ideas — validate before building
+
+- Draggable pane reordering: pursue only if usability feedback shows clear value; retain Input → Transform → Output as the default and provide keyboard/reset behavior.
 - Runnable-session tabs: add only if Explorer testing shows repeated switching friction; do not duplicate the Explorer or reduce editor space unnecessarily.
 - Replace Workspace import: requires explicit approval, rollback design, and destructive-flow testing. Merge-as-copy remains the safe default.
 - Linked project files/includes, encryption, collaboration, and cloud synchronization remain out of scope.
@@ -339,3 +358,7 @@ This file is the handoff for future implementation work. The local-first workspa
 - ✅ Latest upstream CI regression: 175/175 passed with 4 workers.
 - ✅ No source content is uploaded unexpectedly.
 - ✅ Workspace PR #89 merged into `dev`; production deployment / `dev` → `main` remains an explicit release decision.
+# Theme contrast review (completed)
+
+- Reviewed editor syntax, XML/XSLT tokens, console levels, filters, timestamps, and supporting labels in dark and light themes.
+- Increased dark-theme secondary contrast, made inactive console filters recognizable, strengthened light-theme warning contrast, and improved Monaco line-number readability in both themes.

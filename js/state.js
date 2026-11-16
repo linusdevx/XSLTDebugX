@@ -339,7 +339,7 @@ function setSaveIndicator(state, error = null) {
   ind.title = state === 'conflict'
     ? 'This item changed in another tab; choose how to preserve your edits'
     : state === 'temporary'
-    ? 'This shared session is open temporarily and will not overwrite your saved work'
+    ? 'This content is temporary and will not overwrite your saved work until you choose Save…'
     : state === 'failed'
     ? `${itemName} could not be saved locally${error?.message ? ': ' + error.message : ''}`
     : state === 'saving'

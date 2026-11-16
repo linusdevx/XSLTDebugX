@@ -27,8 +27,8 @@ var MONACO_THEME_DARK = {
   colors: {
     'editor.background':                  '#070c14',
     'editor.foreground':                  '#c8d8e8',
-    'editorLineNumber.foreground':        '#1e3050',
-    'editorLineNumber.activeForeground':  '#4a70a8',
+    'editorLineNumber.foreground':        '#52657d',
+    'editorLineNumber.activeForeground':  '#8aa4c2',
     'editor.lineHighlightBackground':     '#0c1826',
     'editor.lineHighlightBorderColor':    '#182030',
     'editorCursor.foreground':            '#0070f2',
@@ -83,8 +83,8 @@ var MONACO_THEME_LIGHT = {
   colors: {
     'editor.background':                  '#ffffff',
     'editor.foreground':                  '#1a2535',
-    'editorLineNumber.foreground':        '#c0cfe0',
-    'editorLineNumber.activeForeground':  '#6080a0',
+    'editorLineNumber.foreground':        '#718096',
+    'editorLineNumber.activeForeground':  '#345d85',
     'editor.lineHighlightBackground':     '#f0f6ff',
     'editor.lineHighlightBorderColor':    '#d8e8f8',
     'editorCursor.foreground':            '#0070f2',

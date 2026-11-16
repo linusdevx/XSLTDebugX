@@ -26,6 +26,32 @@ test.describe('workspace responsive containment', () => {
     await expect(page.locator('#explorerToggle')).toBeFocused();
   });
 
+  test('keeps secondary app actions reachable from the phone session menu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('http://localhost:8000', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('.monaco-editor');
+
+    await page.locator('#sessionMenuTrigger').click();
+    await expect(page.getByRole('menuitem', { name: 'Share current XSLT' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Toggle light / dark theme' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Help & shortcuts' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'About XSLTDebugX' })).toBeVisible();
+  });
+
+  test('shows the dismissible desktop recommendation on a fresh touch profile', async ({ page }) => {
+    await page.addInitScript(() => Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 5 }));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('http://localhost:8000', { waitUntil: 'domcontentloaded' });
+
+    const notice = page.getByRole('note', { name: 'Desktop browser recommended' });
+    await expect(notice).toBeVisible();
+    await notice.getByRole('button', { name: 'Continue on mobile' }).click();
+    await expect(notice).toBeHidden();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(notice).toHaveCount(0);
+  });
+
   test('uses an inline Explorer on wide desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('http://localhost:8000', { waitUntil: 'domcontentloaded' });

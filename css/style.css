@@ -16,7 +16,8 @@
       --sap-gold:       #f5a524;
       --text-primary:   #f1f5f9;
       --text-secondary: #94a3b8;
-      --text-dim:       #475569;
+      /* Still subordinate, but readable at the app's small mono text sizes. */
+      --text-dim:       #64748b;
       --success:        #3fb950;
       --error:          #f85149;
       --warning:        #f5a524;
@@ -488,6 +489,7 @@
     .session-menu button:hover, .session-menu button:focus { outline: none; background: var(--hover-bg-strong); color: var(--text-primary); }
     .session-menu button:disabled { opacity: .4; cursor: default; }
     .session-menu-separator { display: block; margin: 4px 3px; border-top: 1px solid var(--border); }
+    .session-menu-mobile { display: none !important; }
     .workspace-view-switcher {
       display: flex; padding: 2px; gap: 2px; border: 1px solid var(--border);
       border-radius: var(--r-sm); background: var(--bg-base);
@@ -1291,10 +1293,10 @@
     }
     .console-filter-btn:hover { background: var(--hover-bg); }
     /* Inactive — each dot has its own muted color so they're distinguishable */
-    .console-filter-btn[data-filter="all"]   { color: #4a6080; }
-    .console-filter-btn[data-filter="info"]  { color: #2a5a9a; }
-    .console-filter-btn[data-filter="warn"]  { color: #7a5a14; }
-    .console-filter-btn[data-filter="error"] { color: #7a2828; }
+    .console-filter-btn[data-filter="all"]   { color: #718096; }
+    .console-filter-btn[data-filter="info"]  { color: #5794d8; }
+    .console-filter-btn[data-filter="warn"]  { color: #c28a2c; }
+    .console-filter-btn[data-filter="error"] { color: #c75b57; }
     /* Active states — full saturation + border + background tint */
     .console-filter-btn.active[data-filter="all"] {
       color: var(--text-secondary);
@@ -1458,7 +1460,8 @@
       --text-dim:       #64748b;
       --success:        #1a7f37;
       --error:          #cf222e;
-      --warning:        #d97706;
+      /* Darker amber keeps warning text legible on the near-white console. */
+      --warning:        #b45309;
       --scrollbar:      rgba(0, 64, 140, 0.18);
       --kv-row-alt:     rgba(0, 64, 140, 0.025);
       --hover-bg:        rgba(0, 64, 140, 0.05);
@@ -1475,10 +1478,10 @@
     }
 
     /* ── LIGHT THEME: console filter buttons ── */
-    body.light .console-filter-btn[data-filter="all"]   { color: #8090a8; }
-    body.light .console-filter-btn[data-filter="info"]  { color: #5a8ac0; }
-    body.light .console-filter-btn[data-filter="warn"]  { color: #c89030; }
-    body.light .console-filter-btn[data-filter="error"] { color: #c04040; }
+    body.light .console-filter-btn[data-filter="all"]   { color: #64748b; }
+    body.light .console-filter-btn[data-filter="info"]  { color: #2563a6; }
+    body.light .console-filter-btn[data-filter="warn"]  { color: #a64f08; }
+    body.light .console-filter-btn[data-filter="error"] { color: #b4232d; }
     body.light .console-filter-btn.active[data-filter="all"]   { color: var(--text-secondary); background: rgba(0,0,0,0.06); }
     body.light .console-filter-btn.active[data-filter="info"]  { color: var(--sap-blue);  border-color: var(--sap-blue);  background: rgba(0,112,242,0.08); }
     body.light .console-filter-btn.active[data-filter="warn"]  { color: var(--warning);   border-color: var(--warning);   background: rgba(200,120,0,0.1); }
@@ -3018,6 +3021,13 @@ body.light .xpath-results-body-wrap .empty-output-hint .empty-output-icon { bord
   .header #shareBtn, .header .theme-toggle,
   .header .help-btn, .header #settingsBtn, .header #aboutBtn { display: none; }
   .header .explorer-toggle { margin-left: 0; }
+  .header .current-item { display: block; width: 32px; min-width: 32px; border-left: 0; }
+  .header .current-item-trigger { width: 32px; height: 32px; padding: 0; justify-content: center; }
+  .header .current-item-title { display: none; }
+  .header .current-item-trigger > span:last-child { font-size: 0; }
+  .header .current-item-trigger > span:last-child::after { content: '\2026'; font-size: 18px; line-height: 1; }
+  .session-menu { width: 210px; }
+  .session-menu-mobile { display: block !important; }
   .header #exBtn {
     width: 32px;
     padding: 0;
