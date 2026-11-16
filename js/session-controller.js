@@ -126,7 +126,9 @@
         ? options.types.filter(type => type === 'xslt' || type === 'xpath')
         : [snapshot.activeMode === 'XPATH' ? 'xpath' : 'xslt'];
       const generation = ++this.saveGeneration;
-      setSaveIndicator('saving');
+      const activeTypeAtEnqueue = modeManager.isXpath ? 'xpath' : 'xslt';
+      const allTemporary = requestedTypes.every(type => this.temporaryModes.has(type));
+      if (!allTemporary) setSaveIndicator('saving');
       const operation = async () => {
         await this.store.init();
         const saves = [this.store.setSetting('activeMode', snapshot.activeMode)];
@@ -153,7 +155,7 @@
         }
         await Promise.all(saves);
         if (generation === this.saveGeneration) {
-          setSaveIndicator(this.temporaryModes.has(modeManager.isXpath ? 'xpath' : 'xslt') ? 'temporary' : 'saved');
+          setSaveIndicator(this.temporaryModes.has(activeTypeAtEnqueue) ? 'temporary' : 'saved');
         }
       };
       this.saveChain = this.saveChain.catch(() => {}).then(operation);
@@ -176,7 +178,7 @@
         await this.store.init();
         await this.store.setSetting('activeMode', normalized);
       });
-      return this.saveChain;
+      return this.saveChain.catch(error => logError('Could not persist mode selection', error));
     }
 
     async restoreQuickDrafts(options = {}) {
@@ -277,11 +279,11 @@
 
     async restoreSession(record) {
       if (!record) throw new Error('Session was not found.');
-      await flushPendingSave();
-      record = await this.store.markSessionOpened(record.id);
-      if (!record) throw new Error('Session was not found.');
       this.restoring = true;
       try {
+        await flushPendingSave();
+        record = await this.store.markSessionOpened(record.id);
+        if (!record) throw new Error('Session was not found.');
         const mode = record.type === 'xpath' ? 'XPATH' : 'XSLT';
         if (modeManager.mode !== mode) modeManager.setMode(mode);
         this._clearDerivedState(record.type);
@@ -330,8 +332,8 @@
 
     async restoreModeDraft(type) {
       if (type !== 'xslt' && type !== 'xpath') throw new Error('A valid session type is required.');
-      await this.saveChain.catch(() => {});
       this.restoring = true;
+      await this.saveChain.catch(() => {});
       try {
         const draft = await this.store.getDraft(`draft-${type}`);
         this.activeSessions[type] = null;
@@ -370,6 +372,7 @@
     }
 
     async restoreInitialSession() {
+      this.restoring = true;
       try {
         await this.store.init();
         const mode = await this.store.getSetting('activeMode', 'XSLT');
@@ -385,7 +388,6 @@
         ]);
         const records = { xslt: xsltRecord, xpath: xpathRecord };
         const drafts = { xslt: xsltDraft, xpath: xpathDraft };
-        this.restoring = true;
         this.activeSessions = { xslt: null, xpath: null };
         this.temporaryModes.clear();
         this.temporaryTitles = { xslt: null, xpath: null };
@@ -417,7 +419,8 @@
       } catch (error) {
         clog(`Could not restore the last saved item: ${error.message}`, 'warn');
         console.warn('[XSLTDebugX] restoreInitialSession failed', error);
-        return this.restoreQuickDrafts();
+        await this.restoreQuickDrafts();
+        return false;
       } finally {
         this.restoring = false;
       }
@@ -453,7 +456,6 @@
       if (typeof cancelPendingSave === 'function') cancelPendingSave();
       this.saveChain = Promise.resolve();
       this.activateNamedSession(copy);
-      await this.store.setSetting(`activeSession:${type}`, copy.id);
       return copy;
     }
 

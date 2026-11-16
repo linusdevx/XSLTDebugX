@@ -129,15 +129,15 @@ async function toggleXPath() {
   modeSwitchPending = true;
   try {
     await flushPendingSave();
+    return modeManager.setMode(nextMode);
   } catch (error) {
     if (sessionController?.getCurrentSession()) {
       clog(`Mode switch blocked until the current item is saved: ${error.message}`, 'error');
-      return false;
     }
+    return false;
   } finally {
     modeSwitchPending = false;
   }
-  return modeManager.setMode(nextMode);
 }
 
 function clearXPathHighlights() {
@@ -375,6 +375,14 @@ function _xpathSerializeItem(item) {
       return { text: String(item), type: 'node' };
     }
   }
+  // Saxon-JS XDM arrays arrive as JS arrays, maps as plain objects.
+  // String() would produce "[object Object]" — render a JSON-like form instead.
+  if (Array.isArray(item)) {
+    try { return { text: JSON.stringify(item, null, 2), type: 'atomic' }; } catch(_) {}
+  }
+  if (typeof item === 'object') {
+    try { return { text: JSON.stringify(item, null, 2), type: 'atomic' }; } catch(_) {}
+  }
   return { text: String(item), type: 'atomic' };
 }
 
@@ -580,6 +588,10 @@ async function _showXPathResults(items, errorMsg, isError) {
   const body    = document.getElementById('xpathResultsBody');
   const countEl = document.getElementById('xpathMatchCount');
 
+  // Gen check before any DOM mutation — a clearXPathResults() call or a newer
+  // run increments _showXPathGen so we never corrupt the cleared/updated UI.
+  if (gen !== _showXPathGen) return;
+
   // Reveal real content (hides the empty-state overlay).
   bodyWrap?.classList.add('has-content');
   // Only minimise output section if visible (it's hidden in XPath mode).
@@ -598,20 +610,18 @@ async function _showXPathResults(items, errorMsg, isError) {
   };
 
   if (isError) {
-    countEl.textContent = 'Error';
-    countEl.className   = 'xpath-match-count has-error';
-    body.innerHTML      = `<div class="xpath-error">${escHtml(errorMsg)}</div>`;
+    if (countEl) { countEl.textContent = 'Error'; countEl.className = 'xpath-match-count has-error'; }
+    if (body) body.innerHTML = `<div class="xpath-error">${escHtml(errorMsg)}</div>`;
     _setHeaderCount('Error', 'has-error');
     return;
   }
 
   const n = items.length;
-  countEl.textContent = `${n} match${n !== 1 ? 'es' : ''}`;
-  countEl.className   = n > 0 ? 'xpath-match-count has-results' : 'xpath-match-count';
+  if (countEl) { countEl.textContent = `${n} match${n !== 1 ? 'es' : ''}`; countEl.className = n > 0 ? 'xpath-match-count has-results' : 'xpath-match-count'; }
   _setHeaderCount(`${n} match${n !== 1 ? 'es' : ''}`, n > 0 ? 'has-results' : '');
 
   if (n === 0) {
-    body.innerHTML = '<div class="xpath-no-results">No matches found for this expression.</div>';
+    if (body) body.innerHTML = '<div class="xpath-no-results">No matches found for this expression.</div>';
     return;
   }
 
@@ -638,6 +648,7 @@ async function _showXPathResults(items, errorMsg, isError) {
     return;
   }
 
+  if (!body) return;
   body.innerHTML = serialized.map(({ type }, i) => {
     const typeLabel = type === 'node' ? 'Node' : type === 'text' ? 'Text' : 'Value';
     return `<div class="xpath-result-item">
@@ -649,6 +660,9 @@ async function _showXPathResults(items, errorMsg, isError) {
 }
 
 function clearXPathResults() {
+  // Increment gen so any in-flight async _showXPathResults call aborts at
+  // the gen check before writing to the DOM.
+  _showXPathGen++;
   clearXPathHighlights();
   _lastXPathRenderArgs = null;
   // Restore empty-state overlay (hides rendered results without removing the panel).

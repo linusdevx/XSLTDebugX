@@ -58,8 +58,8 @@ function validateXML(src) {
                     text.match(/Line Number\s+([0-9]+)/i);
   const colMatch  = text.match(/column[\s:]+([0-9]+)/i) ||
                     text.match(/Column\s+([0-9]+)/i);
-  if (lineMatch) line = parseInt(lineMatch[1]);
-  if (colMatch)  col  = parseInt(colMatch[1]);
+  if (lineMatch) line = parseInt(lineMatch[1], 10);
+  if (colMatch)  col  = parseInt(colMatch[1], 10);
 
   const message = _cleanDomParserMessage(text);
   return { ok: false, line, col, message };
@@ -135,7 +135,7 @@ function extractSaxonErrorLine(err) {
 function parseSaxonErrorLine(msg) {
   const m = msg.match(/(?:on|at)\s+line\s+(\d+)/i) ||
             msg.match(/line\s+(\d+)/i);
-  return m ? parseInt(m[1]) : null;
+  return m ? parseInt(m[1], 10) : null;
 }
 
 // Find the 1-based line number of the first source line containing `needle`

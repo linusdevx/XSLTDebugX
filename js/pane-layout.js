@@ -37,7 +37,10 @@ function applyPaneLayout(layout) {
   const total = ratios.reduce((sum, value) => sum + value, 0);
   if (total <= 0) return;
   resetPaneLayoutStyles();
-  const available = visibleIds.reduce((sum, id) => sum + document.getElementById(id).getBoundingClientRect().width, 0);
+  // Measure the workspace container width — stable even before the CSS var
+  // reset causes a reflow, since the workspace itself doesn't resize.
+  // Summing individual column widths here would return stale pre-reset values.
+  const available = workspace.getBoundingClientRect().width || workspace.offsetWidth;
   workspace.classList.add('custom-pane-layout');
   visibleIds.forEach((id, index) => workspace.style.setProperty(`--${id}-basis`, `${(ratios[index] / total) * available}px`));
 }
@@ -102,6 +105,7 @@ function movePaneResize(event) {
   const beforeWidth = Math.max(minimum, Math.min(total - minimum, paneResizeState.beforeWidth + delta));
   const afterWidth = total - beforeWidth;
   const workspace = document.querySelector('.workspace');
+  if (!workspace) return;
   workspace.classList.add('custom-pane-layout');
   workspace.style.setProperty(`--${paneResizeState.before.id}-basis`, `${beforeWidth}px`);
   workspace.style.setProperty(`--${paneResizeState.after.id}-basis`, `${afterWidth}px`);
@@ -113,8 +117,8 @@ async function endPaneResize() {
   const workspace = document.querySelector('.workspace');
   const visible = paneLayoutModeKey() === 'xpath'
     ? ['colLeft', 'colRight']
-    : ['colLeft', 'colCenter', 'colRight'].filter(id => !document.getElementById(id).classList.contains('collapsed'));
-  const widths = Object.fromEntries(visible.map(id => [id, document.getElementById(id).getBoundingClientRect().width]));
+    : ['colLeft', 'colCenter', 'colRight'].filter(id => !document.getElementById(id)?.classList.contains('collapsed'));
+  const widths = Object.fromEntries(visible.map(id => [id, document.getElementById(id)?.getBoundingClientRect().width ?? 0]));
   const total = Object.values(widths).reduce((sum, value) => sum + value, 0);
   const ratios = Object.fromEntries(Object.entries(widths).map(([id, width]) => [id, width / total]));
   paneResizeState = null;

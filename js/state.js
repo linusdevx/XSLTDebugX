@@ -10,7 +10,7 @@ function logError(context, err) {
   console.warn('[XSLTDebugX]', context, err);
 }
 function guardReady() {
-  if (!saxonReady) { clog('Saxon-JS not ready yet', 'error'); return false; }
+  if (!saxonReady) { clog('Saxon-JS not ready yet', 'warn'); return false; }
   return true;
 }
 
@@ -171,6 +171,7 @@ function escHtml(s) {
 
 function clearConsole() {
   const body = document.getElementById('consoleBody');
+  if (!body) return;
   body.innerHTML = '';
   consoleErrCount = 0;
   updateConsoleErrBadge();
@@ -180,9 +181,10 @@ function clearConsole() {
 }
 
 function setStatus(txt, state = 'ok') {
-  document.getElementById('statTxt').textContent = txt;
+  const statTxt = document.getElementById('statTxt');
+  if (statTxt) statTxt.textContent = txt;
   const d = document.getElementById('statDot');
-  d.className = 'stat-dot ' + state;
+  if (d) d.className = 'stat-dot ' + state;
 }
 
 let _saveTimer = null;
@@ -262,10 +264,8 @@ function _resetXsltMode() {
   if (typeof invalidateXmlValidationCache === 'function') invalidateXmlValidationCache();
   sessionController?.resetSourceMetadata('xslt');
 
-  _withSuppress(['save', 'validation'], () => {
-    if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml);
-    if (eds.xslt)     eds.xslt.setValue(EXAMPLES.identityTransform.xslt);
-  });
+  _withSuppress(['save', 'validation'], () => { if (xmlModelXslt) xmlModelXslt.setValue(EXAMPLES.identityTransform.xml); });
+  _withSuppress(['save', 'validation'], () => { if (eds.xslt) eds.xslt.setValue(EXAMPLES.identityTransform.xslt); });
 
   _resetOutputPane('xml', 'output.xml');
 

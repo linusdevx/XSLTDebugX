@@ -1,7 +1,9 @@
 function triggerUpload(pane) {
   const id = pane === 'xml' ? 'uploadXml' : 'uploadXslt';
-  document.getElementById(id).value = ''; // reset so same file can be re-uploaded
-  document.getElementById(id).click();
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = ''; // reset so same file can be re-uploaded
+  el.click();
 }
 
 const USER_TEXT_FILE_MAX_BYTES = 25 * 1024 * 1024;
@@ -33,15 +35,16 @@ async function _applyFileContent(text, file, pane, verb) {
     return;
   }
   if (pane === 'xslt' && modeManager.isXpath) modeManager.setMode('XSLT');
-  sessionController.beginTemporary(
-    modeManager.isXpath ? 'xpath' : 'xslt',
-    file.name.replace(/\.(xml|xsl|xslt|txt)$/i, '') || file.name,
-  );
   if (pane === 'xml') {
     const targetModel = modeManager.currentModel;
     if (!targetModel) { clog('Editor not ready — cannot upload file', 'error'); return; }
+    sessionController.beginTemporary(
+      modeManager.isXpath ? 'xpath' : 'xslt',
+      file.name.replace(/\.(xml|xsl|xslt|txt)$/i, '') || file.name,
+    );
     _withSuppress(['save', 'validation'], () => targetModel.setValue(text));
   } else if (eds.xslt) {
+    sessionController.beginTemporary('xslt', file.name.replace(/\.(xml|xsl|xslt|txt)$/i, '') || file.name);
     _withSuppress(['save', 'validation'], () => eds.xslt.setValue(text));
   } else {
     clog('Editor not ready — cannot upload file', 'error');
@@ -91,9 +94,11 @@ function downloadPane(pane, defaultName) {
   const a    = document.createElement('a');
   a.href     = url;
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
+  a.remove();
   // Defer for Safari: synchronous revocation can cancel the download.
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   clog(`Downloaded: ${filename}`, 'success');
 }
 

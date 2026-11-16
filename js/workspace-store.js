@@ -509,6 +509,7 @@
       const record = await requestToPromise(store.get(requireString(id, 'Session ID')));
       if (!record) { await done; return null; }
       record.lastOpenedAt = nowIso();
+      record.revision += 1;
       store.put(record);
       await done;
       this._notify('session-opened', record.id);
@@ -953,20 +954,22 @@
       const workspace = await requestToPromise(
         transaction.objectStore('workspaces').get(item.snapshot.workspaceId),
       );
-      if (!workspace) item.snapshot.workspaceId = DEFAULT_WORKSPACE_ID;
-      if (item.snapshot.folderId) {
+      // Clone before mutating so a transaction rollback doesn't corrupt the in-memory trash item.
+      const snapshot = clone(item.snapshot);
+      if (!workspace) snapshot.workspaceId = DEFAULT_WORKSPACE_ID;
+      if (snapshot.folderId) {
         const folder = await requestToPromise(
-          transaction.objectStore('folders').get(item.snapshot.folderId),
+          transaction.objectStore('folders').get(snapshot.folderId),
         );
-        if (!folder || folder.workspaceId !== item.snapshot.workspaceId) item.snapshot.folderId = null;
+        if (!folder || folder.workspaceId !== snapshot.workspaceId) snapshot.folderId = null;
       }
-      item.snapshot.updatedAt = nowIso();
-      item.snapshot.revision += 1;
-      transaction.objectStore('sessions').add(item.snapshot);
+      snapshot.updatedAt = nowIso();
+      snapshot.revision += 1;
+      transaction.objectStore('sessions').add(snapshot);
       trashStore.delete(item.id);
       await done;
-      this._notify('session-restored', item.snapshot.id);
-      return clone(item.snapshot);
+      this._notify('session-restored', snapshot.id);
+      return clone(snapshot);
     }
 
     async permanentlyDeleteTrashItem(trashId) {

@@ -9,8 +9,8 @@ class ModeManager {
     };
 
     this.columnStates = {
-      xslt: { centerCollapsed: false },
-      xpath: { centerCollapsed: true }
+      xslt: { centerCollapsed: false, rightCollapsed: false },
+      xpath: { centerCollapsed: true, rightCollapsed: false }
     };
   }
 
@@ -94,10 +94,15 @@ class ModeManager {
       // onDidChangeModelContent synchronously and the listener in editor.js
       // consumes this flag. Without it every mode switch fires a spurious
       // scheduleSave + marker clear + xpath-highlight clear + 800ms re-validate.
+      // Use try/finally so the flag can't get stuck true if setModel throws.
       if (eds.xml.getModel() !== targetModel) {
         _suppress.xmlChange = true;
-        eds.xml.setModel(targetModel);
-        eds.xml.layout();
+        try {
+          eds.xml.setModel(targetModel);
+          eds.xml.layout();
+        } finally {
+          if (_suppress.xmlChange) _suppress.xmlChange = false;
+        }
       }
     }
 
@@ -107,10 +112,10 @@ class ModeManager {
 
   saveColumnState() {
     const colCenter = document.getElementById('colCenter');
-    if (colCenter) {
-      this.columnStates[this.mode.toLowerCase()].centerCollapsed =
-        colCenter.classList.contains('collapsed');
-    }
+    const colRight = document.getElementById('colRight');
+    const state = this.columnStates[this.mode.toLowerCase()];
+    if (colCenter) state.centerCollapsed = colCenter.classList.contains('collapsed');
+    if (colRight) state.rightCollapsed = colRight.classList.contains('collapsed');
   }
 
   restoreColumnState() {
@@ -122,8 +127,13 @@ class ModeManager {
     else colCenter.classList.remove('collapsed');
 
     const colRight = document.getElementById('colRight');
-    if (colRight && this.isXpath && colRight.classList.contains('collapsed')) {
-      colRight.classList.remove('collapsed');
+    if (colRight) {
+      if (this.isXpath) {
+        // XPath always needs colRight visible for results; save XSLT state first (done in saveColumnState above).
+        colRight.classList.remove('collapsed');
+      } else {
+        colRight.classList.toggle('collapsed', Boolean(state.rightCollapsed));
+      }
     }
   }
 
@@ -159,9 +169,8 @@ class ModeManager {
 
     if (hdrPanel) hdrPanel.style.display = visibility;
     if (propPanel) propPanel.style.display = visibility;
-    if (outSection) outSection.style.display = visibility;
-    // Output itself remains available in Standard XSLT; only CPI metadata panels hide.
-    if (outSection && this.isXslt) outSection.style.display = '';
+    // Output section is visible in all XSLT modes (CPI and Standard); hidden only in XPath mode.
+    if (outSection) outSection.style.display = this.isXslt ? '' : 'none';
     const outHdrPanel = document.getElementById('outHdrPanel');
     const outPropPanel = document.getElementById('outPropPanel');
     if (outHdrPanel) outHdrPanel.style.display = visibility;

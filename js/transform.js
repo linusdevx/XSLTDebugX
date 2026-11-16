@@ -95,14 +95,16 @@ function rewriteCPICalls(xslt) {
 function ensureJsExcluded(xslt) {
   if (!/xmlns:js\s*=/.test(xslt)) return xslt;
 
-  if (/(exclude-result-prefixes\s*=)/.test(xslt)) {
-    return xslt.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
+  const { stripped, restore } = _extractInsensitiveRegions(xslt);
+
+  if (/(exclude-result-prefixes\s*=)/.test(stripped)) {
+    return restore(stripped.replace(/(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g, (_, attr, q, val) => {
       const parts = val.split(/\s+/).filter(p => p !== 'js');
       parts.push('js');
       return attr + q + parts.filter(Boolean).join(' ') + q;
-    });
+    }));
   } else {
-    return xslt.replace(/(<xsl:(?:stylesheet|transform)\b[^>]*?)(\s*>)/, '$1 exclude-result-prefixes="js"$2');
+    return restore(stripped.replace(/(<xsl:(?:stylesheet|transform)\b[^>]*?)(\s*>)/, '$1 exclude-result-prefixes="js"$2'));
   }
 }
 
@@ -168,7 +170,10 @@ function buildParamsXPath() {
   entries.push(`QName('','exchange'): 'exchange'`);
   // Properties win on name collision (last-write-wins). Saxon map literals
   // require unique keys — duplicates would cause a runtime error.
-  const seen = new Map();
+  // Pre-seed 'exchange' (index 0) so a user-defined header/property named
+  // 'exchange' silently replaces the dummy rather than creating a duplicate key.
+  const seen = new Map([['exchange', 0]]);
+  const _userSeen = new Set(); // tracks names already seen in user-provided data
   [...kvData.headers, ...kvData.properties].forEach(row => {
     const k = row.name.trim();
     const v = row.value.trim().replace(/'/g, "''");
@@ -179,12 +184,13 @@ function buildParamsXPath() {
     }
     const entry = `QName('','${k}'): '${v}'`;
     if (seen.has(k)) {
-      dupes.push(k);
+      if (_userSeen.has(k)) dupes.push(k); // only warn for user-vs-user conflicts, not exchange dummy override
       entries[seen.get(k)] = entry;
     } else {
       seen.set(k, entries.length);
       entries.push(entry);
     }
+    _userSeen.add(k);
   });
   if (skipped.length) {
     skipped.forEach(n =>
@@ -203,8 +209,10 @@ function buildParamsXPath() {
 function renderOutputKV(headers, properties) {
   const render = (rowsId, countId, data) => {
     const keys = Object.keys(data);
-    document.getElementById(countId).textContent = keys.length;
-    document.getElementById(rowsId).innerHTML = keys.length
+    const countEl = document.getElementById(countId);
+    const rowsEl  = document.getElementById(rowsId);
+    if (countEl) countEl.textContent = keys.length;
+    if (rowsEl) rowsEl.innerHTML = keys.length
       ? keys.map(k =>
           `<div class="kv-row-out">
             <span class="kv-k">${escHtml(k)}</span>
@@ -221,6 +229,7 @@ function renderOutputKV(headers, properties) {
 
 function toggleKVPanel(panelId) {
   const panel = document.getElementById(panelId);
+  if (!panel) return;
   panel.classList.toggle('collapsed');
   const header = panel.querySelector('.kv-header[role="button"]');
   if (header) header.setAttribute('aria-expanded', String(!panel.classList.contains('collapsed')));
@@ -304,8 +313,8 @@ function updateKV(type, id, field, val) {
     }
   }
   const countId = type === 'headers' ? 'hdrCount' : 'propCount';
-  document.getElementById(countId).textContent =
-    kvData[type].filter(r => r.name.trim()).length;
+  const countEl = document.getElementById(countId);
+  if (countEl) countEl.textContent = kvData[type].filter(r => r.name.trim()).length;
   if (field === 'name') {
     _validateKVField(type, id);
   }
@@ -358,7 +367,8 @@ function renderKV(type) {
   const rowsEl  = document.getElementById(isHdr ? 'hdrRows'  : 'propRows');
   const countEl = document.getElementById(isHdr ? 'hdrCount' : 'propCount');
   const rows    = kvData[type];
-  countEl.textContent = rows.filter(r => r.name.trim()).length;
+  if (countEl) countEl.textContent = rows.filter(r => r.name.trim()).length;
+  if (!rowsEl) return;
   rowsEl.innerHTML = rows.length === 0
     ? `<div class="kv-empty">No ${type} yet — click + to add one</div>`
     : rows.map(r => `
@@ -393,6 +403,7 @@ function runTransform() {
   let _transformStarted = false; // only enforce min spinner if Saxon was actually invoked
 
   function resetBtn() {
+    if (!btn) return;
     const elapsed = performance.now() - _runStart;
     const restore = () => {
       btn.disabled = false;
@@ -403,8 +414,10 @@ function runTransform() {
     else restore();
   }
 
-  btn.disabled = true;
-  btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">${_KBD_RUN}</span>`;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `${_RUN_BTN_SPINNER} Running… <span class="kbd">${_KBD_RUN}</span>`;
+  }
   setStatus('Transforming…', 'busy');
   _triggerRunParticles();
   // Editorial direction B: drives the inter-column data-flow line animation
@@ -415,8 +428,8 @@ function runTransform() {
     const xmlSrc = eds.xml?.getValue()?.trim();
     let xsltSrc  = eds.xslt?.getValue()?.trim();
 
-    if (!xmlSrc)  { clog('XML Source is empty',      'error'); setStatus('Ready', 'ok'); return; }
-    if (!xsltSrc) { clog('XSLT Stylesheet is empty', 'error'); setStatus('Ready', 'ok'); return; }
+    if (!xmlSrc)  { clog('XML Source is empty — add XML input first',       'warn'); setStatus('Ready', 'ok'); return; }
+    if (!xsltSrc) { clog('XSLT Stylesheet is empty — add a stylesheet first', 'warn'); setStatus('Ready', 'ok'); return; }
 
     setStatus('Validating…', 'busy');
     if (!preflight(xmlSrc, xsltSrc)) return;
@@ -436,28 +449,11 @@ function runTransform() {
     let _prevCpiSetHeader, _prevCpiSetProperty;
 
     if (hasCPI) {
-      _prevCpiSetHeader   = window.cpiSetHeader;
-      _prevCpiSetProperty = window.cpiSetProperty;
-
-      const _cpiStrVal = v => {
-        if (v == null) return '';
-        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
-        if (Array.isArray(v)) return v.map(_cpiStrVal).join('');
-        if (v instanceof Node) return v.textContent ?? '';
-        if (typeof v === 'object' && 'textContent' in v) return v.textContent ?? '';
-        return String(v);
-      };
-
-      // setHeader / setProperty — capture computed values into cpiCaptured.
-      window.cpiSetHeader   = (_exchange, name, value) => { cpiCaptured.headers[_cpiStrVal(name)]    = _cpiStrVal(value); return ''; };
-      window.cpiSetProperty = (_exchange, name, value) => { cpiCaptured.properties[_cpiStrVal(name)] = _cpiStrVal(value); return ''; };
-
       xsltSrc = _xsltRewritten;
-      clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
     }
 
-    // Always exclude js: from output — mirrors CPI runtime behaviour.
-    xsltSrc = ensureJsExcluded(xsltSrc);
+    // Only exclude js: when the CPI rewriter introduced it — don't touch a user's own xmlns:js.
+    if (hasCPI) xsltSrc = ensureJsExcluded(xsltSrc);
 
     const namedParams = cpiRuntime ? [...kvData.headers, ...kvData.properties].filter(r => r.name.trim()) : [];
     if (namedParams.length) {
@@ -480,6 +476,24 @@ function runTransform() {
     };
 
     try {
+      if (hasCPI) {
+        _prevCpiSetHeader   = window.cpiSetHeader;
+        _prevCpiSetProperty = window.cpiSetProperty;
+
+        const _cpiStrVal = v => {
+          if (v == null) return '';
+          if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
+          if (Array.isArray(v)) return v.map(_cpiStrVal).join('');
+          if (v instanceof Node) return v.textContent ?? '';
+          if (typeof v === 'object' && 'textContent' in v) return v.textContent ?? '';
+          return String(v);
+        };
+
+        // setHeader / setProperty — capture computed values into cpiCaptured.
+        window.cpiSetHeader   = (_exchange, name, value) => { cpiCaptured.headers[_cpiStrVal(name)]    = _cpiStrVal(value); return ''; };
+        window.cpiSetProperty = (_exchange, name, value) => { cpiCaptured.properties[_cpiStrVal(name)] = _cpiStrVal(value); return ''; };
+        clog('CPI extension calls detected — rewriting to js: namespace for full dynamic evaluation', 'info');
+      }
       const output = SaxonJS.XPath.evaluate(
         `transform(map {
           'stylesheet-text' : $xslt,
@@ -526,16 +540,17 @@ function runTransform() {
       eds.out.setValue(_outValue);
       eds.out.updateOptions({ readOnly: true });
       // Editorial direction B: hide the empty-state hint once Output has content.
-      document.getElementById('outEdWrap')?.classList.toggle('has-content', !!_outValue);
+      // Always set has-content on success — empty output is valid, not "no result".
+      document.getElementById('outEdWrap')?.classList.add('has-content');
 
       // CPI-captured values (dynamic + static) take priority, then pass-through inputs.
       const outHdrs  = cpiRuntime ? { ...cpiCaptured.headers } : {};
       const outProps = cpiRuntime ? { ...cpiCaptured.properties } : {};
       if (cpiRuntime) {
-        kvData.headers.filter(r => r.name.trim() && !(r.name in outHdrs))
-                      .forEach(r => { outHdrs[r.name] = r.value; });
-        kvData.properties.filter(r => r.name.trim() && !(r.name in outProps))
-                         .forEach(r => { outProps[r.name] = r.value; });
+        kvData.headers.filter(r => r.name.trim() && !(r.name.trim() in outHdrs))
+                      .forEach(r => { outHdrs[r.name.trim()] = r.value; });
+        kvData.properties.filter(r => r.name.trim() && !(r.name.trim() in outProps))
+                         .forEach(r => { outProps[r.name.trim()] = r.value; });
       }
 
       if (hasCPI) {

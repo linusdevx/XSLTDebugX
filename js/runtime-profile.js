@@ -20,11 +20,7 @@ function setRuntimeProfile(profile, options = {}) {
     renderExGrid();
   }
   if (options.save !== false && window.sessionController) {
-    if (modeManager?.isXpath) {
-      void sessionController.saveQuickDrafts({ types: ['xslt'] }).catch(error => logError('Could not save runtime profile change', error));
-    } else {
-      scheduleSave();
-    }
+    void sessionController.saveQuickDrafts().catch(error => logError('Could not save runtime profile change', error));
   }
   if (options.log !== false) clog(`${next === 'cpi' ? 'Cloud Integration' : 'Standard XSLT'} runtime profile active`, 'info');
 }

@@ -27,19 +27,20 @@ let _exModalReturnFocus = null;
 
 function openExModal() {
   _exModalReturnFocus = document.activeElement;
-  document.getElementById('exModalBackdrop').classList.add('open');
+  document.getElementById('exModalBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
-  document.getElementById('exModalSearch').value = '';
+  const searchEl = document.getElementById('exModalSearch');
+  if (searchEl) searchEl.value = '';
   exActiveCat = modeManager.isXpath ? 'xpath' : 'all';
   // Force fresh render — examples list / icons may have changed since last open.
   _exRendered = false;
   renderExSidebar();
   renderExGrid();
-  requestAnimationFrame(() => document.getElementById('exModalSearch').focus());
+  requestAnimationFrame(() => document.getElementById('exModalSearch')?.focus());
 }
 
 function closeExModal() {
-  document.getElementById('exModalBackdrop').classList.remove('open');
+  document.getElementById('exModalBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
   const returnFocus = _exModalReturnFocus;
   _exModalReturnFocus = null;
@@ -91,7 +92,7 @@ function filterExamples() {
   if (!_exRendered) { renderExGrid(); return; }
   const wrap  = document.getElementById('exGridWrap');
   if (!wrap) return;
-  const query = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
+  const query = (document.getElementById('exModalSearch')?.value || '').toLowerCase().trim();
   let visibleCount = 0;
 
   wrap.querySelectorAll('.ex-grid').forEach(grid => {
@@ -117,7 +118,8 @@ function filterExamples() {
     grid.style.display = sectionVisible ? '' : 'none';
   });
 
-  document.getElementById('exModalCount').textContent =
+  const countEl = document.getElementById('exModalCount');
+  if (countEl) countEl.textContent =
     visibleCount + ' example' + (visibleCount !== 1 ? 's' : '');
 
   // No-results placeholder — kept around and toggled.
@@ -139,7 +141,7 @@ function filterExamples() {
 let _exRendered = false;
 
 function renderExGrid() {
-  const query  = (document.getElementById('exModalSearch').value || '').toLowerCase().trim();
+  const query  = (document.getElementById('exModalSearch')?.value || '').toLowerCase().trim();
   const wrap   = document.getElementById('exGridWrap');
 
   const groups = {};
@@ -153,7 +155,8 @@ function renderExGrid() {
     (groups[ex.cat] = groups[ex.cat] || []).push(k);
   });
 
-  document.getElementById('exModalCount').textContent = keys.length + ' example' + (keys.length !== 1 ? 's' : '');
+  const exCountEl = document.getElementById('exModalCount');
+  if (exCountEl) exCountEl.textContent = keys.length + ' example' + (keys.length !== 1 ? 's' : '');
 
   if (!keys.length) {
     wrap.innerHTML = '<div class="ex-no-results">No examples match your search.</div>';
@@ -223,6 +226,7 @@ async function loadExample(key) {
     } else if (!ex.xpathExpr && modeManager.isXpath) {
       modeManager.setMode('XSLT');
       if (typeof clearXPathResults === 'function') clearXPathResults();
+      if (typeof _syncXPathInput === 'function') _syncXPathInput('');
       clog('Switched to XSLT mode', 'info');
     }
   } catch (e) {
@@ -274,10 +278,10 @@ async function loadExample(key) {
     if (xpathInput) {
       if (typeof _syncXPathInput === 'function') _syncXPathInput(ex.xpathExpr);
       else xpathInput.value = ex.xpathExpr;
-      clog(`Example loaded: "${ex.label}" — XPath pre-filled, running…`, 'success');
-      setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 350);
     }
     if (typeof renderXPathHints === 'function') renderXPathHints(ex.xpathHints ?? null);
+    clog(`Example loaded: "${ex.label}" — XPath pre-filled, running…`, 'success');
+    setTimeout(() => { if (typeof runXPath === 'function') runXPath(); }, 350);
   } else {
     if (typeof renderXPathHints === 'function') renderXPathHints(null);
     clog(`Example loaded: "${ex.label}" ✓ Running…`, 'success');

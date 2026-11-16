@@ -173,7 +173,7 @@ function validateBackupModel(model) {
     workspaceIds.add(workspace.id);
   }
   for (const folder of folders) {
-    if (!folder || typeof folder.id !== 'string' || !folder.id || typeof folder.name !== 'string' || !workspaceIds.has(folder.workspaceId)) throw new Error('Backup contains an invalid folder.');
+    if (!folder || typeof folder.id !== 'string' || !folder.id || typeof folder.name !== 'string' || !folder.name.trim() || !workspaceIds.has(folder.workspaceId)) throw new Error('Backup contains an invalid folder.');
     validateRecordVersion(folder, 'A folder');
     if (folderIds.has(folder.id)) throw new Error('Backup contains duplicate folder IDs.');
     folderIds.add(folder.id);
@@ -309,20 +309,22 @@ document.addEventListener('DOMContentLoaded', () => {
 async function confirmWorkspaceBackupImport() {
   if (!pendingBackupImport) return;
   const button = document.getElementById('backupImportConfirmBtn');
-  button.disabled = true;
+  if (button) button.disabled = true;
+  let result;
   try {
-    const result = await workspaceStore.importBackupCopies(pendingBackupImport.model);
-    closeBackupImportDialog();
-    explorerView = 'all';
-    await refreshExplorer();
-    clog(`Backup imported as copies · ${result.sessions} saved item${result.sessions === 1 ? '' : 's'} ✓`, 'success');
-    showCopyToast(`✓ Imported ${result.sessions} saved item${result.sessions === 1 ? '' : 's'}`);
+    result = await workspaceStore.importBackupCopies(pendingBackupImport.model);
   } catch (error) {
+    logError('confirmWorkspaceBackupImport', error);
     const element = document.getElementById('backupImportError');
-    element.hidden = false;
-    element.textContent = error.message;
-    button.disabled = false;
+    if (element) { element.hidden = false; element.textContent = error.message; }
+    if (button) button.disabled = false;
+    return;
   }
+  closeBackupImportDialog();
+  explorerView = 'all';
+  clog(`Backup imported as copies · ${result.sessions} saved item${result.sessions === 1 ? '' : 's'} ✓`, 'success');
+  showCopyToast(`✓ Imported ${result.sessions} saved item${result.sessions === 1 ? '' : 's'}`);
+  await refreshExplorer().catch(error => logError('refreshExplorer after backup import', error));
 }
 
 var handleBackupImportBackdropClick = _makeBackdropClose('backupImportBackdrop', closeBackupImportDialog);

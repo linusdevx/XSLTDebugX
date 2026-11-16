@@ -127,6 +127,7 @@ require(['vs/editor/editor.main'], () => {
 
     editor.onKeyDown(e => {
       if (_inserting) return;
+      if (editor === eds.xml && modeManager.isXpath) return;
       const ch = e.browserEvent.key;
 
       // Block Monaco's built-in <> auto-pair.
@@ -158,7 +159,10 @@ require(['vs/editor/editor.main'], () => {
           e.preventDefault();
           _inserting = true;
           editor.executeEdits('auto-pair', [{ range: sel, text: ch + selectedText + PAIRS[ch] }]);
-          editor.setPosition({ lineNumber: sel.endLineNumber, column: sel.endColumn + 1 });
+          // Multi-line: endColumn unshifted (opening char on a different line), place after closing char.
+          // Single-line: endColumn shifted right by 1 (opening char inserted before it), place after closing char.
+          const endCol = sel.startLineNumber === sel.endLineNumber ? sel.endColumn + 2 : sel.endColumn + 1;
+          editor.setPosition({ lineNumber: sel.endLineNumber, column: endCol });
           _inserting = false;
           return;
         }
@@ -226,6 +230,7 @@ require(['vs/editor/editor.main'], () => {
     // XML auto-close tags.
     editor.onDidChangeModelContent(ev => {
       if (_inserting) return;
+      if (editor === eds.xml && modeManager.isXpath) return;
       for (const change of ev.changes) {
         if (change.text !== '>') continue;
         const model    = editor.getModel();
@@ -264,8 +269,15 @@ require(['vs/editor/editor.main'], () => {
     for (let i = startLine; i <= endLine; i++) lines.push(model.getLineContent(i));
 
     const nonEmpty   = lines.filter(l => l.trim());
-    const allCommented = nonEmpty.length > 0 &&
-      nonEmpty.every(l => l.trim().startsWith('<!--') && l.trim().endsWith('-->'));
+    // A line must be a single XML comment (one <!--...-->) — reject lines that
+    // contain two adjacent comments like <!-- a --> <!-- b -->, which would leave
+    // dangling --> tokens after stripping only the outer delimiters.
+    const isSingleComment = l => {
+      const t = l.trim();
+      return t.startsWith('<!--') && t.endsWith('-->') &&
+        t.indexOf('-->') === t.lastIndexOf('-->');
+    };
+    const allCommented = nonEmpty.length > 0 && nonEmpty.every(isSingleComment);
 
     const edits = [];
     if (allCommented) {
@@ -317,11 +329,15 @@ require(['vs/editor/editor.main'], () => {
     run(ed) {
       const src = ed.getValue();
       if (!src.trim()) { clog('XML pane is empty — nothing to format', 'warn'); return; }
-      const fmt = prettyXML(src);
-      try {
-        ed.executeEdits('format-xml', [{ range: ed.getModel().getFullModelRange(), text: fmt }]);
-        clog('XML formatted ✓', 'success');
-      } catch (error) { logError('Format XML failed', error); }
+      if (typeof fmtEditor === 'function') {
+        fmtEditor('xml');
+      } else {
+        const fmt = prettyXML(src);
+        try {
+          ed.executeEdits('format-xml', [{ range: ed.getModel().getFullModelRange(), text: fmt }]);
+          clog('XML formatted ✓', 'success');
+        } catch (error) { logError('Format XML failed', error); }
+      }
     }
   });
 
@@ -335,7 +351,12 @@ require(['vs/editor/editor.main'], () => {
       if (!src) return;
       const minified = _minifyXml(src);
       try {
-        ed.executeEdits('minify-xml', [{ range: ed.getModel().getFullModelRange(), text: minified }]);
+        _withSuppress(['save', 'validation'], () => {
+          ed.executeEdits('minify-xml', [{ range: ed.getModel().getFullModelRange(), text: minified }]);
+          const otherModel = modeManager.isXpath ? xmlModelXslt : xmlModelXpath;
+          if (otherModel) otherModel.setValue(minified);
+        });
+        scheduleSave();
         clog('XML minified ✓', 'success');
       } catch (error) { logError('Minify XML failed', error); }
     }
@@ -358,7 +379,6 @@ require(['vs/editor/editor.main'], () => {
 
   // Copy actions should never replace or execute the user's current XPath query.
   function _handleCopyXPath(xpath, label) {
-    clog(`ƒx  ${label}: ${xpath}`, 'info');
     _copyXPathToClipboard(xpath, label);
   }
 
@@ -428,7 +448,7 @@ require(['vs/editor/editor.main'], () => {
   });
 
   // CPI namespace auto-injector — ensures xmlns:cpi is declared on
-  // xsl:stylesheet and removed from exclude-result-prefixes before inserting
+  // xsl:stylesheet and added to exclude-result-prefixes before inserting
   // any cpi: snippet.
   function _ensureCpiNamespace(ed) {
     const src = ed.getValue();
@@ -444,16 +464,26 @@ require(['vs/editor/editor.main'], () => {
       /(exclude-result-prefixes\s*=\s*)(["'])([^"']*)\2/g,
       (_, attr, q, val) => {
         const parts = val.split(/\s+/).filter(p => p !== 'cpi' && p !== '');
+        if (!val.includes('#all')) parts.push('cpi');
         return attr + q + parts.join(' ') + q;
       }
     );
+
+    // If exclude-result-prefixes was absent entirely, inject it alongside xmlns:cpi
+    // so the cpi namespace node doesn't bleed into output elements.
+    if (!/(exclude-result-prefixes\s*=)/.test(src)) {
+      updated = updated.replace(
+        /( xmlns:cpi="http:\/\/sap\.com\/it\/")/,
+        '$1 exclude-result-prefixes="cpi"'
+      );
+    }
 
     if (updated === src) {
       clog('⚠ Could not auto-add xmlns:cpi — add it manually to xsl:stylesheet', 'warn');
       return;
     }
 
-    _withSuppress(['validation'], () => {
+    _withSuppress(['validation', 'save'], () => {
       ed.pushUndoStop();
       ed.executeEdits('inject-cpi-ns', [{
         range: ed.getModel().getFullModelRange(),
@@ -682,7 +712,7 @@ require(['vs/editor/editor.main'], () => {
       setStatus(`XSLT error at line ${result.line}`, 'err');
     } else {
       // Don't clobber a transform-failure status.
-      const current = document.getElementById('statTxt').textContent;
+      const current = document.getElementById('statTxt')?.textContent ?? '';
       if (current.startsWith('XSLT error')) setStatus('Ready', 'ok');
     }
   }
@@ -692,7 +722,7 @@ require(['vs/editor/editor.main'], () => {
     if (!src) {
       monaco.editor.setModelMarkers(eds.xml.getModel(), 'xsltdebugx', []);
       if (xmlDecorations) { xmlDecorations.clear(); xmlDecorations = null; }
-      const current = document.getElementById('statTxt').textContent;
+      const current = document.getElementById('statTxt')?.textContent ?? '';
       if (current.startsWith('XML error')) setStatus('Ready', 'ok');
       return;
     }
@@ -701,14 +731,14 @@ require(['vs/editor/editor.main'], () => {
       xmlDecorations = markErrorLine(eds.xml, result.line, result.message, xmlDecorations);
       setStatus(`XML error at line ${result.line}`, 'err');
     } else {
-      const current = document.getElementById('statTxt').textContent;
+      const current = document.getElementById('statTxt')?.textContent ?? '';
       if (current.startsWith('XML error')) setStatus('Ready', 'ok');
     }
   }
 
   eds.xslt.onDidChangeModelContent(() => {
-    scheduleSave();
     if (_suppress.validation) { _suppress.validation = false; return; }
+    scheduleSave();
     // Clear immediately so stale markers don't linger while user types.
     monaco.editor.setModelMarkers(eds.xslt.getModel(), 'xsltdebugx', []);
     if (xsltDecorations) { xsltDecorations.clear(); xsltDecorations = null; }
@@ -813,6 +843,7 @@ require(['vs/editor/editor.main'], () => {
 
 function hideLoader() {
   const el = document.getElementById('loadingOverlay');
+  if (!el) return;
   el.classList.add('hidden');
   setTimeout(() => el.remove(), 600);
 }

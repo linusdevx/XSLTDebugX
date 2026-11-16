@@ -88,6 +88,7 @@ function showToast(message, { tone = 'success', duration, dedupeKey } = {}) {
 
 function toggleSideCol(side) {
   const col = document.getElementById(side === 'left' ? 'colLeft' : 'colRight');
+  if (!col) return;
   col.classList.toggle('collapsed');
   syncWorkspaceViewButtons();
   if (typeof updatePaneSplitters === 'function') updatePaneSplitters();
@@ -103,6 +104,7 @@ const CONSOLE_MAX_VH = 0.7;
 
 function setConsoleState(state) {
   const panel = document.getElementById('consolePanel');
+  if (!panel) return;
   panel.classList.toggle('minimized', state === 'minimized');
   consoleState = state;
 
@@ -192,6 +194,7 @@ function updateConsoleErrBadge() {
 
 function copyConsole() {
   const body = document.getElementById('consoleBody');
+  if (!body) return;
   const text = [...body.querySelectorAll('.log-line')]
     .filter(l => l.style.display !== 'none')
     .map(l => {
@@ -251,7 +254,7 @@ function toggleTheme() {
   document.body.classList.add('theme-switching');
 
   const isLight = document.body.classList.toggle('light');
-  localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark');
+  try { localStorage.setItem('xdebugx-theme', isLight ? 'light' : 'dark'); } catch (_) {}
   clog(`Theme: ${isLight ? 'light' : 'dark'} mode`, 'info');
 
   const monacoTheme = isLight ? 'xdebugx-light' : 'xdebugx';
@@ -269,13 +272,13 @@ let _helpReturnFocus = null;
 
 function openHelpModal() {
   _helpReturnFocus = document.activeElement;
-  document.getElementById('helpModalBackdrop').classList.add('open');
+  document.getElementById('helpModalBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => document.querySelector('#helpModalBackdrop .ex-modal-close')?.focus());
 }
 
 function closeHelpModal() {
-  document.getElementById('helpModalBackdrop').classList.remove('open');
+  document.getElementById('helpModalBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
   const returnFocus = _helpReturnFocus;
   _helpReturnFocus = null;
@@ -289,8 +292,8 @@ function switchHelpTab(tab) {
   document.querySelectorAll('.help-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
-  document.getElementById('helpTabFeatures').classList.toggle('active', tab === 'features');
-  document.getElementById('helpTabShortcuts').classList.toggle('active', tab === 'shortcuts');
+  document.getElementById('helpTabFeatures')?.classList.toggle('active', tab === 'features');
+  document.getElementById('helpTabShortcuts')?.classList.toggle('active', tab === 'shortcuts');
 }
 
 function syncMobilePaneNav() {
@@ -304,10 +307,11 @@ function syncMobilePaneNav() {
   nav.querySelectorAll('button').forEach(button => { button.textContent = labels[button.dataset.pane]; });
   if (centerButton) centerButton.hidden = Boolean(modeManager?.isXpath);
   const visible = [...nav.querySelectorAll('button:not([hidden])')];
+  if (!visible.length) return;
   const workspaceLeft = workspace.getBoundingClientRect().left;
   const active = visible.reduce((closest, button) => {
     const pane = document.getElementById(button.dataset.pane);
-    const distance = pane?.classList.contains('collapsed') ? Infinity : Math.abs(pane.getBoundingClientRect().left - workspaceLeft);
+    const distance = !pane || pane.classList.contains('collapsed') ? Infinity : Math.abs(pane.getBoundingClientRect().left - workspaceLeft);
     return distance < closest.distance ? { button, distance } : closest;
   }, { button: visible[0], distance: Infinity }).button;
   visible.forEach(button => {
@@ -382,7 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Avoids false positives on touch-enabled laptops or narrow browser windows.
   const isSmallScreen = window.matchMedia('(max-width: 900px)').matches;
   const isTouch = navigator.maxTouchPoints > 1;
-  if (!(isSmallScreen && isTouch) || localStorage.getItem(DISMISSED_KEY)) return;
+  let _dismissed = false;
+  try { _dismissed = !!localStorage.getItem(DISMISSED_KEY); } catch(_) {}
+  if (!(isSmallScreen && isTouch) || _dismissed) return;
 
   const banner = document.createElement('div');
   banner.className = 'mobile-banner';
@@ -394,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btn.textContent = 'Continue on mobile';
   btn.addEventListener('click', () => {
     banner.remove();
-    localStorage.setItem(DISMISSED_KEY, '1');
+    try { localStorage.setItem(DISMISSED_KEY, '1'); } catch(_) {}
   });
   banner.appendChild(msg);
   banner.appendChild(btn);

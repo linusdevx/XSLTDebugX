@@ -74,7 +74,6 @@ function loadFromShareHash() {
 
 async function handleShareHashChange() {
   if (!location.hash.startsWith('#share/')) return;
-  window._pendingShareNeedsRestore = false;
   const valid = loadFromShareHash();
   if (!saxonReady) return;
   if (valid && window._pendingShareData) openIncomingShareDialog(window._pendingShareData);
@@ -263,8 +262,8 @@ async function saveSharedCopy() {
         runOptions: {},
       },
     });
-    applyShareData(data);
     sessionController.activateNamedSession(record);
+    applyShareData(data);
     window._pendingShareData = null;
     window._pendingShareNeedsRestore = false;
     closeIncomingShareDialog();
@@ -282,7 +281,7 @@ let _shareReturnFocus = null;
 
 function openShareModal() {
   _shareReturnFocus = document.activeElement;
-  document.getElementById('shareModalBackdrop').classList.add('open');
+  document.getElementById('shareModalBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
   const input = document.getElementById('shareUrlInput');
   const warning = document.getElementById('shareLengthWarning');
@@ -308,7 +307,7 @@ function openShareModal() {
 }
 
 function closeShareModal() {
-  document.getElementById('shareModalBackdrop').classList.remove('open');
+  document.getElementById('shareModalBackdrop')?.classList.remove('open');
   document.body.classList.remove('modal-open');
   const returnFocus = _shareReturnFocus;
   _shareReturnFocus = null;
@@ -324,9 +323,11 @@ function _copyShareUrl(url, silent) {
   const onSuccess = () => {
     if (!silent) {
       const btn  = document.getElementById('shareCopyBtn');
-      const orig = btn.textContent;
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = orig; }, 1400);
+      if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { if (btn.isConnected) btn.textContent = orig; }, 1400);
+      }
       showCopyToast('✓ Copied share link');
     }
     clog('Share URL copied to clipboard', 'success');

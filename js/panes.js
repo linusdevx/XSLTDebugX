@@ -196,12 +196,26 @@ function fmtEditor(which) {
   if (wasReadOnly) ed.updateOptions({ readOnly: false });
   const formatted = prettyXML(ed.getValue());
   // Formatting doesn't change validity — skip the live-validation debounce.
-  _withSuppress(['validation'], () => {
-    ed.pushUndoStop();
-    ed.executeEdits('format', [{ range: ed.getModel().getFullModelRange(), text: formatted }]);
-    ed.pushUndoStop();
-  });
+  if (which === 'xml') {
+    // Both XML models must stay in sync — format both so switching modes doesn't show stale content.
+    _withSuppress(['validation', 'save'], () => {
+      if (xmlModelXslt) {
+        ed.pushUndoStop();
+        xmlModelXslt.setValue(formatted);
+        ed.pushUndoStop();
+      }
+      if (xmlModelXpath) {
+        xmlModelXpath.setValue(formatted);
+      }
+    });
+  } else {
+    _withSuppress(['validation'], () => {
+      ed.pushUndoStop();
+      ed.executeEdits('format', [{ range: ed.getModel().getFullModelRange(), text: formatted }]);
+      ed.pushUndoStop();
+    });
+  }
   if (wasReadOnly) ed.updateOptions({ readOnly: true });
-  scheduleSave();
+  if (which !== 'out') scheduleSave();
   clog(`${which.toUpperCase()} formatted`, 'info');
 }

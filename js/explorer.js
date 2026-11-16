@@ -12,32 +12,26 @@ let explorerActionReturnFocus = null;
 function requestExplorerAction({ title, message = '', label = 'Name', value = '', options = null, optionValue = '', includeInput = false, confirmLabel = 'Save', danger = false }) {
   closeExplorerActionDialog();
   explorerActionReturnFocus = document.activeElement;
-  document.getElementById('explorerActionTitle').textContent = title;
+  const titleEl = document.getElementById('explorerActionTitle');
+  if (titleEl) titleEl.textContent = title;
   const messageElement = document.getElementById('explorerActionMessage');
-  messageElement.textContent = message;
-  messageElement.hidden = !message;
+  if (messageElement) { messageElement.textContent = message; messageElement.hidden = !message; }
   const input = document.getElementById('explorerActionInput');
   const inputLabel = document.getElementById('explorerActionInputLabel');
   const select = document.getElementById('explorerActionSelect');
   const selectLabel = document.getElementById('explorerActionSelectLabel');
   const usesSelect = Array.isArray(options);
-  input.hidden = (usesSelect && !includeInput) || label === null;
-  inputLabel.hidden = input.hidden;
-  inputLabel.textContent = label || '';
-  input.value = value;
-  select.hidden = !usesSelect;
-  selectLabel.hidden = !usesSelect;
-  select.replaceChildren(...(options || []).map(option => new Option(option.label, option.value)));
-  if (usesSelect) select.value = optionValue;
+  if (input) { input.hidden = (usesSelect && !includeInput) || label === null; input.value = value; }
+  if (inputLabel) { inputLabel.hidden = !input || input.hidden; inputLabel.textContent = label || ''; }
+  if (select) { select.hidden = !usesSelect; select.replaceChildren(...(options || []).map(option => new Option(option.label, option.value))); if (usesSelect) select.value = optionValue; }
+  if (selectLabel) selectLabel.hidden = !usesSelect;
   const error = document.getElementById('explorerActionError');
-  error.textContent = '';
-  error.hidden = true;
+  if (error) { error.textContent = ''; error.hidden = true; }
   const confirm = document.getElementById('explorerActionConfirm');
-  confirm.textContent = confirmLabel;
-  confirm.classList.toggle('danger', danger);
-  document.getElementById('explorerActionBackdrop').classList.add('open');
+  if (confirm) { confirm.textContent = confirmLabel; confirm.classList.toggle('danger', danger); }
+  document.getElementById('explorerActionBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
-  requestAnimationFrame(() => (input.hidden ? usesSelect ? select : confirm : input).focus());
+  requestAnimationFrame(() => (input && !input.hidden ? input : usesSelect && select ? select : confirm)?.focus());
   return new Promise(resolve => { explorerActionResolve = resolve; });
 }
 
@@ -45,14 +39,14 @@ function submitExplorerActionDialog(event) {
   event?.preventDefault();
   const input = document.getElementById('explorerActionInput');
   const select = document.getElementById('explorerActionSelect');
+  if (!input || !select) return;
   const inputValue = input.value.trim();
   let value = input.hidden
     ? (select.hidden ? true : select.value)
     : select.hidden ? inputValue : { value: inputValue, option: select.value };
   if (!input.hidden && !inputValue) {
     const error = document.getElementById('explorerActionError');
-    error.textContent = 'Enter a name to continue.';
-    error.hidden = false;
+    if (error) { error.textContent = 'Enter a name to continue.'; error.hidden = false; }
     input.focus();
     return;
   }
@@ -194,9 +188,12 @@ let workspaceSettingsReturnFocus = null;
 
 async function openWorkspaceSettings() {
   workspaceSettingsReturnFocus = document.activeElement;
-  document.getElementById('settingsTheme').value = document.body.classList.contains('light') ? 'light' : 'dark';
-  document.getElementById('settingsRuntimeProfile').value = runtimeProfile;
-  document.getElementById('settingsExplorerOpen').checked = await workspaceStore.getSetting('explorerOpen', true).catch(() => true);
+  const settingsTheme = document.getElementById('settingsTheme');
+  const settingsProfile = document.getElementById('settingsRuntimeProfile');
+  const settingsOpen = document.getElementById('settingsExplorerOpen');
+  if (settingsTheme) settingsTheme.value = document.body.classList.contains('light') ? 'light' : 'dark';
+  if (settingsProfile) settingsProfile.value = runtimeProfile;
+  if (settingsOpen) settingsOpen.checked = await workspaceStore.getSetting('explorerOpen', true).catch(() => true);
   await refreshWorkspaceSettingsStatus();
   document.getElementById('workspaceSettingsBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
@@ -219,14 +216,14 @@ async function refreshWorkspaceSettingsStatus() {
   try {
     const status = await workspaceStore.getStorageStatus();
     const format = bytes => bytes == null ? 'unknown usage' : formatFileSize(bytes);
-    storage.textContent = status.blocked
+    if (storage) storage.textContent = status.blocked
       ? 'Upgrade blocked by another tab · close it, then reload'
       : `${format(status.usage)} · clearing browser site data removes this workspace`;
     const items = await workspaceStore.listTrash();
-    trash.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
+    if (trash) trash.textContent = `${items.length} item${items.length === 1 ? '' : 's'}`;
   } catch (error) {
-    storage.textContent = 'Storage status unavailable';
-    trash.textContent = 'Trash unavailable';
+    if (storage) storage.textContent = 'Storage status unavailable';
+    if (trash) trash.textContent = 'Trash unavailable';
   }
 }
 
@@ -242,9 +239,13 @@ async function setExplorerStartupPreference(open) {
 
 async function emptyWorkspaceTrash() {
   if (!await requestExplorerAction({ title: 'Empty Trash?', message: 'Permanently delete every item in Trash? This cannot be undone.', label: null, confirmLabel: 'Empty Trash', danger: true })) return;
-  await workspaceStore.emptyTrash();
-  await refreshExplorer();
-  await refreshWorkspaceSettingsStatus();
+  try {
+    await workspaceStore.emptyTrash();
+    await refreshExplorer();
+    await refreshWorkspaceSettingsStatus();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function deleteAllWorkspaceData() {
@@ -259,7 +260,8 @@ let _aboutReturnFocus = null;
 function openAboutDialog() {
   _aboutReturnFocus = document.activeElement;
   const build = document.getElementById('buildInfo')?.textContent?.trim() || 'Unknown build';
-  document.getElementById('aboutBuildInfo').textContent = `Build ${build}`;
+  const aboutBuildEl = document.getElementById('aboutBuildInfo');
+  if (aboutBuildEl) aboutBuildEl.textContent = `Build ${build}`;
   document.getElementById('aboutBackdrop')?.classList.add('open');
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => document.querySelector('#aboutBackdrop .ex-modal-close')?.focus());
@@ -577,7 +579,7 @@ function reportExplorerActionError(error) {
 }
 
 async function flushActiveExplorerSession(session) {
-  if (sessionController.getCurrentSession()?.id === session?.id) await flushPendingSave();
+  if (sessionController.activeSessions[session?.type]?.id === session?.id) await flushPendingSave();
 }
 
 function renderExplorerTrash(list, items, search) {
@@ -617,16 +619,26 @@ function renderExplorerTrash(list, items, search) {
 }
 
 async function openExplorerSession(id) {
-  const session = await workspaceStore.getSession(id);
-  if (!session) { await refreshExplorer(); return; }
-  await sessionController.restoreSession(session);
-  if (window.innerWidth < 900) toggleExplorer(false);
+  try {
+    const session = await workspaceStore.getSession(id);
+    if (!session) { await refreshExplorer(); return; }
+    await sessionController.restoreSession(session);
+    if (window.innerWidth < 900) toggleExplorer(false);
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function createExplorerSession(type) {
   const suggested = type === 'xpath' ? 'Untitled XPath Query' : 'Untitled XSLT Mapping';
   const workspaceId = sessionController.getCurrentSession()?.workspaceId || 'workspace-default';
-  const folders = await workspaceStore.listFolders(workspaceId);
+  let folders;
+  try {
+    folders = await workspaceStore.listFolders(workspaceId);
+  } catch (error) {
+    reportExplorerActionError(error);
+    return;
+  }
   const result = await requestExplorerAction({
     title: `New ${type === 'xpath' ? 'XPath query' : 'XSLT mapping'}`,
     label: 'Name',
@@ -641,36 +653,49 @@ async function createExplorerSession(type) {
   if (result == null) return;
   const title = typeof result === 'object' ? result.value : result;
   const folderId = typeof result === 'object' ? result.option || null : null;
-  await flushPendingSave();
-  const source = type === 'xpath'
-    ? { xml: EXAMPLES.xpathNavigation.xml, expression: EXAMPLES.xpathNavigation.xpathExpr, namespaces: {}, evaluatorOptions: {} }
-    : { xml: EXAMPLES.identityTransform.xml, xslt: EXAMPLES.identityTransform.xslt, headers: [], properties: [], runtimeProfile, runOptions: {} };
-  const record = await workspaceStore.createSession({
-    type, workspaceId, folderId, title, source,
-  });
-  await sessionController.restoreSession(record);
-  await refreshExplorer();
+  try {
+    await flushPendingSave();
+    const source = type === 'xpath'
+      ? { xml: EXAMPLES.xpathNavigation.xml, expression: EXAMPLES.xpathNavigation.xpathExpr, namespaces: {}, evaluatorOptions: {} }
+      : { xml: EXAMPLES.identityTransform.xml, xslt: EXAMPLES.identityTransform.xslt, headers: [], properties: [], runtimeProfile, runOptions: {} };
+    const record = await workspaceStore.createSession({
+      type, workspaceId, folderId, title, source,
+    });
+    await sessionController.restoreSession(record);
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function createExplorerFolder() {
   const name = await requestExplorerAction({ title: 'New folder', label: 'Folder name', value: 'New Folder', confirmLabel: 'Create' });
   if (name == null) return;
   const active = sessionController.getCurrentSession();
-  await workspaceStore.createFolder({
-    workspaceId: active?.workspaceId || 'workspace-default',
-    parentFolderId: null,
-    name,
-  });
-  await refreshExplorer();
+  try {
+    await workspaceStore.createFolder({
+      workspaceId: active?.workspaceId || 'workspace-default',
+      parentFolderId: null,
+      name,
+    });
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function renameExplorerFolder(folder) {
   const name = await requestExplorerAction({ title: 'Rename folder', label: 'Folder name', value: folder.name, confirmLabel: 'Rename' });
   if (name == null || name === folder.name) return;
-  const current = (await workspaceStore.listFolders(folder.workspaceId)).find(item => item.id === folder.id);
-  if (!current) return refreshExplorer();
-  await workspaceStore.updateFolder(current.id, current.revision, { name });
-  await refreshExplorer();
+  try {
+    const current = (await workspaceStore.listFolders(folder.workspaceId)).find(item => item.id === folder.id);
+    if (!current) return refreshExplorer();
+    await workspaceStore.updateFolder(current.id, current.revision, { name });
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+    await refreshExplorer();
+  }
 }
 
 async function trashExplorerFolder(folder) {
@@ -681,7 +706,9 @@ async function trashExplorerFolder(folder) {
   const trashed = await workspaceStore.moveFolderToTrash(current.id, current.revision);
   const removedIds = new Set(trashed.snapshot.sessions.map(session => session.id));
   for (const type of ['xslt', 'xpath']) {
-    if (removedIds.has(sessionController.activeSessions[type]?.id)) await sessionController.restoreModeDraft(type);
+    if (removedIds.has(sessionController.activeSessions[type]?.id)) {
+      try { await sessionController.restoreModeDraft(type); } catch (e) { logError('restoreModeDraft after folder trash', e); }
+    }
   }
   trashed.snapshot.folders.forEach(item => collapsedExplorerFolders?.delete(item.id));
   void workspaceStore.setSetting('explorerCollapsedFolders', [...(collapsedExplorerFolders || [])]).catch(() => {});
@@ -699,14 +726,18 @@ async function moveExplorerSession(session, folders = []) {
     confirmLabel: 'Move',
   });
   if (folderId == null) return;
-  await flushActiveExplorerSession(session);
-  const current = await workspaceStore.getSession(session.id);
-  if (!current) return refreshExplorer();
-  const updated = await workspaceStore.updateSession(current.id, current.revision, {
-    folderId: folderId || null,
-  });
-  if (sessionController.activeSessions[session.type]?.id === session.id) sessionController.activeSessions[session.type] = updated;
-  await refreshExplorer();
+  try {
+    await flushActiveExplorerSession(session);
+    const current = await workspaceStore.getSession(session.id);
+    if (!current) return refreshExplorer();
+    const updated = await workspaceStore.updateSession(current.id, current.revision, {
+      folderId: folderId || null,
+    });
+    if (sessionController.activeSessions[session.type]?.id === session.id) sessionController.activeSessions[session.type] = updated;
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 function explorerFolderPath(folder, folders) {
@@ -730,7 +761,13 @@ async function saveCurrentAsCopy() {
   const temporaryTitle = sessionController.getTemporaryTitle(type);
   const suggested = active ? `${active.title} Copy` : temporaryTitle || (type === 'xpath' ? 'Untitled XPath Query' : 'Untitled XSLT Mapping');
   const workspaceId = active?.workspaceId || 'workspace-default';
-  const folders = await workspaceStore.listFolders(workspaceId);
+  let folders;
+  try {
+    folders = await workspaceStore.listFolders(workspaceId);
+  } catch (error) {
+    reportExplorerActionError(error);
+    return null;
+  }
   const result = await requestExplorerAction({
     title: 'Save current work',
     label: 'Name',
@@ -746,37 +783,49 @@ async function saveCurrentAsCopy() {
   if (result == null) return null;
   const title = typeof result === 'object' ? result.value : result;
   const folderId = typeof result === 'object' ? result.option || null : active?.folderId || null;
-  await flushPendingSave();
-  const source = sessionController.serializeDrafts()[type].source;
-  const record = await workspaceStore.createSession({
-    type,
-    workspaceId,
-    folderId,
-    title,
-    source,
-  });
-  sessionController.activateNamedSession(record);
-  await refreshExplorer();
-  clog(`Saved current work as “${record.title}” ✓`, 'success');
-  return record;
+  try {
+    await flushPendingSave();
+    const source = sessionController.serializeDrafts()[type].source;
+    const record = await workspaceStore.createSession({
+      type,
+      workspaceId,
+      folderId,
+      title,
+      source,
+    });
+    sessionController.activateNamedSession(record);
+    clog(`Saved current work as “${record.title}” ✓`, 'success');
+    return record;
+  } catch (error) {
+    reportExplorerActionError(error);
+    return null;
+  }
 }
 
 async function renameExplorerSession(session) {
   const title = await requestExplorerAction({ title: 'Rename saved item', label: 'Name', value: session.title, confirmLabel: 'Rename' });
   if (title == null || title === session.title) return;
-  await flushActiveExplorerSession(session);
-  const current = await workspaceStore.getSession(session.id);
-  if (!current) { await refreshExplorer(); return; }
-  const updated = await workspaceStore.updateSession(current.id, current.revision, { title });
-  if (sessionController.activeSessions[session.type]?.id === session.id) sessionController.activateNamedSession(updated);
-  await refreshExplorer();
+  try {
+    await flushActiveExplorerSession(session);
+    const current = await workspaceStore.getSession(session.id);
+    if (!current) { await refreshExplorer(); return; }
+    const updated = await workspaceStore.updateSession(current.id, current.revision, { title });
+    if (sessionController.activeSessions[session.type]?.id === session.id) sessionController.activateNamedSession(updated);
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function duplicateExplorerSession(session) {
-  await flushActiveExplorerSession(session);
-  const copy = await workspaceStore.duplicateSession(session.id, `${session.title} Copy`);
-  await sessionController.restoreSession(copy);
-  await refreshExplorer();
+  try {
+    await flushActiveExplorerSession(session);
+    const copy = await workspaceStore.duplicateSession(session.id, `${session.title} Copy`);
+    await sessionController.restoreSession(copy);
+    await refreshExplorer();
+  } catch (error) {
+    reportExplorerActionError(error);
+  }
 }
 
 async function duplicateCurrentSession() {
