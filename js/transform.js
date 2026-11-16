@@ -553,7 +553,7 @@ function runTransform() {
       setStatus(`Done · ${elapsed} ms`, 'ok');
       _flashPaneResult(true);
       const colRight = document.getElementById('colRight');
-      if (colRight.classList.contains('collapsed')) {
+      if (colRight?.classList.contains('collapsed')) {
         colRight.classList.remove('collapsed');
         _layoutAfterTransition(colRight, 400);
       }

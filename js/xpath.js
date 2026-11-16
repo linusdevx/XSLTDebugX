@@ -403,7 +403,7 @@ function runXPath() {
   const xmlSrc = eds.xml?.getValue()?.trim();
 
   const colRight = document.getElementById('colRight');
-  if (colRight.classList.contains('collapsed')) {
+  if (colRight?.classList.contains('collapsed')) {
     colRight.classList.remove('collapsed');
     setTimeout(() => { eds.xml?.layout(); eds.xslt?.layout(); eds.out?.layout(); }, 250);
   }
